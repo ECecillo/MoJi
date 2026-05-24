@@ -1,0 +1,224 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sinogrammes.local/schema/data-schema.v1.json",
+  "title": "Sinogrammes — données de référence v1",
+  "description": "Schéma officiel des données pédagogiques (caractères, mots, decks). Cf. RFC 0004.",
+  "type": "object",
+  "required": ["schema_version", "characters", "words", "decks"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Version SemVer du schéma. Doit commencer par 1. pour ce fichier.",
+      "pattern": "^1\\.[0-9]+\\.[0-9]+$"
+    },
+    "characters": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/character" }
+    },
+    "words": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/word" }
+    },
+    "decks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/deck" }
+    }
+  },
+  "$defs": {
+    "pinyinSyllable": {
+      "type": "object",
+      "required": ["syllable", "tone"],
+      "additionalProperties": false,
+      "properties": {
+        "syllable": {
+          "type": "string",
+          "description": "Syllabe pinyin avec marques de ton (ex. \"nǐ\").",
+          "minLength": 1
+        },
+        "tone": {
+          "type": "integer",
+          "description": "Ton (0 = neutre, 1-4 = tons 1 à 4).",
+          "minimum": 0,
+          "maximum": 4
+        }
+      }
+    },
+    "translations": {
+      "type": "object",
+      "description": "Traductions indexées par code de langue ISO 639-1.",
+      "patternProperties": {
+        "^[a-z]{2}$": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "character": {
+      "type": "object",
+      "required": [
+        "id",
+        "hanzi",
+        "pinyin",
+        "translations",
+        "hsk_level",
+        "stroke_count",
+        "radicals",
+        "tags",
+        "stroke_data_ref",
+        "metadata"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^char_[A-Z0-9]+$",
+          "description": "Identifiant unique du caractère, préfixé par 'char_'."
+        },
+        "hanzi": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1,
+          "description": "Le caractère chinois (un seul code point logique)."
+        },
+        "pinyin": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/pinyinSyllable" },
+          "minItems": 1
+        },
+        "translations": { "$ref": "#/$defs/translations" },
+        "hsk_level": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9
+        },
+        "stroke_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "radicals": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "frequency_rank": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Rang de fréquence (1 = plus fréquent). Optionnel."
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "stroke_data_ref": {
+          "type": "string",
+          "pattern": "^[a-z]+:[A-Z0-9]+$",
+          "description": "Référence vers la source des tracés, ex. 'makemeahanzi:4F60'."
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Champs futurs non normés. Ne pas s'appuyer dessus sans validation locale."
+        }
+      }
+    },
+    "word": {
+      "type": "object",
+      "required": [
+        "id",
+        "hanzi",
+        "pinyin",
+        "translations",
+        "hsk_level",
+        "character_refs",
+        "examples",
+        "tags",
+        "metadata"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^word_[a-z0-9_]+$"
+        },
+        "hanzi": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pinyin": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/pinyinSyllable" },
+          "minItems": 1
+        },
+        "translations": { "$ref": "#/$defs/translations" },
+        "hsk_level": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9
+        },
+        "character_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^char_[A-Z0-9]+$"
+          },
+          "minItems": 1
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["hanzi", "translations"],
+            "additionalProperties": false,
+            "properties": {
+              "hanzi": { "type": "string", "minLength": 1 },
+              "pinyin": {
+                "type": "array",
+                "items": { "$ref": "#/$defs/pinyinSyllable" }
+              },
+              "translations": { "$ref": "#/$defs/translations" }
+            }
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "metadata": {
+          "type": "object"
+        }
+      }
+    },
+    "deck": {
+      "type": "object",
+      "required": ["id", "name", "items"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^deck_[a-z0-9_]+$"
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type", "ref"],
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["character", "word"]
+              },
+              "ref": {
+                "type": "string",
+                "pattern": "^(char|word)_[A-Za-z0-9_]+$"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

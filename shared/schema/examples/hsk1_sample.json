@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0.0",
+  "characters": [
+    {
+      "id": "char_4F60",
+      "hanzi": "你",
+      "pinyin": [{ "syllable": "nǐ", "tone": 3 }],
+      "translations": {
+        "fr": ["tu", "toi"],
+        "en": ["you"]
+      },
+      "hsk_level": 1,
+      "stroke_count": 7,
+      "radicals": ["亻", "尔"],
+      "frequency_rank": 8,
+      "tags": ["pronom"],
+      "stroke_data_ref": "makemeahanzi:4F60",
+      "metadata": {}
+    },
+    {
+      "id": "char_597D",
+      "hanzi": "好",
+      "pinyin": [
+        { "syllable": "hǎo", "tone": 3 },
+        { "syllable": "hào", "tone": 4 }
+      ],
+      "translations": {
+        "fr": ["bon", "bien"],
+        "en": ["good", "well"]
+      },
+      "hsk_level": 1,
+      "stroke_count": 6,
+      "radicals": ["女", "子"],
+      "frequency_rank": 35,
+      "tags": ["adjectif"],
+      "stroke_data_ref": "makemeahanzi:597D",
+      "metadata": {}
+    }
+  ],
+  "words": [
+    {
+      "id": "word_nihao",
+      "hanzi": "你好",
+      "pinyin": [
+        { "syllable": "nǐ", "tone": 3 },
+        { "syllable": "hǎo", "tone": 3 }
+      ],
+      "translations": {
+        "fr": ["bonjour"],
+        "en": ["hello"]
+      },
+      "hsk_level": 1,
+      "character_refs": ["char_4F60", "char_597D"],
+      "examples": [],
+      "tags": ["salutation"],
+      "metadata": {}
+    }
+  ],
+  "decks": [
+    {
+      "id": "deck_hsk1_sample",
+      "name": "HSK 1 — échantillon",
+      "description": "Petit échantillon HSK 1 pour les tests et fixtures.",
+      "items": [
+        { "type": "character", "ref": "char_4F60" },
+        { "type": "character", "ref": "char_597D" },
+        { "type": "word", "ref": "word_nihao" }
+      ]
+    }
+  ]
+}
