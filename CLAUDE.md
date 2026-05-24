@@ -19,15 +19,29 @@ Pour la vision complète et figée : [`BRIEF.md`](BRIEF.md) à la racine.
 ```
 sinogrammes/
 ├── CLAUDE.md                # ce fichier
+├── AGENTS.md                # miroir cross-outils de CLAUDE.md
 ├── README.md                # présentation humaine
 ├── BRIEF.md                 # brief de cadrage initial (figé)
+├── Makefile                 # orchestration front + back (cf. section Commandes)
 ├── docs/                    # toute la doc projet
 │   ├── rfc/                 # décisions structurantes (RFC numérotées)
 │   ├── journal/             # une entrée par session de travail
 │   └── handoff/             # CURRENT_STATE.md
-├── frontend/                # Vite + React + TS (à venir)
-├── backend/                 # Go + chi + SQLite (à venir)
-└── shared/                  # JSON Schema partagé front/back (à venir)
+├── frontend/                # Vite + React + TS strict
+│   ├── scripts/             # pipelines de données (vendor + build, cf. RFC 0008)
+│   └── src/
+│       ├── domain/          # logique pure : schema/, migrations/, ports/
+│       ├── adapters/        # implémentations concrètes (renderer/, storage/, api/)
+│       ├── features/, ui/, i18n/, lib/, data/, test/
+├── backend/                 # Go + chi + SQLite (modernc.org/sqlite)
+│   ├── cmd/server/
+│   └── internal/
+│       ├── domain/, ports/, config/
+│       ├── adapters/{http,sqlite}/
+│       └── migrations/      # SQL goose
+└── shared/                  # artefacts partagés
+    ├── schema/              # JSON Schema v1 + fixtures (source de vérité)
+    └── data/sources/        # snapshots upstream pinned (vendored)
 ```
 
 ## Conventions clés
@@ -40,14 +54,54 @@ sinogrammes/
 - **Pointer Events** uniquement (jamais Touch ou Mouse seuls) pour gérer le stylet Wacom.
 - **E-ink awareness** : minimalisme visuel, animations rares ou désactivables, respect de `prefers-reduced-motion` et `prefers-contrast`.
 
+## Commandes utiles
+
+Toutes les commandes se lancent **depuis la racine du repo** via `make`. `make help` liste toutes les cibles disponibles.
+
+### À lancer avant chaque commit
+
+| Commande         | Effet                                                             |
+|------------------|-------------------------------------------------------------------|
+| `make test`      | Vitest côté front + `go test -race` côté back                     |
+| `make lint`      | ESLint + Prettier (front) + golangci-lint (back)                  |
+| `make typecheck` | `tsc --noEmit` strict côté front                                  |
+
+Les trois doivent passer vert. En cas d'erreurs de format Prettier : `cd frontend && npm run lint:fix`.
+
+### Développement
+
+| Commande           | Effet                                                             |
+|--------------------|-------------------------------------------------------------------|
+| `make dev`         | Lance front (http://127.0.0.1:5173) **et** back (http://127.0.0.1:8787) en parallèle. Ctrl-C arrête les deux. |
+| `make dev-front`   | Front seul (Vite).                                                |
+| `make dev-back`    | Back seul (`go run ./cmd/server`).                                |
+| `make build`       | Bundle front (`dist/`) + binaire back (`backend/bin/server`).     |
+| `make install`     | `npm install` côté front + `go mod download` côté back.           |
+
+### Pipeline de données (cf. [RFC 0008](docs/rfc/0008-sourcing-hsk1.md))
+
+| Commande              | Effet                                                                                       |
+|-----------------------|---------------------------------------------------------------------------------------------|
+| `make build-data`     | **Offline**. Régénère `frontend/src/data/hsk1.generated.json` depuis `shared/data/sources/`. Valide via Zod : si la validation échoue, aucun fichier n'est écrit. À relancer après toute modification du schéma ou des sources vendorées. |
+| `make vendor-sources` | **Réseau**, rare. Rafraîchit `shared/data/sources/` depuis les SHA upstream pinnés (drkameleon + makemeahanzi). À utiliser pour bumper une version amont. |
+
+### Nettoyage
+
+`make clean` — supprime `dist/`, `bin/`, coverage.
+
 ## Rythme de travail
 
 - Découpé en **lots** (cf. [`docs/rfc/0007-decoupage-en-lots.md`](docs/rfc/0007-decoupage-en-lots.md)). On ne saute pas de lot, on ne mélange pas.
 - À chaque session : tenir à jour `CURRENT_STATE.md` et écrire une entrée de journal `docs/journal/AAAA-MM-JJ-titre.md`.
 - Décision structurante = nouvelle RFC. Pas de décision implicite enterrée dans un commit.
+- **Commits thématiques** (un sujet par commit), messages en français au style Conventional Commits (`feat(scope): …`, `docs: …`, `build: …`, `fix: …`).
 
 ## Ce que Claude Code ne fait pas
 
-- Pas de code applicatif tant que le Lot 0 n'est pas explicitement démarré.
-- Pas de modification du brief (`BRIEF.md`) : c'est un document figé. Toute évolution passe par une RFC.
-- Pas de raccourci sur l'hexagonal "parce que c'est trop tôt" : la discipline est demandée dès la première ligne.
+- **Pas de modification de fichiers générés ou vendorés à la main** :
+  - `frontend/src/data/*.generated.json` se régénère via `make build-data`.
+  - `shared/data/sources/*` se régénère via `make vendor-sources`.
+- **Pas de modification du brief (`BRIEF.md`)** : document figé. Toute évolution passe par une RFC.
+- **Pas de raccourci sur l'hexagonal** : `src/domain/` n'importe jamais `src/adapters/` ; le lint le vérifie via `no-restricted-imports`.
+- **Pas de code applicatif sans correspondance avec un lot ouvert** : se référer à `CURRENT_STATE.md` pour savoir quel lot est en cours.
+- **Pas de commit sans `make test && make lint && make typecheck` verts.**
