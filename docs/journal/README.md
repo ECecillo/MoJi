@@ -30,5 +30,6 @@ Contenu type :
 
 ## Index (par date décroissante)
 
+- [2026-05-24 — Sourcing et bundling des données HSK 3.0 niveau 1](2026-05-24-sourcing-hsk1.md)
 - [2026-05-24 — Lot 0, fondations en place](2026-05-24-lot0-fondations.md)
 - [2026-05-24 — Initialisation du projet](2026-05-24-init-projet.md)
