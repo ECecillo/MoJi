@@ -120,6 +120,22 @@ export class HanziWriterRenderer implements CharacterRenderer {
     void writer.quiz(this.buildQuizOptions());
   }
 
+  showOutline(): void {
+    void this.writer?.showOutline();
+  }
+
+  hideOutline(): void {
+    void this.writer?.hideOutline();
+  }
+
+  showCharacter(): void {
+    void this.writer?.showCharacter();
+  }
+
+  hideCharacter(): void {
+    void this.writer?.hideCharacter();
+  }
+
   private currentQuiz(): HanziWriterInternalQuiz {
     const quiz = this.writer?._quiz;
     if (!quiz) {

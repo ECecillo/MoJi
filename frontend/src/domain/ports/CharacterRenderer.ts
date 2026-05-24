@@ -35,4 +35,16 @@ export interface CharacterRenderer {
 
   /** Réinitialise l'état d'avancement (par exemple sur "recommencer"). */
   reset(): void;
+
+  /** Affiche le modèle en filigrane (semi-transparent). */
+  showOutline(): void;
+
+  /** Cache le modèle en filigrane. */
+  hideOutline(): void;
+
+  /** Affiche le caractère complet (modèle plein). */
+  showCharacter(): void;
+
+  /** Cache le caractère complet. */
+  hideCharacter(): void;
 }

@@ -115,6 +115,11 @@ const hanziWriterMock = vi.hoisted(() => {
     cancelQuiz = vi.fn(() => {
       this._quiz = undefined;
     });
+
+    showOutline = vi.fn();
+    hideOutline = vi.fn();
+    showCharacter = vi.fn();
+    hideCharacter = vi.fn();
   }
 
   return { MockHanziWriter };
@@ -279,6 +284,24 @@ describe('HanziWriterRenderer', () => {
         ],
       }),
     ).toThrow(HanziWriterRendererError);
+  });
+
+  it('pilote la visibilité du modèle et du caractère', async () => {
+    const renderer = new HanziWriterRenderer({ characterDataLoader: () => characterData });
+    await renderer.mount(document.createElement('div'), '你');
+    const instance = mountedInstance();
+
+    renderer.showOutline();
+    expect(instance.showOutline).toHaveBeenCalled();
+
+    renderer.hideOutline();
+    expect(instance.hideOutline).toHaveBeenCalled();
+
+    renderer.showCharacter();
+    expect(instance.showCharacter).toHaveBeenCalled();
+
+    renderer.hideCharacter();
+    expect(instance.hideCharacter).toHaveBeenCalled();
   });
 
   it('charge les données Hanzi Writer bundlées depuis hanzi-writer-data', async () => {
