@@ -1,0 +1,235 @@
+import { fireEvent, render, screen } from '@testing-library/react';
+import { Canvas, type CapturedStrokeAttempt } from './Canvas';
+import type {
+  CharacterRenderer,
+  StrokeAttempt,
+  StrokeValidationResult,
+} from '../../domain/ports/CharacterRenderer';
+
+class FakeRenderer implements CharacterRenderer {
+  mount = vi.fn(async (_container: HTMLElement, _hanzi: string) => undefined);
+  unmount = vi.fn();
+  validateStroke = vi.fn(
+    (_attempt: StrokeAttempt): StrokeValidationResult => ({
+      expectedStrokeIndex: 0,
+      accepted: true,
+    }),
+  );
+  reset = vi.fn();
+}
+
+function inputLayer() {
+  return screen.getByRole('application', { name: /zone de saisie stylet/i });
+}
+
+function withRect(element: Element, rect: Partial<DOMRect>) {
+  vi.spyOn(element, 'getBoundingClientRect').mockReturnValue({
+    x: rect.x ?? 0,
+    y: rect.y ?? 0,
+    left: rect.left ?? 0,
+    top: rect.top ?? 0,
+    right: rect.right ?? 0,
+    bottom: rect.bottom ?? 0,
+    width: rect.width ?? 320,
+    height: rect.height ?? 320,
+    toJSON: () => ({}),
+  } as DOMRect);
+}
+
+function dispatchPointer(
+  element: Element,
+  type: 'pointerdown' | 'pointermove' | 'pointerup' | 'pointercancel',
+  init: {
+    pointerId: number;
+    pointerType?: string;
+    isPrimary?: boolean;
+    clientX?: number;
+    clientY?: number;
+    pressure?: number;
+    tiltX?: number;
+    tiltY?: number;
+  },
+) {
+  const event = new MouseEvent(type, {
+    bubbles: true,
+    cancelable: true,
+    clientX: init.clientX ?? 0,
+    clientY: init.clientY ?? 0,
+  });
+  Object.defineProperties(event, {
+    pointerId: { value: init.pointerId },
+    pointerType: { value: init.pointerType ?? 'pen' },
+    isPrimary: { value: init.isPrimary ?? true },
+    pressure: { value: init.pressure ?? 0 },
+    tiltX: { value: init.tiltX ?? 0 },
+    tiltY: { value: init.tiltY ?? 0 },
+  });
+  fireEvent(element, event);
+}
+
+describe('Canvas', () => {
+  it('monte et démonte le CharacterRenderer pour le hanzi courant', () => {
+    const renderer = new FakeRenderer();
+    const { unmount } = render(<Canvas hanzi="你" renderer={renderer} />);
+
+    expect(renderer.mount).toHaveBeenCalledTimes(1);
+    expect(renderer.mount.mock.calls[0]?.[0]).toBeInstanceOf(HTMLElement);
+    expect(renderer.mount.mock.calls[0]?.[1]).toBe('你');
+
+    unmount();
+    expect(renderer.unmount).toHaveBeenCalledTimes(1);
+  });
+
+  it('capture points, pression et inclinaison puis valide au pointerup', () => {
+    const renderer = new FakeRenderer();
+    const onStrokeValidated = vi.fn();
+    render(
+      <Canvas hanzi="你" renderer={renderer} size={200} onStrokeValidated={onStrokeValidated} />,
+    );
+    const layer = inputLayer();
+    withRect(layer, { left: 10, top: 20 });
+
+    dispatchPointer(layer, 'pointerdown', {
+      pointerId: 7,
+      pointerType: 'pen',
+      isPrimary: true,
+      clientX: 20,
+      clientY: 40,
+      pressure: 0.25,
+      tiltX: 12,
+      tiltY: -4,
+    });
+    dispatchPointer(layer, 'pointermove', {
+      pointerId: 7,
+      pointerType: 'pen',
+      clientX: 30,
+      clientY: 50,
+      pressure: 0.5,
+      tiltX: 10,
+      tiltY: -2,
+    });
+    dispatchPointer(layer, 'pointerup', {
+      pointerId: 7,
+      pointerType: 'pen',
+      clientX: 40,
+      clientY: 60,
+      pressure: 0,
+      tiltX: 8,
+      tiltY: 0,
+    });
+
+    expect(renderer.validateStroke).toHaveBeenCalledTimes(1);
+    expect(renderer.validateStroke).toHaveBeenCalledWith({
+      points: [
+        { x: 10, y: 20 },
+        { x: 20, y: 30 },
+        { x: 30, y: 40 },
+      ],
+      pressures: [0.25, 0.5, 0],
+      tilts: [
+        { x: 12, y: -4 },
+        { x: 10, y: -2 },
+        { x: 8, y: 0 },
+      ],
+      pointerType: 'pen',
+    } satisfies CapturedStrokeAttempt);
+    expect(onStrokeValidated).toHaveBeenCalledWith(
+      { expectedStrokeIndex: 0, accepted: true },
+      expect.objectContaining({ pointerType: 'pen' }),
+    );
+  });
+
+  it('dessine le trait validé en noir quand il est accepté', () => {
+    const renderer = new FakeRenderer();
+    render(<Canvas hanzi="你" renderer={renderer} />);
+    const layer = inputLayer();
+
+    dispatchPointer(layer, 'pointerdown', {
+      pointerId: 1,
+      pointerType: 'pen',
+      isPrimary: true,
+      clientX: 1,
+      clientY: 2,
+    });
+    dispatchPointer(layer, 'pointerup', {
+      pointerId: 1,
+      pointerType: 'pen',
+      clientX: 3,
+      clientY: 4,
+    });
+
+    const stroke = document.querySelector('polyline');
+    expect(stroke).toHaveAttribute('points', '1,2 3,4');
+    expect(stroke).toHaveAttribute('stroke', '#111111');
+  });
+
+  it('dessine un trait refusé en gris', () => {
+    const renderer = new FakeRenderer();
+    renderer.validateStroke.mockReturnValue({
+      expectedStrokeIndex: 0,
+      accepted: false,
+      reason: 'wrong_direction',
+    });
+    render(<Canvas hanzi="你" renderer={renderer} />);
+    const layer = inputLayer();
+
+    dispatchPointer(layer, 'pointerdown', {
+      pointerId: 1,
+      pointerType: 'pen',
+      isPrimary: true,
+      clientX: 1,
+      clientY: 2,
+    });
+    dispatchPointer(layer, 'pointerup', {
+      pointerId: 1,
+      pointerType: 'pen',
+      clientX: 3,
+      clientY: 4,
+    });
+
+    expect(document.querySelector('polyline')).toHaveAttribute('stroke', '#888888');
+  });
+
+  it('annule un trait sur pointercancel sans appeler validateStroke', () => {
+    const renderer = new FakeRenderer();
+    render(<Canvas hanzi="你" renderer={renderer} />);
+    const layer = inputLayer();
+
+    dispatchPointer(layer, 'pointerdown', {
+      pointerId: 9,
+      pointerType: 'pen',
+      isPrimary: true,
+      clientX: 1,
+      clientY: 2,
+    });
+    dispatchPointer(layer, 'pointercancel', {
+      pointerId: 9,
+      pointerType: 'pen',
+    });
+
+    expect(renderer.validateStroke).not.toHaveBeenCalled();
+    expect(document.querySelector('polyline')).toBeNull();
+  });
+
+  it('ignore les pointeurs non primaires', () => {
+    const renderer = new FakeRenderer();
+    render(<Canvas hanzi="你" renderer={renderer} />);
+    const layer = inputLayer();
+
+    dispatchPointer(layer, 'pointerdown', {
+      pointerId: 2,
+      pointerType: 'pen',
+      isPrimary: false,
+      clientX: 1,
+      clientY: 2,
+    });
+    dispatchPointer(layer, 'pointerup', {
+      pointerId: 2,
+      pointerType: 'pen',
+      clientX: 3,
+      clientY: 4,
+    });
+
+    expect(renderer.validateStroke).not.toHaveBeenCalled();
+  });
+});
