@@ -1,0 +1,37 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/coverage/
+frontend/.vite/
+frontend/.eslintcache
+*.tsbuildinfo
+
+# Go / backend
+backend/bin/
+backend/coverage.out
+backend/coverage.html
+backend/*.db
+backend/*.db-shm
+backend/*.db-wal
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
