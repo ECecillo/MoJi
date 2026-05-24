@@ -34,6 +34,7 @@ Contenu type :
 
 ## Index (par date décroissante)
 
+- [2026-05-24 — Capture Pointer Events du canvas](2026-05-24-capture-pointer-events.md)
 - [2026-05-24 — Adapter Hanzi Writer Renderer](2026-05-24-hanzi-writer-renderer.md)
 - [2026-05-24 — Sourcing et bundling des données HSK 3.0 niveau 1](2026-05-24-sourcing-hsk1.md)
 - [2026-05-24 — Lot 0, fondations en place](2026-05-24-lot0-fondations.md)

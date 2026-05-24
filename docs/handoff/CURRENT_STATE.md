@@ -6,7 +6,7 @@
 
 ## Lot en cours
 
-**Lot 1 — Canvas et validation de tracé** : 🟡 en cours. Sourcing HSK 1, `BundledDataSource` et `HanziWriterRenderer` posés.
+**Lot 1 — Canvas et validation de tracé** : 🟡 en cours. Sourcing HSK 1, `BundledDataSource`, `HanziWriterRenderer` et capture Pointer Events posés.
 
 ## Ce qui est fait
 
@@ -42,9 +42,16 @@ Cf. [`docs/journal/2026-05-24-lot0-fondations.md`](../journal/2026-05-24-lot0-fo
 - ✅ Options par défaut e-ink-friendly : SVG, noir/gris, modèle masqué par défaut, timings d'animation à zéro, pas de hint/flash automatique.
 - ✅ 8 nouveaux tests Vitest/jsdom : câblage options, loader injecté, no mouse/touch listeners, validation acceptée, wrong direction, too short, reset/unmount, chargement bundlé de `你`.
 
+### Lot 1 step 3 — capture Pointer Events (`<Canvas />`)
+
+- ✅ `frontend/src/features/canvas/Canvas.tsx` ajouté : monte un `CharacterRenderer` injecté, capture `pointerdown` / `pointermove` / `pointerup` / `pointercancel`, calcule les points locaux, conserve pression et inclinaison, appelle `validateStroke()` au lever du stylet.
+- ✅ Retour visuel minimal en SVG : trait noir si accepté, gris si refusé. Pas d'animation.
+- ✅ `setPointerCapture` / `releasePointerCapture` utilisés si disponibles.
+- ✅ 6 nouveaux tests React/jsdom : mount/unmount, capture points + pression + inclinaison, validation, rendu accepté/refusé, cancel, ignore non-primary.
+
 ### Vérifications croisées
 
-- `env -u GOROOT make test` : **61 tests front** passent, 2 paquets back passent avec `-race`.
+- `env -u GOROOT make test` : **67 tests front** passent, 2 paquets back passent avec `-race`.
 - `env -u GOROOT make lint` : ESLint + Prettier clean, golangci-lint 0 issue.
 - `make typecheck` : `tsc --noEmit` clean.
 - `env -u GOROOT make build` : bundle front + binaire back OK.
@@ -64,7 +71,7 @@ Aucun.
 
 1. ✅ **`BundledDataSource`** (adapter du port `DataSource`).
 2. ✅ **Intégration de Hanzi Writer** dans l'adapter `HanziWriterRenderer` (port `CharacterRenderer`).
-3. **Capture stylet via Pointer Events** : composant `<Canvas />` dans `features/canvas/`. Gestion pression/inclinaison, transmission des points à `CharacterRenderer.validateStroke()`.
+3. ✅ **Capture stylet via Pointer Events** : composant `<Canvas />` dans `features/canvas/`. Gestion pression/inclinaison, transmission des points à `CharacterRenderer.validateStroke()`.
 4. **Grilles d'aide** : Tian Zi Ge, Mi Zi Ge, Hui Zi Ge en composants `ui/`.
 5. **Modes d'affichage** : modèle semi-transparent vs caché, basculable.
 6. **UX e-ink** : noir/blanc strict, pas d'animation gratuite, redraw minimisé.
@@ -75,5 +82,5 @@ Aucun.
 - Brief figé : [`../../BRIEF.md`](../../BRIEF.md)
 - Index des RFC : [`../rfc/README.md`](../rfc/README.md)
 - Index du journal : [`../journal/README.md`](../journal/README.md)
-- Dernière entrée de journal : [`../journal/2026-05-24-hanzi-writer-renderer.md`](../journal/2026-05-24-hanzi-writer-renderer.md)
+- Dernière entrée de journal : [`../journal/2026-05-24-capture-pointer-events.md`](../journal/2026-05-24-capture-pointer-events.md)
 - Provenance des sources vendorées : [`../../shared/data/sources/_provenance.json`](../../shared/data/sources/_provenance.json)
