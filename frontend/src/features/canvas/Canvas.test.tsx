@@ -16,6 +16,10 @@ class FakeRenderer implements CharacterRenderer {
     }),
   );
   reset = vi.fn();
+  showOutline = vi.fn();
+  hideOutline = vi.fn();
+  showCharacter = vi.fn();
+  hideCharacter = vi.fn();
 }
 
 function inputLayer() {
@@ -231,5 +235,25 @@ describe('Canvas', () => {
     });
 
     expect(renderer.validateStroke).not.toHaveBeenCalled();
+  });
+
+  it('affiche la grille demandée', () => {
+    const renderer = new FakeRenderer();
+    const { container } = render(<Canvas hanzi="你" renderer={renderer} gridType="mi" />);
+
+    // Mi Zi Ge has vertical, horizontal and 2 diagonals = 4 lines
+    const lines = container.querySelectorAll('line');
+    expect(lines).toHaveLength(4);
+  });
+
+  it('pilote la visibilité du renderer au montage', async () => {
+    const renderer = new FakeRenderer();
+    render(<Canvas hanzi="你" renderer={renderer} showOutline={true} showCharacter={false} />);
+
+    // On attend que mount soit fini
+    await Promise.resolve();
+
+    expect(renderer.showOutline).toHaveBeenCalled();
+    expect(renderer.hideCharacter).toHaveBeenCalled();
   });
 });

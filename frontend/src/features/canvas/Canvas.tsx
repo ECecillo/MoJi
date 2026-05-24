@@ -4,6 +4,7 @@ import type {
   StrokeAttempt,
   StrokeValidationResult,
 } from '../../domain/ports/CharacterRenderer';
+import { CharacterGrid, type GridType } from '../../ui/CharacterGrid';
 
 export interface CapturedStrokeAttempt extends StrokeAttempt {
   tilts: ReadonlyArray<{ x: number; y: number }>;
@@ -14,6 +15,9 @@ export interface CanvasProps {
   hanzi: string;
   renderer: CharacterRenderer;
   size?: number;
+  gridType?: GridType;
+  showOutline?: boolean;
+  showCharacter?: boolean;
   className?: string;
   onStrokeValidated?: (result: StrokeValidationResult, attempt: CapturedStrokeAttempt) => void;
 }
@@ -36,6 +40,9 @@ export function Canvas({
   hanzi,
   renderer,
   size = 320,
+  gridType = 'tian',
+  showOutline = true,
+  showCharacter = false,
   className = '',
   onStrokeValidated,
 }: CanvasProps) {
@@ -53,14 +60,34 @@ export function Canvas({
     let cancelled = false;
 
     void renderer.mount(layer, hanzi).then(() => {
-      if (cancelled) renderer.unmount();
+      if (cancelled) {
+        renderer.unmount();
+      } else {
+        // Apply initial visibility
+        if (showOutline) renderer.showOutline();
+        else renderer.hideOutline();
+
+        if (showCharacter) renderer.showCharacter();
+        else renderer.hideCharacter();
+      }
     });
 
     return () => {
       cancelled = true;
       renderer.unmount();
     };
-  }, [hanzi, renderer]);
+  }, [hanzi, renderer, showOutline, showCharacter]);
+
+  // Sync visibility changes after mount
+  useEffect(() => {
+    if (showOutline) renderer.showOutline();
+    else renderer.hideOutline();
+  }, [renderer, showOutline]);
+
+  useEffect(() => {
+    if (showCharacter) renderer.showCharacter();
+    else renderer.hideCharacter();
+  }, [renderer, showCharacter]);
 
   const startStroke = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.isPrimary === false) return;
@@ -124,6 +151,7 @@ export function Canvas({
         className="relative shrink-0 border border-ink bg-paper"
         style={{ width: size, height: size }}
       >
+        <CharacterGrid type={gridType} size={size} className="absolute inset-0" />
         <div ref={rendererLayerRef} className="absolute inset-0" aria-hidden="true" />
         <svg
           className="pointer-events-none absolute inset-0 h-full w-full"
