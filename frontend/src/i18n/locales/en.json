@@ -1,0 +1,12 @@
+{
+  "app": {
+    "title": "Sinogrammes",
+    "greeting": "Hello!",
+    "lot": "Lot 0 — foundations in place."
+  },
+  "language": {
+    "toggle": "Switch language",
+    "fr": "French",
+    "en": "English"
+  }
+}
