@@ -1,0 +1,43 @@
+{
+  "generated_at": "2026-05-24T17:22:55.134Z",
+  "note": "Fichier régénéré par frontend/scripts/vendor-sources.ts. Ne pas éditer à la main.",
+  "sources": [
+    {
+      "name": "drkameleon/complete-hsk-vocabulary",
+      "repo": "drkameleon/complete-hsk-vocabulary",
+      "ref": "7ac65bf1a6387d35f1ade478906172a19311c7f9",
+      "path": "wordlists/inclusive/new/1.json",
+      "url": "https://raw.githubusercontent.com/drkameleon/complete-hsk-vocabulary/7ac65bf1a6387d35f1ade478906172a19311c7f9/wordlists/inclusive/new/1.json",
+      "vendored_as": "drkameleon-hsk30-l1.json",
+      "sha256": "7ebcdbd2548ebdcf2413713d975ce095065f0f3447a5967e9caa4f4bf3d82c26",
+      "bytes": 482400
+    },
+    {
+      "name": "skishore/makemeahanzi (dictionary.txt)",
+      "repo": "skishore/makemeahanzi",
+      "ref": "bddc96d41bef78427ed0e034e9f7e31d71fd1b92",
+      "path": "dictionary.txt",
+      "url": "https://raw.githubusercontent.com/skishore/makemeahanzi/bddc96d41bef78427ed0e034e9f7e31d71fd1b92/dictionary.txt",
+      "derived_into": "makemeahanzi-hsk1-meta.jsonl (champs: character, hex, radical, decomposition, definition, pinyin)",
+      "upstream_sha256": "744bb05d5b0742e9ee35c37791f94d56a173349b3367569e7ca11e510364d203",
+      "upstream_bytes": 2420720
+    },
+    {
+      "name": "skishore/makemeahanzi (graphics.txt)",
+      "repo": "skishore/makemeahanzi",
+      "ref": "bddc96d41bef78427ed0e034e9f7e31d71fd1b92",
+      "path": "graphics.txt",
+      "url": "https://raw.githubusercontent.com/skishore/makemeahanzi/bddc96d41bef78427ed0e034e9f7e31d71fd1b92/graphics.txt",
+      "derived_into": "makemeahanzi-hsk1-meta.jsonl (champ: stroke_count)",
+      "upstream_sha256": "a28c478b5178e98f67f510b2d52fde08a69dc664654ef43498253b9b764d46ee",
+      "upstream_bytes": 30758928
+    },
+    {
+      "name": "derived: makemeahanzi-hsk1-meta.jsonl",
+      "sha256": "b1e41645d31dfdc1cfe023725dcbf45f4fe7c0608869d465018d22b8ccb2e468",
+      "bytes": 44830,
+      "entries": 300,
+      "missing": []
+    }
+  ]
+}
