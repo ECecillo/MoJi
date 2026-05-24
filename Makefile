@@ -8,6 +8,7 @@ SHELL := /bin/sh
         test test-front test-back \
         lint lint-front lint-back \
         typecheck build build-front build-back \
+        vendor-sources build-data \
         clean
 
 help:
@@ -18,6 +19,8 @@ help:
 	@echo "  make lint        — exécute lint + format check des deux côtés"
 	@echo "  make typecheck   — typecheck strict TypeScript"
 	@echo "  make build       — compile front et back"
+	@echo "  make vendor-sources — rafraîchit shared/data/sources/ depuis les SHA upstream (rare, réseau)"
+	@echo "  make build-data  — régénère frontend/src/data/hsk1.generated.json (offline)"
 	@echo "  make clean       — nettoie artefacts de build et caches"
 	@echo ""
 	@echo "Cibles ciblées : *-front, *-back (ex. make test-front)."
@@ -78,6 +81,14 @@ build-back:
 	cd backend && mkdir -p bin && go build -o bin/server ./cmd/server
 
 build: build-front build-back
+
+# ─────────── data pipeline (cf. RFC 0008) ───────────
+
+vendor-sources:
+	cd frontend && npm run vendor:sources
+
+build-data:
+	cd frontend && npm run build:data
 
 # ─────────── clean ───────────
 
