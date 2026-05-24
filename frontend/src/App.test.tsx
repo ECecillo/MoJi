@@ -8,10 +8,10 @@ describe('App', () => {
     await i18n.changeLanguage('fr');
   });
 
-  it('affiche le titre et le message en français par défaut', () => {
+  it('affiche le titre et le caractère par défaut', () => {
     render(<App />);
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Sinogrammes');
-    expect(screen.getByText('Bonjour !')).toBeInTheDocument();
+    expect(screen.getByLabelText(/Tracé du caractère 你/i)).toBeInTheDocument();
     expect(screen.getByTestId('current-language')).toHaveTextContent('fr');
   });
 
@@ -20,8 +20,8 @@ describe('App', () => {
     const user = userEvent.setup();
     await user.click(screen.getByTestId('language-toggle'));
 
-    expect(screen.getByText('Hello!')).toBeInTheDocument();
     expect(screen.getByTestId('current-language')).toHaveTextContent('en');
+    expect(screen.getByRole('button', { name: /French/i })).toBeInTheDocument();
   });
 
   it('revient au français après deux bascules', async () => {
@@ -30,6 +30,6 @@ describe('App', () => {
     await user.click(screen.getByTestId('language-toggle'));
     await user.click(screen.getByTestId('language-toggle'));
 
-    expect(screen.getByText('Bonjour !')).toBeInTheDocument();
+    expect(screen.getByTestId('current-language')).toHaveTextContent('fr');
   });
 });
