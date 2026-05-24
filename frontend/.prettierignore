@@ -2,3 +2,9 @@ dist
 coverage
 node_modules
 *.min.js
+
+# Vendored upstream snapshots — figés par SHA upstream, ne pas reformater
+../shared/data/sources
+
+# Données générées par scripts/build-hsk1-data.ts
+src/data/*.generated.json

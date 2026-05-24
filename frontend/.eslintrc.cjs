@@ -61,6 +61,15 @@ module.exports = {
         '@typescript-eslint/no-explicit-any': 'off',
       },
     },
+    {
+      files: ['scripts/**/*.ts'],
+      env: { node: true, browser: false },
+      rules: {
+        'no-console': 'off',
+        // Scripts Node : pas de garde-fou hexagonal (ils peuvent tout faire).
+        'no-restricted-imports': 'off',
+      },
+    },
   ],
   ignorePatterns: ['dist', 'node_modules', 'coverage', '*.cjs', 'postcss.config.js'],
 };
