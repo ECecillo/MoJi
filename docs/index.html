@@ -1,0 +1,2142 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sinogrammes — Carnet de bord</title>
+<style>
+:root {
+  --ink: #111;
+  --ink-muted: #555;
+  --ink-faint: #888;
+  --paper: #fdfdfd;
+  --paper-muted: #f3f3f3;
+  --border: #d4d4d4;
+  --link: #2255aa;
+  --accepte: #d4edda;
+  --brouillon: #fff3cd;
+  --remplace: #f8d7da;
+  --abandonne: #e2e3e5;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.65;
+  padding-bottom: 4rem;
+}
+.wrap { max-width: 60rem; margin: 0 auto; padding: 0 1.5rem; }
+nav.topnav {
+  position: sticky;
+  top: 0;
+  background: var(--paper);
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 0;
+  z-index: 10;
+}
+nav.topnav .wrap { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+nav.topnav a {
+  text-decoration: none;
+  color: var(--ink);
+  font-weight: 600;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.95rem;
+}
+nav.topnav a:hover { text-decoration: underline; }
+header.hero {
+  border-bottom: 1px solid var(--border);
+  padding: 2rem 0 1.5rem;
+  margin-bottom: 1rem;
+}
+header.hero h1 {
+  margin: 0 0 0.5rem;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.8rem;
+}
+h1, h2, h3, h4 {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  line-height: 1.3;
+}
+h2 { margin: 3rem 0 1rem; padding-bottom: 0.3rem; border-bottom: 2px solid var(--ink); }
+h3 { margin: 1.5rem 0 0.75rem; }
+section { margin-bottom: 3rem; scroll-margin-top: 4rem; }
+details { scroll-margin-top: 4rem; }
+a { color: var(--link); }
+.meta { color: var(--ink-muted); font-size: 0.9rem; }
+.hint { color: var(--ink-faint); font-size: 0.85rem; font-style: italic; }
+code {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  background: var(--paper-muted);
+  padding: 0.1em 0.35em;
+  font-size: 0.9em;
+  border-radius: 3px;
+}
+pre {
+  background: var(--paper-muted);
+  padding: 1rem;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+blockquote {
+  border-left: 3px solid var(--ink-faint);
+  margin: 1rem 0;
+  padding: 0.2rem 1rem;
+  color: var(--ink-muted);
+  font-style: italic;
+}
+table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: 0.92rem; }
+th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; vertical-align: top; }
+th { background: var(--paper-muted); font-family: ui-sans-serif, system-ui, sans-serif; }
+details {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  margin: 0.5rem 0;
+  background: var(--paper);
+}
+details > summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  padding: 0.5rem 0;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+details > summary::-webkit-details-marker { display: none; }
+details > summary::before {
+  content: '▸';
+  color: var(--ink-faint);
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+details[open] > summary::before { content: '▾'; }
+details[open] > summary { border-bottom: 1px solid var(--border); margin-bottom: 0.75rem; }
+details .content > :first-child { margin-top: 0; }
+details .content > :last-child { margin-bottom: 0; }
+.status {
+  display: inline-block;
+  padding: 0.1em 0.6em;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+.status-Accepté { background: var(--accepte); }
+.status-Brouillon { background: var(--brouillon); }
+.status-Remplacé { background: var(--remplace); }
+.status-Abandonné { background: var(--abandonne); }
+footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e6e6e6;
+    --ink-muted: #a0a0a0;
+    --ink-faint: #707070;
+    --paper: #181818;
+    --paper-muted: #242424;
+    --border: #3a3a3a;
+    --link: #6aa7ff;
+    --accepte: #1f4f2f;
+    --brouillon: #5a4720;
+    --remplace: #5a2a2a;
+    --abandonne: #3a3a3a;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+@media print {
+  nav.topnav { display: none; }
+  details { border: none; padding: 0; }
+  details > summary { font-size: 1.1rem; margin: 1rem 0 0.5rem; }
+  details > summary::before { content: ''; }
+  details:not([open]) { display: none; }
+}
+</style>
+</head>
+<body>
+<nav class="topnav"><div class="wrap">
+  <a href="#etat">État courant</a>
+  <a href="#rfc">RFC (8)</a>
+  <a href="#journal">Journal (8)</a>
+  <a href="#brief">Brief</a>
+</div></nav>
+
+<div class="wrap">
+<header class="hero">
+  <h1>Sinogrammes — Carnet de bord</h1>
+  <p class="meta">Index généré le 2026-05-28 19:47. 8 RFC · 8 entrées de journal.</p>
+  <p class="hint">Toutes les sections sont collapsables. Cliquez sur une ligne ou un lien interne pour ouvrir et défiler.</p>
+</header>
+
+<section id="etat">
+<h2>État courant</h2>
+<div class="content"><h1>CURRENT_STATE — état courant du projet</h1>
+<blockquote>
+<p><strong>Fichier toujours à jour.</strong> À mettre à jour à la fin de chaque session de travail. Répond à la question : &quot;où en est le projet, là, maintenant ?&quot;</p>
+</blockquote>
+<p><strong>Dernière mise à jour</strong> : 2026-05-28</p>
+<h2>Lot en cours</h2>
+<p><strong>Lot 2 — Glossaire</strong> : 🟡 en cours. Liste, recherche et navigation vers le tracé en place. Reste les fiches détaillées.</p>
+<h2>Ce qui est fait</h2>
+<h3>Lot 0 (clôturé)</h3>
+<p>Cf. <a href="#journal-2026-05-24-lot0-fondations"><code>docs/journal/2026-05-24-lot0-fondations.md</code></a>. Documentation initiale, structure du monorepo, schéma de données v1 + fixture, backend Go avec <code>/health</code> en TDD, frontend Vite/React/TS strict + Tailwind + Vitest + i18n FR/EN, ports hexagonaux, orchestrateur de migrations, Makefile racine.</p>
+<h3>Lot 1 (clôturé) — Canvas et validation de tracé</h3>
+<p>Cf. journal Lot 1 : sourcing HSK 1, <code>BundledDataSource</code>, <code>HanziWriterRenderer</code>, capture Pointer Events, grilles calligraphiques et modes d&#39;affichage. L&#39;app permet de choisir un caractère, le tracer au stylet, valider l&#39;ordre des traits.</p>
+<h3>Lot 2 (en cours) — Glossaire</h3>
+<p>Cf. <a href="#journal-2026-05-28-lot2-glossaire-recherche"><code>docs/journal/2026-05-28-lot2-glossaire-recherche.md</code></a>.</p>
+<ul>
+<li>✅ <strong>Composant <code>Glossary</code></strong> (<code>src/features/glossary/</code>) : liste HSK 1 navigable, deux onglets <code>caractères</code> / <code>mots</code>, compteurs, état <code>loading</code> pendant le parse Zod.</li>
+<li>✅ <strong>Recherche unique</strong> sur hanzi + pinyin (diacritique et ASCII) + traductions toutes langues confondues.</li>
+<li>✅ <strong>Helper pinyin</strong> (<code>src/lib/pinyin.ts</code>) : <code>pinyinToString</code> (diacritique) + <code>pinyinToAscii</code> (insensible aux tons et au tréma).</li>
+<li>✅ <strong>Routing app</strong> glossary ↔ practice : <code>App.tsx</code> orchestre via état local, bouton retour <code>←</code>, mémoïsation du <code>HanziWriterRenderer</code>.</li>
+<li>✅ <strong>i18n FR/EN</strong> : nouvelle section <code>glossary</code> (title, search_placeholder, characters, words, no_results, practice).</li>
+<li>⏳ Fiches détaillées caractère/mot (étape 4 du Lot 2, à faire).</li>
+</ul>
+<h3>Outillage doc (cette session)</h3>
+<p>Cf. <a href="#journal-2026-05-28-carnet-html"><code>docs/journal/2026-05-28-carnet-html.md</code></a>.</p>
+<ul>
+<li>✅ <strong>Carnet de bord HTML autonome</strong> : <code>docs/index.html</code> généré par <code>make docs</code> (script <code>frontend/scripts/build-docs-index.ts</code>). Section État courant + RFC + Journal + Brief, navigation par ancres, mode sombre, mode print.</li>
+<li>✅ <strong>Discipline <code>CLAUDE.md</code></strong> : <code>make docs</code> est obligatoire après toute modif markdown sous <code>docs/</code> ou de <code>BRIEF.md</code>, dans le même commit.</li>
+</ul>
+<h2>Vérifications croisées</h2>
+<ul>
+<li><code>make test</code> : <strong>86 tests front passent</strong>, 2 paquets back passent avec <code>-race</code>.</li>
+<li><code>make lint</code> : ESLint + Prettier propres, golangci-lint 0 issue.</li>
+<li><code>make typecheck</code> : <code>tsc --noEmit</code> propre.</li>
+<li><code>make docs</code> : <code>docs/index.html</code> à jour (8 RFC + 8 entrées de journal après les deux nouvelles d&#39;aujourd&#39;hui).</li>
+</ul>
+<h2>Dernières décisions importantes</h2>
+<ul>
+<li>2026-05-28 : <strong>recherche pinyin par défaut insensible aux diacritiques</strong> dans le glossaire — l&#39;utilisateur tape sur un clavier ASCII, on accepte la perte <code>nǚ → nu</code> pour la recherche tout en gardant l&#39;affichage diacritique.</li>
+<li>2026-05-28 : <strong>carnet HTML versionné dans le repo</strong> plutôt que généré-au-build. Diff bruyant accepté en échange de la facilité de consultation (double-click sur <code>docs/index.html</code>).</li>
+<li>2026-05-28 : <code>docs/index.html</code> est régénéré dans le <strong>même commit</strong> que les markdown modifiés (pas dans un commit séparé).</li>
+</ul>
+<h2>Bloquants connus</h2>
+<p>Aucun.</p>
+<h2>Prochaines étapes (Lot 2)</h2>
+<ol>
+<li>✅ Liste HSK 1.</li>
+<li>✅ Recherche.</li>
+<li>✅ Navigation glossary → canvas.</li>
+<li><strong>Fiches détaillées</strong> : afficher pinyin complet, toutes les traductions, exemples si disponibles, character_refs cliquables (mot → ses caractères constitutifs). À arbitrer : modale, page dédiée, ou panneau latéral.</li>
+</ol>
+<p>Pistes pour plus tard : tri/filtre par radical, par tag, par fréquence ; statistiques d&#39;apprentissage côté liste (% des caractères vus / pratiqués).</p>
+<h2>Liens utiles</h2>
+<ul>
+<li>Brief figé : <a href="#brief"><code>../../BRIEF.md</code></a></li>
+<li>Carnet HTML : <a href="../index.html"><code>../index.html</code></a></li>
+<li>Index des RFC : <a href="../rfc/README.md"><code>../rfc/README.md</code></a></li>
+<li>Index du journal : <a href="../journal/README.md"><code>../journal/README.md</code></a></li>
+<li>Provenance des sources vendorées : <a href="../../shared/data/sources/_provenance.json"><code>../../shared/data/sources/_provenance.json</code></a></li>
+</ul>
+</div>
+</section>
+
+<section id="rfc">
+<h2>RFC — décisions structurantes</h2>
+<table>
+<thead><tr><th>#</th><th>Titre</th><th>Statut</th><th>Date</th></tr></thead>
+<tbody><tr>
+  <td><a href="#rfc-0001">0001</a></td>
+  <td><a href="#rfc-0001">Vision et périmètre</a></td>
+  <td><span class="status status-Accepté">Accepté</span></td>
+  <td>2026-05-24</td>
+</tr>
+<tr>
+  <td><a href="#rfc-0002">0002</a></td>
+  <td><a href="#rfc-0002">Stack technique</a></td>
+  <td><span class="status status-Accepté">Accepté</span></td>
+  <td>2026-05-24</td>
+</tr>
+<tr>
+  <td><a href="#rfc-0003">0003</a></td>
+  <td><a href="#rfc-0003">Architecture hexagonale</a></td>
+  <td><span class="status status-Accepté">Accepté</span></td>
+  <td>2026-05-24</td>
+</tr>
+<tr>
+  <td><a href="#rfc-0004">0004</a></td>
+  <td><a href="#rfc-0004">Format de données et versioning</a></td>
+  <td><span class="status status-Accepté">Accepté</span></td>
+  <td>2026-05-24</td>
+</tr>
+<tr>
+  <td><a href="#rfc-0005">0005</a></td>
+  <td><a href="#rfc-0005">Stratégie d'internationalisation</a></td>
+  <td><span class="status status-Accepté">Accepté</span></td>
+  <td>2026-05-24</td>
+</tr>
+<tr>
+  <td><a href="#rfc-0006">0006</a></td>
+  <td><a href="#rfc-0006">PWA et offline-first</a></td>
+  <td><span class="status status-Accepté">Accepté</span></td>
+  <td>2026-05-24</td>
+</tr>
+<tr>
+  <td><a href="#rfc-0007">0007</a></td>
+  <td><a href="#rfc-0007">Découpage en lots</a></td>
+  <td><span class="status status-Accepté">Accepté</span></td>
+  <td>2026-05-24</td>
+</tr>
+<tr>
+  <td><a href="#rfc-0008">0008</a></td>
+  <td><a href="#rfc-0008">Sourcing des données HSK 3.0 niveau 1</a></td>
+  <td><span class="status status-Accepté">Accepté</span></td>
+  <td>2026-05-24</td>
+</tr></tbody>
+</table>
+<details id="rfc-0001">
+  <summary>RFC 0001 — Vision et périmètre<span class="meta">2026-05-24 · <span class="status status-Accepté">Accepté</span></span></summary>
+  <div class="content"><h1>RFC 0001 — Vision et périmètre</h1>
+<ul>
+<li><strong>Statut</strong> : Accepté</li>
+<li><strong>Date</strong> : 2026-05-24</li>
+<li><strong>Auteur(s)</strong> : Enzo</li>
+<li><strong>Lié à</strong> : RFC 0007 (découpage en lots)</li>
+</ul>
+<h2>Contexte</h2>
+<p>Apprendre les sinogrammes nécessite trois choses dont peu d&#39;applications grand public couvrent l&#39;intersection :</p>
+<ol>
+<li><strong>Tracer manuellement</strong> les caractères dans le bon ordre, avec la bonne direction de traits — c&#39;est la mémorisation kinesthésique qui ancre durablement la forme.</li>
+<li><strong>Réviser</strong> régulièrement (répétition espacée).</li>
+<li><strong>Disposer d&#39;un glossaire</strong> propre, navigable, multilingue.</li>
+</ol>
+<p>L&#39;utilisateur dispose d&#39;une <strong>tablette Boox Air 5c</strong> (e-ink couleur, stylet Wacom). Aucune application existante n&#39;offre simultanément une bonne expérience de tracé sur cette plateforme, une révision propre et une consultation glossaire fluide. D&#39;où la décision de construire une application personnelle, sur mesure.</p>
+<h2>Décision</h2>
+<h3>Vision produit</h3>
+<p>Application web personnelle, <strong>mono-utilisateur</strong>, dédiée à l&#39;apprentissage des sinogrammes HSK 3.0 niveau 1 (300 caractères + 500 mots). L&#39;usage principal est la <strong>pratique du tracé au stylet sur Boox Air 5c</strong>. Les usages secondaires sont la révision (sur tablette, ordinateur, téléphone) et la consultation d&#39;un glossaire.</p>
+<h3>Périmètre fonctionnel</h3>
+<p>Quatre fonctionnalités cibles :</p>
+<ol>
+<li><strong>Canvas de tracé</strong> avec :<ul>
+<li>Modes d&#39;affichage du modèle : semi-transparent (guide) ou caché (test).</li>
+<li>Grilles d&#39;aide optionnelles : Tian Zi Ge (田字格), Mi Zi Ge (米字格), Hui Zi Ge (回字格).</li>
+<li><strong>Validation de l&#39;ordre et de la direction des traits</strong> — fonctionnalité centrale, non négociable.</li>
+</ul>
+</li>
+<li><strong>Révision</strong> type Anki (répétition espacée).</li>
+<li><strong>Mode vocal</strong> : prononciation des caractères et mots via la synthèse vocale du navigateur.</li>
+<li><strong>Glossaire</strong> consultable de tous les caractères et mots.</li>
+</ol>
+<h3>Plateformes cibles</h3>
+<ul>
+<li><strong>Tablette Boox Air 5c</strong> (Android, Chromium 111, stylet Wacom) : usage principal pour le tracé. Recommandation : installer Chrome depuis le Play Store plutôt que d&#39;utiliser le navigateur Boox natif.</li>
+<li><strong>Ordinateur (desktop / portable)</strong> : usage secondaire, révision et glossaire uniquement. Pas de tracé à la souris.</li>
+<li><strong>PWA installable</strong>, <strong>offline-first</strong>.</li>
+</ul>
+<h3>Contraintes liées à l&#39;e-ink</h3>
+<p>Le rendu sur e-ink (Boox Air 5c) impose :</p>
+<ul>
+<li>Refresh rate lent, ghosting marqué.</li>
+<li>Minimalisme visuel obligatoire.</li>
+<li>Animations rares ou désactivables.</li>
+<li>Respect de <code>prefers-reduced-motion</code> et <code>prefers-contrast</code> partout.</li>
+</ul>
+<h3>Hors périmètre (au moins pour le MVP)</h3>
+<ul>
+<li>Pas d&#39;authentification, pas de multi-utilisateur (à la limite des profils locaux plus tard).</li>
+<li>Pas de social, pas de partage, pas de classement.</li>
+<li>Pas d&#39;export/import Anki (envisageable post-MVP).</li>
+<li>Pas de HSK 2+ au démarrage (HSK 3.0 niveau 1 seulement).</li>
+</ul>
+<h2>Conséquences</h2>
+<ul>
+<li><strong>Discipline e-ink</strong> dès la première ligne de CSS : noir/blanc/contraste, peu de transitions, pas d&#39;animations gratuites.</li>
+<li><strong>Stylet first</strong> : on conçoit le tracé pour Pointer Events / stylet Wacom, pas pour la souris ou le doigt.</li>
+<li><strong>Offline-first</strong> : tout fonctionne sans réseau, le backend est un simple service de sync (cf. RFC 0006).</li>
+<li><strong>Pas de bottleneck d&#39;auth</strong> : on peut se concentrer sur la valeur d&#39;usage.</li>
+<li><strong>Cadrage produit clair</strong> : pas de risque de scope creep vers du social ou des fonctionnalités tierces.</li>
+</ul>
+<h2>Alternatives considérées</h2>
+<ul>
+<li><strong>Réutiliser une app existante</strong> (Skritter, Pleco, Anki + add-ons) : refusé. Aucune n&#39;offre simultanément une bonne UX e-ink, une validation rigoureuse de l&#39;ordre des traits, et un mode personnalisable. Beaucoup sont payantes et fermées.</li>
+<li><strong>App native Android</strong> : refusé. Le web couvre tous les besoins, est installable en PWA, et reste portable vers d&#39;autres plateformes (ordinateur) sans effort.</li>
+<li><strong>Multi-utilisateur dès le départ</strong> : refusé. Le coût (auth, autorisations, hébergement multi-tenant) n&#39;est pas justifié pour un usage personnel. On garde l&#39;option de profils locaux côté front sans authentification.</li>
+</ul>
+</div>
+</details>
+<details id="rfc-0002">
+  <summary>RFC 0002 — Stack technique<span class="meta">2026-05-24 · <span class="status status-Accepté">Accepté</span></span></summary>
+  <div class="content"><h1>RFC 0002 — Stack technique</h1>
+<ul>
+<li><strong>Statut</strong> : Accepté</li>
+<li><strong>Date</strong> : 2026-05-24</li>
+<li><strong>Auteur(s)</strong> : Enzo</li>
+<li><strong>Lié à</strong> : RFC 0001 (vision), RFC 0003 (architecture hexagonale), RFC 0006 (offline-first)</li>
+</ul>
+<h2>Contexte</h2>
+<p>Il faut choisir une stack qui soit :</p>
+<ul>
+<li><strong>Stable</strong> et bien documentée (projet long, mono-développeur).</li>
+<li><strong>Adaptée au web installable PWA</strong>, avec un excellent support du stylet sur Chromium 111+ (Boox).</li>
+<li><strong>Sobre côté backend</strong> : un seul utilisateur, déploiement sur VPS perso, pas de gros besoin de concurrence.</li>
+<li><strong>Compatible avec une discipline TDD</strong> (cf. RFC 0007).</li>
+<li><strong>Plug-and-play</strong> : on doit pouvoir remplacer une brique (la lib de tracé, le routeur HTTP, la base) sans gros refacto, ce qui implique de bien isoler ces briques (cf. RFC 0003).</li>
+</ul>
+<h2>Décision</h2>
+<h3>Frontend</h3>
+<table>
+<thead>
+<tr>
+<th>Brique</th>
+<th>Choix</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Build / dev server</td>
+<td><strong>Vite</strong></td>
+</tr>
+<tr>
+<td>Framework UI</td>
+<td><strong>React 18</strong></td>
+</tr>
+<tr>
+<td>Langage</td>
+<td><strong>TypeScript en mode <code>strict</code></strong> (et <code>noUncheckedIndexedAccess: true</code>)</td>
+</tr>
+<tr>
+<td>Styling</td>
+<td><strong>Tailwind CSS</strong></td>
+</tr>
+<tr>
+<td>Validation runtime</td>
+<td><strong>Zod</strong></td>
+</tr>
+<tr>
+<td>i18n interface</td>
+<td><strong>i18next</strong> + <strong>react-i18next</strong> (locales <code>fr</code> et <code>en</code> dès le départ)</td>
+</tr>
+<tr>
+<td>Tests</td>
+<td><strong>Vitest</strong> + <strong>Testing Library</strong></td>
+</tr>
+<tr>
+<td>Lint / format</td>
+<td><strong>ESLint</strong> + <strong>Prettier</strong> (configuration stricte)</td>
+</tr>
+<tr>
+<td>Rendu et validation des tracés</td>
+<td><strong>Hanzi Writer</strong> <strong>derrière une abstraction</strong> <code>CharacterRenderer</code></td>
+</tr>
+<tr>
+<td>PWA</td>
+<td>Service worker + IndexedDB (Lot 5)</td>
+</tr>
+<tr>
+<td>Saisie stylet</td>
+<td><strong>Pointer Events</strong> uniquement (jamais Touch ou Mouse seuls)</td>
+</tr>
+</tbody></table>
+<h3>Backend</h3>
+<table>
+<thead>
+<tr>
+<th>Brique</th>
+<th>Choix</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Langage</td>
+<td><strong>Go 1.22+</strong></td>
+</tr>
+<tr>
+<td>Routeur HTTP</td>
+<td><strong>chi</strong> (remplaçable derrière <code>adapters/http/</code>)</td>
+</tr>
+<tr>
+<td>Base de données</td>
+<td><strong>SQLite</strong> via <strong><code>modernc.org/sqlite</code></strong> (pas de cgo, build simplifié)</td>
+</tr>
+<tr>
+<td>Migrations SQL</td>
+<td><strong>pressly/goose</strong></td>
+</tr>
+<tr>
+<td>Lint</td>
+<td><strong>golangci-lint</strong> en mode strict</td>
+</tr>
+<tr>
+<td>Tests</td>
+<td><strong>testify</strong> pour la lisibilité</td>
+</tr>
+<tr>
+<td>Architecture</td>
+<td>Hexagonale : <code>internal/domain/</code>, <code>internal/ports/</code>, <code>internal/adapters/</code></td>
+</tr>
+</tbody></table>
+<h3>Données de référence</h3>
+<ul>
+<li><strong>Tracés</strong> : <a href="https://github.com/skishore/makemeahanzi">Make Me a Hanzi</a> (MIT, ~9000 caractères avec chemins SVG par trait + lignes médianes).</li>
+<li><strong>Définitions</strong> : CC-CEDICT (anglais, CC BY-SA) au démarrage.</li>
+<li><strong>Traductions françaises</strong> : ajoutées progressivement à la main.</li>
+<li><strong>Liste HSK</strong> : HSK 3.0 niveau 1 (300 caractères + 500 mots).</li>
+</ul>
+<h3>Hébergement</h3>
+<ul>
+<li>VPS personnel déjà disponible pour le backend Go et le service de fichiers statiques.</li>
+<li>Frontend déployé sur le même VPS ou ailleurs (à décider plus tard, pas bloquant pour le MVP).</li>
+</ul>
+<h2>Conséquences</h2>
+<ul>
+<li><strong>Tout est sobre, mature, monolangage côté front (TS) et back (Go)</strong>. Pas de stack exotique à maintenir.</li>
+<li><strong>Hanzi Writer est utilisé pour démarrer vite</strong> mais reste derrière un port <code>CharacterRenderer</code>. Si demain on veut le remplacer (par exemple par une implémentation custom), aucune autre partie du code ne bouge.</li>
+<li><strong><code>modernc.org/sqlite</code> sans cgo</strong> simplifie le build et le déploiement (binaire statique, cross-compilation facile).</li>
+<li><strong>TypeScript strict + Zod</strong> : le typage compile-time est doublé d&#39;une validation runtime aux frontières (lecture du JSON HSK, payloads API).</li>
+<li><strong>Vitest</strong> plutôt que Jest : intégration native avec Vite, démarrage instantané, watch mode performant.</li>
+<li><strong>Chromium 111 sur Boox</strong> : on peut s&#39;appuyer sur les Pointer Events modernes, le service worker v2, les Web Locks, etc. Mais on évite les API les plus récentes (View Transitions, Container Queries niveau 2, etc.) sans polyfill.</li>
+</ul>
+<h2>Alternatives considérées</h2>
+<ul>
+<li><strong>Next.js / Remix</strong> au lieu de Vite : refusé. SSR inutile pour une app perso PWA offline-first, complexité ajoutée non justifiée.</li>
+<li><strong>Svelte / Solid</strong> : refusé. React est le plus universel, le mieux outillé, et le bénéfice d&#39;une autre lib reste marginal pour un projet de cette taille.</li>
+<li><strong>Node.js / Rust côté backend</strong> : refusé. Go offre le meilleur compromis entre simplicité, performance, et déploiement statique pour un service de persistance.</li>
+<li><strong>Postgres</strong> côté backend : refusé. Overkill pour un mono-utilisateur. SQLite suffit largement et simplifie l&#39;hébergement.</li>
+<li><strong>Lib de tracé maison</strong> dès le début : refusé. Hanzi Writer est mature, MIT-licensed, et offre déjà la validation de l&#39;ordre des traits. On capitalise dessus tout en gardant l&#39;option de le remplacer.</li>
+<li><strong>gRPC</strong> côté backend : refusé pour démarrer. REST suffit, mais l&#39;architecture hexagonale permet d&#39;ajouter <code>adapters/grpc/</code> plus tard sans toucher au domaine.</li>
+</ul>
+</div>
+</details>
+<details id="rfc-0003">
+  <summary>RFC 0003 — Architecture hexagonale<span class="meta">2026-05-24 · <span class="status status-Accepté">Accepté</span></span></summary>
+  <div class="content"><h1>RFC 0003 — Architecture hexagonale</h1>
+<ul>
+<li><strong>Statut</strong> : Accepté</li>
+<li><strong>Date</strong> : 2026-05-24</li>
+<li><strong>Auteur(s)</strong> : Enzo</li>
+<li><strong>Lié à</strong> : RFC 0002 (stack), RFC 0004 (données), RFC 0006 (offline)</li>
+</ul>
+<h2>Contexte</h2>
+<p>L&#39;utilisateur a explicitement demandé que tout soit <strong>plug-and-play</strong> : pouvoir remplacer Hanzi Writer, changer de transport (REST → gRPC), changer de base de données, ou faire évoluer la couche stockage côté client (IndexedDB → autre) <strong>sans gros refacto</strong>.</p>
+<p>Cette exigence se traduit naturellement par une <strong>architecture hexagonale</strong> (ports &amp; adapters) appliquée aux deux côtés (front et back). Elle est suffisamment légère pour un projet de cette taille tout en garantissant la séparation des préoccupations.</p>
+<h2>Décision</h2>
+<h3>Principe général</h3>
+<p>On distingue trois couches :</p>
+<ul>
+<li><strong><code>domain/</code></strong> : logique métier pure, aucune dépendance externe. Définit les entités, les règles, les opérations.</li>
+<li><strong><code>ports/</code></strong> : interfaces définissant les contrats avec l&#39;extérieur. Le domaine dépend des ports, jamais des adapters.</li>
+<li><strong><code>adapters/</code></strong> : implémentations concrètes des ports (HTTP, SQLite, IndexedDB, Hanzi Writer, etc.).</li>
+</ul>
+<p>Règle d&#39;or : <strong>le domaine ne connaît jamais les détails d&#39;implémentation</strong>. Il connaît uniquement les ports.</p>
+<h3>Côté frontend</h3>
+<pre><code>frontend/src/
+├── domain/
+│   ├── schema/         # types, validateurs Zod, version du schéma
+│   ├── migrations/     # orchestrateur de migrations de schéma
+│   └── ports/          # interfaces : CharacterRenderer, ProgressRepository, DataSource, etc.
+├── adapters/
+│   ├── renderer/       # ex. HanziWriterRenderer.ts (Lot 1)
+│   ├── storage/        # ex. IndexedDBProgressRepository.ts (Lot 3)
+│   └── api/            # ex. RestApiClient.ts (Lot 3)
+├── features/           # canvas/, glossary/, review/, voice/ — orchestrent ports + UI
+├── ui/                 # composants UI réutilisables, sans logique métier
+└── i18n/, lib/         # support
+</code></pre>
+<p><strong>Ports identifiés au démarrage</strong> :</p>
+<ul>
+<li><code>CharacterRenderer</code> — encapsule le rendu et la validation du tracé. Implémentation initiale : <code>HanziWriterRenderer</code>.</li>
+<li><code>ProgressRepository</code> — persistance de la progression utilisateur (SRS, stats). Implémentation initiale : <code>IndexedDBProgressRepository</code>.</li>
+<li><code>DataSource</code> — accès aux données de référence (caractères, mots, decks). Implémentation initiale : <code>BundledDataSource</code> (cf. RFC 0006).</li>
+</ul>
+<p>D&#39;autres ports apparaîtront avec les lots : <code>SpeechSynthesizer</code>, <code>SessionStore</code>, etc.</p>
+<h3>Côté backend</h3>
+<pre><code>backend/
+├── cmd/server/main.go
+└── internal/
+    ├── domain/         # entités et règles métier pures
+    ├── ports/          # interfaces (ProgressStore, etc.)
+    ├── adapters/
+    │   ├── http/       # handlers chi
+    │   └── sqlite/     # repositories sur SQLite
+    ├── migrations/     # migrations SQL versionnées par goose
+    └── config/         # chargement de la config
+</code></pre>
+<p>Le backend est volontairement <strong>minimal</strong> au démarrage : il sert essentiellement à persister la progression et à fournir un point de synchronisation entre appareils (cf. RFC 0006). Le domaine reste petit.</p>
+<h3>Règles de discipline</h3>
+<ol>
+<li><strong>Aucun import inversé</strong> : <code>domain/</code> n&#39;importe rien de <code>adapters/</code>, <code>ports/</code> n&#39;importe rien de <code>adapters/</code>. Vérifiable mécaniquement (ESLint côté front avec <code>import/no-restricted-paths</code>, structure de packages côté Go).</li>
+<li><strong>Les ports sont nommés par capacité</strong> (<code>CharacterRenderer</code>, <code>ProgressRepository</code>), pas par technologie (<code>HanziWriter</code>, <code>SQLite</code>).</li>
+<li><strong>Une nouvelle implémentation = nouveau fichier dans <code>adapters/</code></strong>. Aucun fichier de domaine ou de port ne bouge.</li>
+<li><strong>Les tests de domaine ne dépendent d&#39;aucun adapter</strong> (TDD pur, sans mock de framework).</li>
+</ol>
+<h3>Exemples concrets</h3>
+<ul>
+<li><strong>Remplacer Hanzi Writer</strong> : créer <code>adapters/renderer/SvgRenderer.ts</code> qui implémente <code>CharacterRenderer</code>. Câbler dans le bootstrap de l&#39;app. Aucune autre ligne de code ne change.</li>
+<li><strong>Ajouter gRPC côté back</strong> : créer <code>internal/adapters/grpc/</code> qui réutilise les services du domaine. Le code REST existant continue à tourner.</li>
+<li><strong>Tester le SRS</strong> : tests unitaires purs sur le domaine, sans IndexedDB, sans réseau, sans React.</li>
+</ul>
+<h2>Conséquences</h2>
+<ul>
+<li><strong>Coût initial</strong> : un peu de cérémonie au Lot 0 (créer les répertoires et les interfaces vides). Acceptable.</li>
+<li><strong>Bénéfice</strong> : à chaque lot, on sait exactement où mettre quoi. Pas de débat. Pas de refacto.</li>
+<li><strong>Testabilité maximale</strong> du domaine : la logique critique (validation de schéma, migrations, SRS) est testable sans monter d&#39;environnement.</li>
+<li><strong>Pas de dogme</strong> : pour un mono-développeur sur un projet perso, on accepte l&#39;hexagonal &quot;léger&quot; — pas de DDD agressif, pas de CQRS, pas d&#39;event sourcing.</li>
+</ul>
+<h2>Alternatives considérées</h2>
+<ul>
+<li><strong>Architecture en couches classique</strong> (MVC / services / repositories) : refusé. Moins explicite sur la frontière, encourage les fuites de dépendances.</li>
+<li><strong>Clean Architecture stricte (Uncle Bob)</strong> : refusé. Trop cérémonieuse pour la taille du projet, sans bénéfice supplémentaire par rapport à l&#39;hexagonal léger.</li>
+<li><strong>Pas d&#39;architecture explicite, on verra plus tard</strong> : refusé. Les briques à remplacer (Hanzi Writer, transport) sont connues dès le départ. Mieux vaut isoler dès le Lot 0.</li>
+</ul>
+</div>
+</details>
+<details id="rfc-0004">
+  <summary>RFC 0004 — Format de données et versioning<span class="meta">2026-05-24 · <span class="status status-Accepté">Accepté</span></span></summary>
+  <div class="content"><h1>RFC 0004 — Format de données et versioning</h1>
+<ul>
+<li><strong>Statut</strong> : Accepté</li>
+<li><strong>Date</strong> : 2026-05-24</li>
+<li><strong>Auteur(s)</strong> : Enzo</li>
+<li><strong>Lié à</strong> : RFC 0002 (stack), RFC 0003 (hexagonale), RFC 0006 (offline)</li>
+</ul>
+<h2>Contexte</h2>
+<p>L&#39;application manipule deux familles de données :</p>
+<ol>
+<li><strong>Données de référence</strong> : caractères, mots, decks, traductions. Statiques entre deux releases.</li>
+<li><strong>Données utilisateur</strong> : progression, état SRS, sessions de travail. Mutables, par appareil, synchronisées best-effort.</li>
+</ol>
+<p>Ces données doivent :</p>
+<ul>
+<li>Être <strong>versionnées</strong> : on doit pouvoir faire évoluer le schéma sans tout casser.</li>
+<li>Être <strong>validées strictement</strong> à l&#39;entrée (lecture d&#39;un JSON, payload d&#39;API).</li>
+<li><strong>Survivre aux migrations</strong> : un utilisateur qui ouvre l&#39;app après une mise à jour ne doit jamais perdre sa progression.</li>
+<li>Être <strong>partagées entre front et back</strong> avec une source de vérité unique.</li>
+</ul>
+<h2>Décision</h2>
+<h3>Source de vérité unique : JSON Schema</h3>
+<p>Le <strong>JSON Schema officiel</strong> vit dans <code>shared/schema/data-schema.v1.json</code>. C&#39;est la <strong>seule</strong> source de vérité du format des données. À partir de lui :</p>
+<ul>
+<li>Les <strong>types TypeScript</strong> côté front sont écrits manuellement (et validés par Zod, voir plus bas) ou générés.</li>
+<li>Les <strong>structs Go</strong> côté back sont écrites manuellement.</li>
+<li>Les <strong>validateurs Zod</strong> sont écrits manuellement et testés sur fixtures.</li>
+</ul>
+<p>Toute évolution du schéma se fait dans ce fichier d&#39;abord, puis répercutée des deux côtés.</p>
+<h3>Schéma v1.0.0 — données de référence</h3>
+<pre><code class="language-json">{
+  &quot;schema_version&quot;: &quot;1.0.0&quot;,
+  &quot;characters&quot;: [
+    {
+      &quot;id&quot;: &quot;char_4F60&quot;,
+      &quot;hanzi&quot;: &quot;你&quot;,
+      &quot;pinyin&quot;: [{ &quot;syllable&quot;: &quot;nǐ&quot;, &quot;tone&quot;: 3 }],
+      &quot;translations&quot;: { &quot;fr&quot;: [&quot;tu&quot;, &quot;toi&quot;], &quot;en&quot;: [&quot;you&quot;] },
+      &quot;hsk_level&quot;: 1,
+      &quot;stroke_count&quot;: 7,
+      &quot;radicals&quot;: [&quot;亻&quot;, &quot;尔&quot;],
+      &quot;frequency_rank&quot;: 8,
+      &quot;tags&quot;: [],
+      &quot;stroke_data_ref&quot;: &quot;makemeahanzi:4F60&quot;,
+      &quot;metadata&quot;: {}
+    }
+  ],
+  &quot;words&quot;: [
+    {
+      &quot;id&quot;: &quot;word_nihao&quot;,
+      &quot;hanzi&quot;: &quot;你好&quot;,
+      &quot;pinyin&quot;: [
+        { &quot;syllable&quot;: &quot;nǐ&quot;, &quot;tone&quot;: 3 },
+        { &quot;syllable&quot;: &quot;hǎo&quot;, &quot;tone&quot;: 3 }
+      ],
+      &quot;translations&quot;: { &quot;fr&quot;: [&quot;bonjour&quot;], &quot;en&quot;: [&quot;hello&quot;] },
+      &quot;hsk_level&quot;: 1,
+      &quot;character_refs&quot;: [&quot;char_4F60&quot;, &quot;char_597D&quot;],
+      &quot;examples&quot;: [],
+      &quot;tags&quot;: [],
+      &quot;metadata&quot;: {}
+    }
+  ],
+  &quot;decks&quot;: [
+    {
+      &quot;id&quot;: &quot;deck_hsk1&quot;,
+      &quot;name&quot;: &quot;HSK 1&quot;,
+      &quot;description&quot;: &quot;Vocabulaire HSK niveau 1&quot;,
+      &quot;items&quot;: [
+        { &quot;type&quot;: &quot;character&quot;, &quot;ref&quot;: &quot;char_4F60&quot; },
+        { &quot;type&quot;: &quot;word&quot;, &quot;ref&quot;: &quot;word_nihao&quot; }
+      ]
+    }
+  ]
+}
+</code></pre>
+<h3>Schéma v1.0.0 — données utilisateur (séparées)</h3>
+<pre><code class="language-json">{
+  &quot;schema_version&quot;: &quot;1.0.0&quot;,
+  &quot;profile_id&quot;: &quot;default&quot;,
+  &quot;progress&quot;: [
+    {
+      &quot;ref&quot;: { &quot;type&quot;: &quot;character&quot;, &quot;id&quot;: &quot;char_4F60&quot; },
+      &quot;srs_state&quot;: { &quot;interval_days&quot;: 4, &quot;ease&quot;: 2.5, &quot;due&quot;: &quot;2026-05-28&quot; },
+      &quot;stats&quot;: { &quot;attempts&quot;: 12, &quot;successes&quot;: 10, &quot;last_seen&quot;: &quot;2026-05-24&quot; }
+    }
+  ],
+  &quot;sessions&quot;: [
+    { &quot;id&quot;: &quot;sess_...&quot;, &quot;started_at&quot;: &quot;...&quot;, &quot;ended_at&quot;: &quot;...&quot;, &quot;items_practiced&quot;: [] }
+  ]
+}
+</code></pre>
+<h3>Choix de design clés</h3>
+<ul>
+<li><strong><code>schema_version</code> au top niveau</strong> : permet à l&#39;orchestrateur de migrations de détecter et migrer sans ambiguïté.</li>
+<li><strong><code>metadata: {}</code> générique</strong> sur chaque entité : extensible sans casser le schéma (champs futurs non normés).</li>
+<li><strong><code>tags: []</code></strong> : classification libre.</li>
+<li><strong><code>stroke_data_ref</code></strong> (référence externe, format <code>&quot;makemeahanzi:4F60&quot;</code>) plutôt que tracés inlinés : garde le JSON léger, découple la source des tracés. Le frontend résout la référence via un service dédié.</li>
+<li><strong><code>pinyin</code> structuré</strong> (syllabe + ton numérique) : permet le tri, la coloration des tons, l&#39;export propre.</li>
+<li><strong><code>translations</code> indexé par langue</strong> (<code>fr</code>, <code>en</code>, …) plutôt que <code>translations_fr</code> / <code>translations_en</code> : extensible sans changement de schéma.</li>
+<li><strong><code>id</code> préfixé</strong> (<code>char_</code>, <code>word_</code>, <code>deck_</code>) : évite les collisions, lisibilité immédiate.</li>
+<li><strong>Données de référence et données utilisateur séparées</strong> : la référence est en lecture seule et bundlée au build (cf. RFC 0006), l&#39;utilisateur vit dans IndexedDB et est synchronisée.</li>
+</ul>
+<h3>Versioning : SemVer strict</h3>
+<table>
+<thead>
+<tr>
+<th>Bump</th>
+<th>Sens</th>
+<th>Migration ?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>PATCH</strong> (1.0.0 → 1.0.1)</td>
+<td>Aucun changement structurel (correction de données seulement).</td>
+<td>Non</td>
+</tr>
+<tr>
+<td><strong>MINOR</strong> (1.0.0 → 1.1.0)</td>
+<td>Ajout de champs <strong>optionnels</strong> ou d&#39;entités. <strong>Rétrocompatible obligatoirement</strong>.</td>
+<td>Non requise</td>
+</tr>
+<tr>
+<td><strong>MAJOR</strong> (1.0.0 → 2.0.0)</td>
+<td>Changement cassant (suppression, renommage, changement de type).</td>
+<td><strong>Oui, explicite</strong></td>
+</tr>
+</tbody></table>
+<p><strong>Discipline</strong> : on ne supprime jamais et on ne renomme jamais en MINOR. Si le besoin se présente, on bascule en MAJOR avec migration. Pas de demi-mesure.</p>
+<h3>Système de migrations de données (côté front)</h3>
+<ul>
+<li>Dossier <code>frontend/src/domain/migrations/</code>.</li>
+<li>Une migration = un fichier exportant <code>{ from: SemVer, to: SemVer, migrate(oldData) -&gt; newData }</code>.</li>
+<li>Au chargement de l&#39;app :<ol>
+<li>Détection de la version locale en lisant <code>schema_version</code>.</li>
+<li>Application <strong>en chaîne</strong> des migrations nécessaires (1.0 → 1.1 → 2.0 → 2.1, etc.).</li>
+<li>Sauvegarde du résultat avec la nouvelle version.</li>
+</ol>
+</li>
+<li><strong>Backup de l&#39;ancien format</strong> dans une clé séparée d&#39;IndexedDB <strong>avant migration</strong>. Garde-fou contre les régressions.</li>
+<li><strong>Tests obligatoires</strong> pour chaque migration : fixture <code>v_n</code> → vérification <code>v_n+1</code>.</li>
+</ul>
+<h3>Système de migrations (côté back)</h3>
+<ul>
+<li>Migrations SQL séparées et indépendantes via <strong>goose</strong> (<code>backend/internal/migrations/</code>).</li>
+<li>Versionnées par horodatage incrémental.</li>
+<li>Appliquées au démarrage du serveur (et idempotentes).</li>
+<li>Le versioning SQL et le versioning du JSON Schema <strong>n&#39;ont pas à être alignés</strong> : ils servent des artefacts différents.</li>
+</ul>
+<h3>Validation aux frontières</h3>
+<ul>
+<li>Côté front : <strong>Zod</strong> valide tout ce qui rentre dans le domaine (JSON HSK bundlé, payloads API). Une erreur de validation = on n&#39;avale pas la donnée.</li>
+<li>Côté back : validation manuelle ou via une lib (à décider au Lot 3 quand l&#39;API est introduite).</li>
+</ul>
+<h2>Conséquences</h2>
+<ul>
+<li><strong>Coût</strong> : maintenir trois représentations cohérentes (JSON Schema, types TS, structs Go). Modeste car le schéma évolue lentement.</li>
+<li><strong>Bénéfice</strong> : on peut faire évoluer le schéma sereinement, avec une discipline claire. Aucune perte de données possible si on respecte la procédure (backup + tests de migration).</li>
+<li><strong>Le <code>metadata: {}</code></strong> est un échappatoire utile pour expérimenter sans bumper en MAJOR. À ne pas abuser : si un champ devient stable, il sort de <code>metadata</code> et entre dans le schéma officiel (en MINOR).</li>
+</ul>
+<h2>Alternatives considérées</h2>
+<ul>
+<li><strong>Protobuf</strong> comme source de vérité partagée : refusé. Overkill pour un projet web mono-utilisateur, complexifie le build, n&#39;apporte rien que le JSON Schema ne couvre déjà.</li>
+<li><strong>Pas de versioning explicite</strong> (&quot;on cassera quand on en aura besoin&quot;) : refusé. Premier vrai casse-tête garanti dans six mois.</li>
+<li><strong>Migrations bidirectionnelles</strong> (rollback) : refusé pour le front (on a le backup à la place). Acceptable côté back via goose si jamais utile.</li>
+<li><strong>Fusionner données de référence et données utilisateur dans un seul fichier</strong> : refusé. Les cycles de vie sont totalement différents (la référence est livrée par le build, l&#39;utilisateur évolue à chaque session).</li>
+</ul>
+</div>
+</details>
+<details id="rfc-0005">
+  <summary>RFC 0005 — Stratégie d'internationalisation<span class="meta">2026-05-24 · <span class="status status-Accepté">Accepté</span></span></summary>
+  <div class="content"><h1>RFC 0005 — Stratégie d&#39;internationalisation</h1>
+<ul>
+<li><strong>Statut</strong> : Accepté</li>
+<li><strong>Date</strong> : 2026-05-24</li>
+<li><strong>Auteur(s)</strong> : Enzo</li>
+<li><strong>Lié à</strong> : RFC 0004 (format de données)</li>
+</ul>
+<h2>Contexte</h2>
+<p>L&#39;application doit gérer deux dimensions d&#39;i18n très différentes :</p>
+<ol>
+<li><strong>L&#39;interface utilisateur</strong> (boutons, labels, messages d&#39;erreur, tooltips) : doit être disponible en français et en anglais. Locale par défaut : français.</li>
+<li><strong>Les données pédagogiques</strong> (traductions des caractères et mots) : chaque caractère et chaque mot a potentiellement plusieurs traductions dans plusieurs langues. CC-CEDICT fournit l&#39;anglais ; l&#39;utilisateur enrichit progressivement le français.</li>
+</ol>
+<p>Confondre ces deux dimensions serait une erreur classique. La RFC les sépare explicitement.</p>
+<h2>Décision</h2>
+<h3>Dimension 1 — i18n de l&#39;interface</h3>
+<ul>
+<li>Bibliothèque : <strong>i18next</strong> + <strong>react-i18next</strong>.</li>
+<li>Locales gérées <strong>dès le Lot 0</strong> : <code>fr</code>, <code>en</code>.</li>
+<li>Locale par défaut : <code>fr</code>.</li>
+<li>Détection automatique via <code>navigator.language</code>, override possible par l&#39;utilisateur (toggle accessible dans l&#39;UI).</li>
+<li>Fichiers de traduction : <code>frontend/src/i18n/locales/fr.json</code>, <code>frontend/src/i18n/locales/en.json</code>.</li>
+<li>Convention de clés hiérarchique (<code>canvas.brush.size</code>, <code>glossary.search.placeholder</code>, etc.).</li>
+<li>Aucune chaîne UI codée en dur dans les composants : tout passe par <code>t(&#39;clé&#39;)</code>.</li>
+</ul>
+<h3>Dimension 2 — Multilangue des données</h3>
+<p>Intégré au <strong>schéma de données</strong> (cf. RFC 0004) via le champ <code>translations</code> indexé par code de langue :</p>
+<pre><code class="language-json">&quot;translations&quot;: {
+  &quot;fr&quot;: [&quot;tu&quot;, &quot;toi&quot;],
+  &quot;en&quot;: [&quot;you&quot;]
+}
+</code></pre>
+<ul>
+<li>Au démarrage : <code>translations.en</code> est peuplé automatiquement depuis CC-CEDICT.</li>
+<li><code>translations.fr</code> est rempli <strong>progressivement à la main</strong> par l&#39;utilisateur. Tant qu&#39;une traduction française manque, on affiche un placeholder ou la traduction anglaise en fallback.</li>
+<li>Ajouter une nouvelle langue plus tard = ajouter une clé dans l&#39;objet <code>translations</code>. <strong>Pas de migration de schéma nécessaire</strong> (c&#39;est un changement de données, pas de structure).</li>
+</ul>
+<h3>Articulation entre les deux dimensions</h3>
+<ul>
+<li>La langue de l&#39;interface (i18next) et la langue affichée pour les traductions sont <strong>indépendantes par défaut</strong>, mais peuvent être couplées par préférence utilisateur (&quot;afficher les traductions dans la même langue que l&#39;UI&quot;).</li>
+<li>L&#39;utilisateur peut choisir explicitement quelle(s) langue(s) de traduction afficher dans le glossaire (par exemple : afficher français + anglais simultanément).</li>
+</ul>
+<h3>Conventions linguistiques</h3>
+<ul>
+<li><strong>Codes ISO 639-1</strong> uniquement (<code>fr</code>, <code>en</code>, jamais <code>fra</code> / <code>eng</code>).</li>
+<li>Pluriel et formes complexes : <code>i18next</code> gère cela nativement via <code>count</code> et <code>context</code>. À utiliser dès qu&#39;une chaîne dépend d&#39;un nombre ou d&#39;un genre.</li>
+<li><strong>Format des dates</strong> : via <code>Intl.DateTimeFormat</code> avec la locale courante, jamais à la main.</li>
+<li><strong>Format du pinyin</strong> : reste intact (pas localisable, c&#39;est de la donnée linguistique).</li>
+</ul>
+<h2>Conséquences</h2>
+<ul>
+<li><strong>Pas de dette</strong> : on installe i18next dès le Lot 0, même si la première version n&#39;a que dix labels. Ajouter <code>i18next</code> à mi-projet est plus coûteux que de l&#39;avoir dès le départ.</li>
+<li><strong>Extensible</strong> : ajouter <code>de</code>, <code>es</code>, <code>zh</code> côté UI = nouveau fichier de locale + clé dans le toggle. Côté données = clé en plus dans <code>translations</code>.</li>
+<li><strong>Pas de fallback agressif</strong> : si une traduction française manque dans les données, on affiche un signal explicite (ex. icône, texte grisé) plutôt que de masquer le manque.</li>
+<li><strong>Workflow d&#39;enrichissement</strong> : il faudra un mini-outil (UI, ou import CSV) pour saisir les traductions françaises confortablement. À planifier hors Lot 0 (probablement Lot 2 — glossaire).</li>
+</ul>
+<h2>Alternatives considérées</h2>
+<ul>
+<li><strong>Une seule dimension</strong> (mélanger UI et données dans i18next) : refusé. i18next est conçu pour l&#39;UI ; mettre 300 caractères × 5 langues dedans casse les outils (extraction de clés, vérification de couverture) et alourdit le bundle. Séparer est plus propre.</li>
+<li><strong>Pas d&#39;i18n au début</strong> (&quot;on fera quand on en aura besoin&quot;) : refusé. Coût marginal très faible au Lot 0, coût élevé d&#39;introduction tardive.</li>
+<li><strong>Traductions inlinées dans le bundle JS</strong> : refusé. JSON externe + lazy load par locale = bundle initial plus léger.</li>
+<li><strong>Codes BCP 47 complets</strong> (<code>fr-FR</code>, <code>en-US</code>) : refusé pour démarrer. ISO 639-1 suffit ; on basculera vers BCP 47 si on a besoin de distinguer variantes régionales.</li>
+</ul>
+</div>
+</details>
+<details id="rfc-0006">
+  <summary>RFC 0006 — PWA et offline-first<span class="meta">2026-05-24 · <span class="status status-Accepté">Accepté</span></span></summary>
+  <div class="content"><h1>RFC 0006 — PWA et offline-first</h1>
+<ul>
+<li><strong>Statut</strong> : Accepté</li>
+<li><strong>Date</strong> : 2026-05-24</li>
+<li><strong>Auteur(s)</strong> : Enzo</li>
+<li><strong>Lié à</strong> : RFC 0001 (vision), RFC 0002 (stack), RFC 0004 (données), RFC 0007 (lots)</li>
+</ul>
+<h2>Contexte</h2>
+<p>L&#39;usage principal de l&#39;application — pratique du tracé sur Boox Air 5c — a lieu <strong>en mobilité</strong>, souvent sans connexion réseau garantie (transports, week-ends, lieux mal couverts). De plus, la Boox peut rester offline plusieurs jours.</p>
+<p>Un fonctionnement web classique (requête réseau à chaque interaction) est inutilisable dans ces conditions. L&#39;application doit être <strong>offline-first</strong> par défaut : tout doit fonctionner sans réseau, et la connectivité n&#39;est qu&#39;un bonus pour la synchronisation.</p>
+<h2>Décision</h2>
+<h3>Principe directeur : offline-first</h3>
+<ul>
+<li><strong>Toute la logique métier tourne côté client</strong> : validation de tracé, SRS, glossaire, statistiques. Aucun aller-retour serveur n&#39;est nécessaire pour l&#39;expérience normale.</li>
+<li>Le <strong>backend est un simple service de persistance et de synchronisation</strong>, jamais un point de passage obligé.</li>
+<li>La synchronisation est <strong>best-effort</strong> : la Boox peut rester offline plusieurs jours, tout se rattrape au prochain wifi.</li>
+</ul>
+<h3>Données de référence : Option B (bundlées au build) pour le MVP</h3>
+<p>Deux options ont été identifiées pour servir les données HSK :</p>
+<ul>
+<li><strong>Option A</strong> : servies par le backend, cachées par le service worker.</li>
+<li><strong>Option B</strong> : bundlées dans le frontend au build.</li>
+</ul>
+<p><strong>Choix pour le MVP</strong> : <strong>Option B</strong>. Le JSON HSK 3.0 niveau 1 est embarqué dans le frontend au build. Avantages :</p>
+<ul>
+<li>Marche offline <strong>dès la première ouverture</strong>, sans même avoir besoin d&#39;amorcer un cache.</li>
+<li>Pas de gestion de cache complexe au démarrage.</li>
+<li>Le backend reste minimal : il ne gère <strong>que les données utilisateur</strong> (progression, sessions).</li>
+</ul>
+<p>À terme : migration possible vers l&#39;Option A (servies par le backend, cachées par le service worker). À planifier mais <strong>non prioritaire</strong>. Le port <code>DataSource</code> (cf. RFC 0003) permet le basculement sans toucher au domaine.</p>
+<h3>Données utilisateur : IndexedDB côté client, SQLite côté serveur</h3>
+<ul>
+<li><strong>Côté client</strong> : IndexedDB stocke la progression, l&#39;état SRS, les sessions. Toutes les écritures sont locales et immédiates.</li>
+<li><strong>Côté serveur</strong> : SQLite stocke les mêmes données (synchronisées) et permet de retrouver sa progression sur un autre appareil (par exemple, on a tracé sur la Boox, on révise sur l&#39;ordi).</li>
+<li><strong>Synchronisation</strong> : à introduire au Lot 3 quand le SRS arrive. Stratégie de fusion : <strong>Last-Write-Wins par clé</strong> au démarrage, suffisant pour un mono-utilisateur. À raffiner si nécessaire.</li>
+</ul>
+<h3>Service worker et installabilité (Lot 5)</h3>
+<ul>
+<li><strong>Manifest PWA</strong> complet (icônes, couleurs, mode d&#39;affichage <code>standalone</code>, theme adaptée e-ink).</li>
+<li><strong>Service worker</strong> stratégie :<ul>
+<li><strong>Cache-first</strong> pour les assets statiques (JS, CSS, fonts, images).</li>
+<li><strong>Network-first avec fallback cache</strong> pour les appels API.</li>
+<li>Mise à jour du SW via prompt utilisateur (pas de rechargement intempestif au milieu d&#39;une session).</li>
+</ul>
+</li>
+<li><strong>Précaching</strong> au premier chargement : tous les assets + le JSON HSK bundlé.</li>
+<li><strong>Pas de Background Sync</strong> au démarrage (la sync au retour du focus suffit) ; à considérer plus tard.</li>
+</ul>
+<h3>Conséquences pour l&#39;architecture</h3>
+<ul>
+<li>Le port <code>DataSource</code> (cf. RFC 0003) doit pouvoir être servi par <strong>deux adapters</strong> au cours de la vie du projet :<ul>
+<li><code>BundledDataSource</code> (lit le JSON inclus au build) — Lot 1+.</li>
+<li><code>RemoteDataSource</code> (lit depuis le backend avec cache SW) — post-MVP.</li>
+</ul>
+</li>
+<li>Le port <code>ProgressRepository</code> est exclusivement local (IndexedDB) côté front. La synchronisation est gérée par un service séparé (<code>SyncService</code> ou équivalent), pas confondue avec la persistance locale.</li>
+</ul>
+<h3>Conséquences pour l&#39;UX</h3>
+<ul>
+<li>Toujours afficher un <strong>indicateur de statut</strong> discret (en ligne / hors ligne / sync en cours / dernière sync à HH:MM).</li>
+<li>Jamais bloquer l&#39;utilisateur sur l&#39;attente d&#39;une réponse réseau.</li>
+<li>Les conflits de sync sont rarissimes (mono-utilisateur) mais doivent être détectables : on stocke un timestamp côté client et serveur.</li>
+</ul>
+<h2>Conséquences</h2>
+<ul>
+<li><strong>Délai d&#39;introduction du service worker repoussé au Lot 5</strong> : on peut développer l&#39;app entière offline avec juste le JSON bundlé + IndexedDB. Le service worker est la cerise sur le gâteau (installabilité, performance au chargement).</li>
+<li><strong>Le backend reste très léger pendant longtemps</strong> : il n&#39;a presque rien à faire avant le Lot 3.</li>
+<li><strong>Discipline</strong> : à chaque feature, se poser la question &quot;et si on est offline ?&quot; en premier. Si la réponse est &quot;ça plante&quot;, c&#39;est un bug de conception.</li>
+</ul>
+<h2>Alternatives considérées</h2>
+<ul>
+<li><strong>Online-first avec dégradation offline</strong> : refusé. C&#39;est l&#39;inverse de l&#39;usage réel ; rendrait l&#39;app pénible sur Boox en mobilité.</li>
+<li><strong>Option A dès le MVP</strong> (référence servie par le backend) : refusé. Complexité ajoutée au Lot 0 (cache management, gestion d&#39;erreurs réseau) pour aucun bénéfice avant longtemps.</li>
+<li><strong>Pas de PWA, simple web app</strong> : refusé. L&#39;installabilité (icône, plein écran) est un confort majeur sur Boox.</li>
+<li><strong>Sync CRDT</strong> : refusé pour le démarrage. Last-Write-Wins suffit largement pour un mono-utilisateur. CRDT envisageable si on ouvre un jour le multi-appareil simultané intensif.</li>
+</ul>
+</div>
+</details>
+<details id="rfc-0007">
+  <summary>RFC 0007 — Découpage en lots<span class="meta">2026-05-24 · <span class="status status-Accepté">Accepté</span></span></summary>
+  <div class="content"><h1>RFC 0007 — Découpage en lots</h1>
+<ul>
+<li><strong>Statut</strong> : Accepté</li>
+<li><strong>Date</strong> : 2026-05-24</li>
+<li><strong>Auteur(s)</strong> : Enzo</li>
+<li><strong>Lié à</strong> : RFC 0001 (vision), RFC 0003 (hexagonale), RFC 0006 (offline)</li>
+</ul>
+<h2>Contexte</h2>
+<p>Le projet est ambitieux pour un mono-développeur sur du temps libre. Le risque principal est d&#39;entamer plusieurs chantiers en parallèle, de ne rien finir, et de se décourager.</p>
+<p>D&#39;où la décision de <strong>découper en lots</strong> livrables et utilisables indépendamment, avec un ordre clair. Un lot livre une valeur d&#39;usage tangible (à l&#39;exception du Lot 0 qui est de la plomberie). On ne saute pas un lot, on ne mélange pas deux lots.</p>
+<h2>Décision</h2>
+<h3>Lot 0 — Fondations <em>(en cours)</em></h3>
+<p>Mise en place de la plomberie. Aucune logique métier.</p>
+<ul>
+<li>Repo, structure du monorepo.</li>
+<li>Documentation (RFC, journal, CURRENT_STATE.md, CLAUDE.md, README.md).</li>
+<li>Stack frontend : Vite, React, TS strict, Tailwind, ESLint, Prettier, Vitest, i18next.</li>
+<li>Stack backend : Go, chi, SQLite, goose, golangci-lint, testify.</li>
+<li>Architecture hexagonale en place côté front et back, dossiers vides prêts.</li>
+<li>Schéma de données v1.0.0 dans <code>shared/schema/data-schema.v1.json</code> + fixture d&#39;exemple.</li>
+<li>Types TS + validateurs Zod sur le schéma, <strong>avec tests unitaires sur fixtures</strong>.</li>
+<li>Squelette du système de migrations (orchestrateur + dossier + README).</li>
+<li>Premier endpoint <code>/health</code> côté back, testé en TDD.</li>
+<li>Composant &quot;Hello&quot; trivial côté front avec toggle FR/EN, testé.</li>
+<li><code>make dev</code>, <code>make lint</code>, <code>make test</code> fonctionnels à la racine.</li>
+</ul>
+<p><strong>Critère de sortie</strong> : <code>make dev</code> lance front et back, <code>make test</code> passe vert des deux côtés, la doc est complète et <code>CURRENT_STATE.md</code> indique &quot;Lot 0 terminé&quot;.</p>
+<h3>Lot 1 — Canvas et validation de tracé</h3>
+<p>Fonctionnalité centrale du projet.</p>
+<ul>
+<li>Intégration de <strong>Hanzi Writer</strong> derrière l&#39;abstraction <code>CharacterRenderer</code>.</li>
+<li>Gestion du <strong>stylet via Pointer Events</strong> (pression, inclinaison).</li>
+<li><strong>Grilles d&#39;aide</strong> : Tian Zi Ge, Mi Zi Ge, Hui Zi Ge (toggle).</li>
+<li><strong>Modes d&#39;affichage</strong> : modèle semi-transparent (guide) ou caché (test).</li>
+<li><strong>Validation de l&#39;ordre et de la direction des traits</strong>.</li>
+<li>UX e-ink-aware : noir/blanc, pas d&#39;animations gratuites, redraw minimisé.</li>
+<li>Import du JSON HSK bundlé (Option B, cf. RFC 0006).</li>
+</ul>
+<p><strong>Critère de sortie</strong> : sur la Boox, on peut choisir un caractère HSK 1, le tracer au stylet, et obtenir une validation immédiate de l&#39;ordre des traits.</p>
+<h3>Lot 2 — Glossaire</h3>
+<p>Navigation et consultation.</p>
+<ul>
+<li>Liste de tous les caractères et mots HSK 1.</li>
+<li>Recherche par pinyin, hanzi, traduction (fr / en).</li>
+<li>Filtres : statut d&#39;apprentissage, tags, plage de fréquence.</li>
+<li>Lien direct depuis le glossaire vers le canvas de tracé.</li>
+<li>Outil d&#39;édition des <strong>traductions françaises</strong> (saisie manuelle progressive).</li>
+</ul>
+<p><strong>Critère de sortie</strong> : on peut feuilleter le HSK 1, chercher un mot, et lancer le tracé en un clic.</p>
+<h3>Lot 3 — Système de révision</h3>
+<p>Mémorisation à long terme.</p>
+<ul>
+<li>Algorithme <strong>SM-2</strong> (~100 lignes, suffisant pour mono-utilisateur).</li>
+<li>Tracking de progression dans <code>ProgressRepository</code> (IndexedDB).</li>
+<li>Files de révision (dûs, nouveaux, en cours).</li>
+<li>Première itération de <strong>synchronisation backend</strong> : le serveur Go stocke la progression, sync best-effort au focus.</li>
+<li>API REST minimale côté back, accédée via <code>RestApiClient</code> (port <code>DataSource</code> / nouveau port <code>SyncClient</code>).</li>
+</ul>
+<p><strong>Critère de sortie</strong> : on peut faire une session de révision quotidienne, et retrouver sa progression sur un autre appareil après sync.</p>
+<h3>Lot 4 — Synthèse vocale</h3>
+<p>Audio.</p>
+<ul>
+<li>Intégration de l&#39;API navigateur <code>SpeechSynthesis</code>.</li>
+<li>Paramétrage : voix, vitesse, tonalité.</li>
+<li>Bouton &quot;écouter&quot; sur chaque caractère et mot dans le canvas et le glossaire.</li>
+<li>Lecture automatique optionnelle (révision en mode &quot;écoute&quot;).</li>
+</ul>
+<p><strong>Critère de sortie</strong> : on entend la prononciation correcte d&#39;un caractère ou d&#39;un mot en un clic, avec une voix chinoise disponible sur le navigateur cible.</p>
+<h3>Lot 5 — Polish et PWA offline complète</h3>
+<p>Finition.</p>
+<ul>
+<li>Service worker robuste (cache-first assets, network-first API).</li>
+<li>Manifest PWA, installabilité, icônes adaptées e-ink.</li>
+<li>Mode hors-ligne complet (zéro requête réseau au runtime nominal).</li>
+<li>Import HSK 2 (extension du jeu de données).</li>
+<li>Audit accessibilité (<code>prefers-reduced-motion</code>, <code>prefers-contrast</code>, navigation clavier).</li>
+<li>Performance : audit Lighthouse, optimisation des assets.</li>
+</ul>
+<p><strong>Critère de sortie</strong> : l&#39;app est installable sur Boox et ordinateur, fonctionne 100 % offline, et passe un audit Lighthouse acceptable.</p>
+<h3>Ce qui suit (post-MVP)</h3>
+<ul>
+<li>Bascule des données de référence vers l&#39;Option A (servies par le backend).</li>
+<li>Export / import de decks Anki.</li>
+<li>Statistiques avancées (heatmap, courbes de rétention).</li>
+<li>HSK 3, HSK 4, etc.</li>
+<li>Docker / CI / déploiement formalisé.</li>
+</ul>
+<h2>Conséquences</h2>
+<ul>
+<li><strong>Pas de scope creep</strong> entre lots. Si une idée nouvelle apparaît, elle va dans un futur lot ou dans la section post-MVP.</li>
+<li><strong>Chaque lot est livrable individuellement</strong>. À la fin du Lot 1, on a déjà un outil utilisable (tracé seul). À la fin du Lot 2, on a tracé + glossaire. Et ainsi de suite.</li>
+<li><strong>Le Lot 0 ne livre pas de valeur d&#39;usage</strong> mais conditionne toute la suite. On ne le bâcle pas.</li>
+<li><strong>Discipline</strong> : un lot se termine officiellement quand son critère de sortie est atteint, son entrée de journal est écrite, et <code>CURRENT_STATE.md</code> est mis à jour.</li>
+</ul>
+<h2>Alternatives considérées</h2>
+<ul>
+<li><strong>MVP &quot;tout en un coup&quot;</strong> : refusé. Risque d&#39;abandon élevé, et l&#39;expérience montre qu&#39;on a toujours sous-estimé l&#39;effort.</li>
+<li><strong>Découpage par tech (front d&#39;abord, back ensuite)</strong> : refusé. Briserait la valeur d&#39;usage progressive. Le découpage par feature force à finir chaque feature de bout en bout.</li>
+<li><strong>Commencer par le SRS</strong> : refusé. Le SRS sans canvas n&#39;a aucun intérêt produit ; le canvas seul est déjà utile.</li>
+<li><strong>Sauter le Lot 0</strong> (&quot;on documentera plus tard&quot;) : refusé. La discipline doc/architecture est moins coûteuse à installer dès le début qu&#39;à rétablir après coup.</li>
+</ul>
+</div>
+</details>
+<details id="rfc-0008">
+  <summary>RFC 0008 — Sourcing des données HSK 3.0 niveau 1<span class="meta">2026-05-24 · <span class="status status-Accepté">Accepté</span></span></summary>
+  <div class="content"><h1>RFC 0008 — Sourcing des données HSK 3.0 niveau 1</h1>
+<ul>
+<li><strong>Statut</strong> : Accepté</li>
+<li><strong>Date</strong> : 2026-05-24</li>
+<li><strong>Auteur(s)</strong> : Enzo</li>
+<li><strong>Lié à</strong> : RFC 0002 (stack), RFC 0004 (format de données), RFC 0006 (offline-first)</li>
+</ul>
+<h2>Contexte</h2>
+<p>Le brief (section 7, Lot 1) prévoit l&#39;intégration de la liste HSK 3.0 niveau 1 — <strong>300 caractères distincts</strong> dans <strong>~500 entrées de vocabulaire</strong> (caractères mono-syllabe + mots composés). Le brief reporte explicitement (section 10) le sourcing au début du Lot 1.</p>
+<p>Trois choix structurants en découlent :</p>
+<ol>
+<li><strong>Quelle(s) source(s)</strong> publiques utiliser ?</li>
+<li>Comment <strong>figer</strong> ces sources pour garantir des builds reproductibles offline ?</li>
+<li><strong>Où vit</strong> le pipeline qui transforme ces sources brutes en un JSON conforme au schéma v1 (cf. RFC 0004) ?</li>
+</ol>
+<h2>Décision</h2>
+<h3>1. Sources upstream</h3>
+<table>
+<thead>
+<tr>
+<th>Rôle</th>
+<th>Source</th>
+<th>Licence</th>
+<th>Pinné au commit</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Liste HSK 3.0 niveau 1 (vocabulaire + traductions EN + pinyin)</td>
+<td><a href="https://github.com/drkameleon/complete-hsk-vocabulary"><code>drkameleon/complete-hsk-vocabulary</code></a>, fichier <code>wordlists/inclusive/new/1.json</code></td>
+<td><strong>MIT</strong></td>
+<td><code>7ac65bf1a6387d35f1ade478906172a19311c7f9</code> (2026-03-23)</td>
+</tr>
+<tr>
+<td>Métadonnées par caractère (nombre de traits, radical, décomposition)</td>
+<td><a href="https://github.com/skishore/makemeahanzi"><code>skishore/makemeahanzi</code></a>, fichiers <code>dictionary.txt</code> + <code>graphics.txt</code></td>
+<td><strong>Arphic fonts</strong> (graphics) + <strong>Unihan/CJKlib</strong> (dictionary) — permissif</td>
+<td><code>bddc96d41bef78427ed0e034e9f7e31d71fd1b92</code> (2026-03-08)</td>
+</tr>
+</tbody></table>
+<p><strong>Pourquoi drkameleon</strong> :</p>
+<ul>
+<li>Fichier dédié HSK 3.0 niveau 1 (<code>1.json</code>, 495 KB), pas un blob global à filtrer.</li>
+<li>506 entrées correspondant exactement à la spec HSK 3.0 band 1 ; couvrent <strong>300 hanzi distincts</strong> (vérifié par script avant adoption).</li>
+<li>Schéma riche : pinyin (avec et sans tons), traditional, POS, frequency rank, <strong><code>meanings</code> en anglais</strong> pour chaque entrée — pas besoin de CC-CEDICT au MVP.</li>
+<li>Licence MIT, repo actif (mises à jour automatisées).</li>
+</ul>
+<p><strong>Pourquoi makemeahanzi</strong> :</p>
+<ul>
+<li>Déjà acté par la RFC 0002 pour fournir les chemins SVG des tracés. On en réutilise les métadonnées par caractère.</li>
+<li><code>dictionary.txt</code> (JSONL) fournit <code>radical</code>, <code>decomposition</code> (notation IDS) pour 9574 caractères.</li>
+<li><code>graphics.txt</code> (JSONL) fournit <code>strokes</code> (chemins SVG) ; sa longueur donne le <code>stroke_count</code>.</li>
+</ul>
+<h3>2. Vendoring</h3>
+<p>Les sources sont <strong>vendorées</strong> dans <code>shared/data/sources/</code> :</p>
+<ul>
+<li><code>drkameleon-hsk30-l1.json</code> — copie verbatim du fichier amont (~495 KB).</li>
+<li><code>makemeahanzi-hsk1-meta.jsonl</code> — <strong>sous-ensemble dérivé</strong> : une ligne JSON par hanzi HSK 1, contenant <code>{character, hex, stroke_count, radical, decomposition}</code> (~30 KB).</li>
+<li><code>_provenance.json</code> — URLs, SHA upstream, dates, hashs SHA-256 des fichiers vendorés. Source de vérité pour la traçabilité.</li>
+<li><code>README.md</code> — procédure de mise à jour.</li>
+</ul>
+<p><strong>Pourquoi vendorer</strong> :</p>
+<ul>
+<li><strong>Reproductibilité</strong> : un <code>git checkout</code> à n&#39;importe quel commit reproduit exactement les builds de l&#39;époque, même si l&#39;upstream change ou disparaît.</li>
+<li><strong>Builds offline</strong> : aucun appel réseau pendant <code>make build</code> ou <code>make build-data</code>. Cohérent avec la RFC 0006.</li>
+<li><strong>Pinning par SHA upstream</strong> : on sait exactement quelle version de la liste HSK 1 on utilise.</li>
+</ul>
+<p><strong>Mise à jour</strong> : un script dédié <code>frontend/scripts/vendor-sources.ts</code> re-fetche depuis les URL pinnées, recalcule le sous-ensemble dérivé et met à jour les fichiers + <code>_provenance.json</code>. Une mise à jour de SHA = un commit explicite, jamais silencieux.</p>
+<h3>3. Pipeline de génération</h3>
+<p>Le pipeline vit dans <strong><code>frontend/scripts/</code></strong> (cf. RFC 0003, on assume cette responsabilité côté front car la sortie est un asset front) :</p>
+<ul>
+<li><code>frontend/scripts/vendor-sources.ts</code> — bootstrap / mise à jour du vendoring (re-fetch + recalcul du sous-ensemble + provenance).</li>
+<li><code>frontend/scripts/build-hsk1-data.ts</code> — lit les sources vendorées, transforme au format schéma v1, valide avec les schémas Zod existants (<code>src/domain/schema/validators.ts</code>), écrit la sortie.</li>
+</ul>
+<p><strong>Sortie</strong> : <code>frontend/src/data/hsk1.generated.json</code>, <strong>commitée</strong> au repo. C&#39;est elle qui sera consommée par <code>BundledDataSource</code> au Lot 1.</p>
+<p><strong>Scripts npm</strong> :</p>
+<ul>
+<li><code>npm run vendor:sources</code> — rejoue le vendoring depuis l&#39;upstream (rare).</li>
+<li><code>npm run build:data</code> — régénère <code>hsk1.generated.json</code> à partir des sources vendorées (à chaque évolution du schéma ou des sources vendorées).</li>
+</ul>
+<p><strong>Pourquoi pas dans <code>tools/data-pipeline/</code> standalone ou côté Go</strong> :</p>
+<ul>
+<li>Standalone : dédoublerait l&#39;écosystème TS + les types/Zod, sans bénéfice.</li>
+<li>Côté Go : obligerait à dupliquer la validation Zod en validation Go, pour produire un fichier qui ne profite qu&#39;au front.</li>
+</ul>
+<h3>4. Mapping <code>drkameleon → schéma v1</code></h3>
+<table>
+<thead>
+<tr>
+<th>Schéma v1</th>
+<th>Drkameleon</th>
+<th>makemeahanzi (subset)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>character.id</code></td>
+<td><code>&quot;char_&quot; + hex(codepoint)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>character.hanzi</code></td>
+<td>hanzi (issu de <code>simplified</code>)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>character.pinyin[].syllable</code></td>
+<td><code>forms[0].transcriptions.pinyin</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>character.pinyin[].tone</code></td>
+<td>dérivé de <code>transcriptions.numeric</code> (chiffre final, 0 si neutre)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>character.translations.en</code></td>
+<td><code>forms[0].meanings</code> (1ère forme)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>character.translations.fr</code></td>
+<td><strong>vide au MVP</strong> (rempli à la main progressivement)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>character.hsk_level</code></td>
+<td><code>1</code> (constant, c&#39;est le niveau)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>character.stroke_count</code></td>
+<td></td>
+<td><code>len(strokes)</code> depuis <code>graphics.txt</code></td>
+</tr>
+<tr>
+<td><code>character.radicals</code></td>
+<td></td>
+<td>feuilles non-IDS de <code>decomposition</code> (≥ 1 char)</td>
+</tr>
+<tr>
+<td><code>character.frequency_rank</code></td>
+<td><code>frequency</code> (entier)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>character.stroke_data_ref</code></td>
+<td><code>&quot;makemeahanzi:&quot; + hex(codepoint)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>character.metadata</code></td>
+<td><code>{}</code> (réservé)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>word.*</code></td>
+<td>mêmes règles, <code>character_refs</code> = <code>[char_HEX...]</code> pour chaque hanzi de <code>simplified</code></td>
+<td></td>
+</tr>
+</tbody></table>
+<p><strong>Cas limite</strong> : les 212 entrées drkameleon mono-caractère sont <strong>à la fois</strong> un <code>character</code> (entité d&#39;apprentissage du tracé) et un <code>word</code> (entité de vocabulaire). Elles vivent donc dans les deux arrays — cohérent avec le schéma. Les 88 caractères restants (300 − 212) n&#39;apparaissent qu&#39;inside des mots composés et ne sont présents que dans <code>characters[]</code>.</p>
+<h3>5. Decks</h3>
+<p>Deux decks générés par le pipeline :</p>
+<ul>
+<li><code>deck_hsk1_words</code> — les 506 entrées de vocabulaire (drkameleon).</li>
+<li><code>deck_hsk1_characters</code> — les 300 caractères distincts (utile pour drill de tracé).</li>
+</ul>
+<h2>Conséquences</h2>
+<ul>
+<li><strong>Bénéfice immédiat</strong> : <code>hsk1.generated.json</code> est disponible offline dès le démarrage du Lot 1. La feature canvas peut directement piocher dans la liste.</li>
+<li><strong>Coût initial</strong> : ~525 KB de fichiers vendorés dans <code>shared/data/sources/</code> + ~150 KB de JSON généré dans <code>frontend/src/data/</code>. Acceptable.</li>
+<li><strong>Engagement</strong> : à chaque rafraîchissement des sources, on bump les SHA pinnés dans le code du vendoring + on rejoue <code>npm run vendor:sources</code> + on relit <code>_provenance.json</code> + on commit. Discipline équivalente à un upgrade de dépendance.</li>
+<li><strong>Traductions françaises</strong> : volontairement vides au démarrage. Le Lot 2 (glossaire) introduira un outil de saisie. Aucune contrainte sur quand/où elles sont remplies.</li>
+</ul>
+<h2>Alternatives considérées</h2>
+<ul>
+<li><strong>CC-CEDICT comme source des définitions</strong> : refusé pour le MVP. drkameleon contient déjà des <code>meanings</code> lisibles et concis ; CC-CEDICT alourdirait pour rien. Reste utilisable plus tard si besoin (CC BY-SA 4.0).</li>
+<li><strong><code>ivankra/hsk30</code></strong> comme source principale : refusé. Pas de glose anglaise dans le CSV (il faudrait joindre avec CC-CEDICT), augmente la complexité du pipeline sans bénéfice immédiat.</li>
+<li><strong><code>krmanik/HSK-3.0</code></strong> : refusé. Format texte non structuré, parser fragile.</li>
+<li><strong>Refetch à chaque build</strong> au lieu de vendoring : refusé. Casse l&#39;offline-first, fragile (un repo amont qui disparaît ou bouge casse les builds historiques).</li>
+<li><strong>Pipeline en Go côté back</strong> : refusé. Duplique la validation Zod, fait porter une responsabilité front au back.</li>
+<li><strong>Stocker les chemins SVG (<code>strokes</code>)</strong> dans <code>hsk1.generated.json</code> : refusé. ~30 MB de paths inutiles pour le canvas (Hanzi Writer charge ses données côté runtime). On conserve <code>stroke_data_ref</code> comme indirection.</li>
+</ul>
+</div>
+</details>
+</section>
+
+<section id="journal">
+<h2>Journal de bord</h2>
+<details id="journal-2026-05-28-lot2-glossaire-recherche">
+  <summary>2026-05-28 — Lot 2 (1/n) : glossaire HSK 1 avec recherche et navigation</summary>
+  <div class="content"><h1>2026-05-28 — Lot 2 (1/n) : glossaire HSK 1 avec recherche et navigation</h1>
+<h2>Objectif de la session</h2>
+<p>Démarrer le Lot 2 par la <strong>liste navigable et recherchable</strong> des 300 caractères et 506 mots HSK 1, branchée sur le canvas de tracé du Lot 1. Mettre en place les briques de réutilisation pinyin (formattage diacritique + variante ASCII pour la recherche) et le routing top-level <code>glossary ↔ practice</code>.</p>
+<h2>Ce qui a été fait</h2>
+<h3>Composant <code>Glossary</code> (<code>src/features/glossary/Glossary.tsx</code>)</h3>
+<ul>
+<li>Chargement asynchrone via <code>BundledDataSource(hsk1Data)</code>, état <code>loading</code> pendant le parse + validation Zod.</li>
+<li>Deux onglets <code>character</code> / <code>word</code> avec compteur dans le label (<code>Caractères (300)</code> / <code>Mots (506)</code>).</li>
+<li>Champ de recherche unique qui filtre simultanément sur :<ul>
+<li>hanzi (substring),</li>
+<li>pinyin avec diacritiques (<code>pinyinToString</code>),</li>
+<li><strong>pinyin ASCII</strong> (<code>pinyinToAscii</code>) — permet de taper &quot;ni&quot; sans tréma et de matcher &quot;nǐ&quot;,</li>
+<li>traductions (toutes langues confondues).</li>
+</ul>
+</li>
+<li>Rendu de chaque entrée : hanzi grand format + pinyin diacritique + traduction langue courante (fallback EN).</li>
+<li>Bouton &quot;Tracer&quot; qui appelle <code>onSelect(hanzi)</code> → bascule sur le canvas.</li>
+<li>Tests Vitest (3) : recherche par pinyin + bascule onglet + appel <code>onSelect</code>.</li>
+</ul>
+<h3>Helper pinyin (<code>src/lib/pinyin.ts</code>)</h3>
+<ul>
+<li><code>pinyinToString(syllables)</code> — place les marques diacritiques selon les règles classiques (a &gt; e &gt; ou &gt; dernière voyelle). Inchangé par rapport au commit initial sauf retrait du <code>tone === 5</code> inatteignable.</li>
+<li><strong>Nouveau</strong> : <code>pinyinToAscii(syllables)</code> — strippe <strong>toutes</strong> les diacritiques (y compris le tréma de <code>ü</code>) via <code>String.normalize(&#39;NFD&#39;).replace(/[̀-ͯ]/g, &#39;&#39;)</code>. Choix assumé : l&#39;utilisateur tape sur un clavier ASCII, on accepte <code>nǚ → nu</code> pour le filtrage.</li>
+<li>Tests Vitest (4 au total après ajout de <code>pinyinToAscii</code>).</li>
+</ul>
+<h3>App-level routing (<code>src/App.tsx</code> + <code>App.test.tsx</code>)</h3>
+<ul>
+<li>Vue <code>glossary</code> par défaut, vue <code>practice</code> après sélection. Bouton retour <code>←</code> dans le header. État local <code>view</code>, <code>selectedHanzi</code>, <code>gridType</code>, <code>showOutline</code> ; le <code>HanziWriterRenderer</code> est mémoïsé une fois pour toute via <code>useMemo</code>.</li>
+<li>Tests réécrits : <code>glossary</code> rendu par défaut, navigation glossary → practice → retour, toggle FR/EN inchangé.</li>
+</ul>
+<h3>i18n (<code>src/i18n/locales/{fr,en}.json</code>)</h3>
+<ul>
+<li>Nouvelle section <code>glossary</code> : <code>title</code>, <code>search_placeholder</code>, <code>characters</code>, <code>words</code>, <code>no_results</code>, <code>practice</code>.</li>
+</ul>
+<h3>Utilitaire CSS (<code>src/index.css</code>)</h3>
+<ul>
+<li>Ajout d&#39;<code>@layer utilities { .scrollbar-hide }</code> (cache la scrollbar webkit/firefox) — utilisé dans la liste du glossaire et la zone scrollable du practice.</li>
+</ul>
+<h2>Bugs identifiés et corrigés en cours de session</h2>
+<ol>
+<li><strong><code>pinyin.ts</code> typecheck KO</strong> — <code>if (tone === 0 || tone === 5)</code> était inatteignable (le type <code>PinyinSyllable.tone</code> est <code>0|1|2|3|4</code>, le schéma rejette <code>5</code>). Retiré la branche morte.</li>
+<li><strong>Recherche diacritique-sensible</strong> — tapant &quot;ni&quot; dans la barre de recherche, le caractère 你 (pinyin &quot;nǐ&quot;) n&#39;apparaissait pas dans la liste filtrée. Le bug a été détecté par le test <code>Glossary &gt; affiche les caractères par défaut et permet de chercher</code>. Correction : recherche menée à la fois sur la chaîne diacritique et sur la chaîne ASCII normalisée.</li>
+<li><strong>Lint warning <code>react-hooks/exhaustive-deps</code></strong> — <code>currentLang</code> était dans les dépendances du <code>useMemo</code> du filtre alors qu&#39;il ne servait pas au calcul. Retiré.</li>
+<li><strong>Format Prettier</strong> — 6 fichiers Lot 2 (Glossary, pinyin, App, CharacterGrid, tests) n&#39;étaient pas formatés. Rattrapés par <code>npm run lint:fix</code>.</li>
+</ol>
+<h2>Découvertes / surprises</h2>
+<ul>
+<li><strong><code>String.normalize(&#39;NFD&#39;)</code></strong> décompose les caractères latin-étendus (<code>ü</code> → <code>u</code> + U+0308) ce qui permet de strip n&#39;importe quelle diacritique d&#39;une voyelle accentuée en une seule passe. La regex <code>/[̀-ͯ]/g</code> couvre toute la plage Unicode des marques combinantes.</li>
+<li><strong><code>hanziMatch</code> sur le champ recherche</strong> : le <code>query</code> est <code>toLowerCase()</code>, mais les hanzi n&#39;ont pas de casse. La méthode <code>String.includes</code> continue de fonctionner correctement (les hanzi ne changent pas avec <code>.toLowerCase()</code>).</li>
+</ul>
+<h2>Décisions prises</h2>
+<p>Aucune nouvelle RFC. Choix internes :</p>
+<ul>
+<li>Recherche pinyin par défaut <strong>insensible aux diacritiques</strong> (compromis ergonomique : on n&#39;oblige pas l&#39;utilisateur à savoir composer les tons au clavier).</li>
+<li><code>pinyinToAscii</code> strippe aussi le tréma de <code>ü</code> pour la même raison.</li>
+<li>Pas de virtualisation de la liste pour l&#39;instant (300+506 items rendent en quelques ms sur une machine raisonnable).</li>
+</ul>
+<h2>Vérifications</h2>
+<ul>
+<li><code>make test</code> : <strong>86 tests front passent</strong> (3 nouveaux Glossary + 1 nouveau <code>pinyinToAscii</code> + le reste inchangé), 2 paquets back passent avec <code>-race</code>.</li>
+<li><code>make lint</code> : ESLint + Prettier propres, golangci-lint 0 issue.</li>
+<li><code>make typecheck</code> : <code>tsc --noEmit</code> propre.</li>
+</ul>
+<h2>Reste à faire / prochaines étapes (Lot 2)</h2>
+<ul>
+<li><strong>Étape 4 du Lot 2 — fiches détaillées</strong> : afficher pinyin complet, toutes les traductions par langue, exemples si disponibles, character_refs cliquables (mot → ses caractères). Reste à arbitrer : modale, page dédiée, ou panneau latéral.</li>
+<li>Ouverture pour plus tard : tri/filtre par radical, par tag, par fréquence.</li>
+</ul>
+</div>
+</details>
+<details id="journal-2026-05-28-carnet-html">
+  <summary>2026-05-28 — Carnet de bord HTML autonome (outillage doc)</summary>
+  <div class="content"><h1>2026-05-28 — Carnet de bord HTML autonome (outillage doc)</h1>
+<h2>Objectif de la session</h2>
+<p>Construire un point d&#39;entrée HTML unique (<code>docs/index.html</code>) pour consulter facilement, dans un navigateur, l&#39;état du projet, les RFC et le journal. Ancrer dans <code>CLAUDE.md</code> la discipline de régénération à chaque modification de markdown.</p>
+<h2>Ce qui a été fait</h2>
+<h3>Script <code>frontend/scripts/build-docs-index.ts</code></h3>
+<ul>
+<li>Lecture des sources : <code>BRIEF.md</code>, <code>docs/handoff/CURRENT_STATE.md</code>, <code>docs/rfc/*.md</code> (sauf README), <code>docs/journal/*.md</code> (sauf README, tri filename décroissant pour avoir l&#39;entrée la plus récente en premier).</li>
+<li>Extraction de la métadonnée RFC (statut, date) via regex sur les bullets <code>**Clé** : valeur</code> du début du fichier.</li>
+<li>Rendu markdown via <code>marked</code> v18 (GFM activé) en mode synchrone.</li>
+<li><strong>Réécriture des liens internes</strong> <code>*.md</code> en ancres <code>#rfc-NNNN</code>, <code>#journal-…</code>, <code>#etat</code>, <code>#brief</code>. Permet la navigation entre RFC depuis l&#39;intérieur d&#39;une autre RFC sans casser.</li>
+<li>HTML autonome : CSS et JS inlinés, aucune dépendance runtime. S&#39;ouvre directement via <code>file://</code>.</li>
+<li>Affichage : nav sticky en haut, sections collapsables via <code>&lt;details&gt;</code>, badge de statut coloré pour les RFC (Accepté/Brouillon/Remplacé/Abandonné), tableau d&#39;index des RFC en tête de section, support <code>prefers-color-scheme: dark</code>, mode print propre, <code>prefers-reduced-motion</code> respecté.</li>
+<li>Petit script JS inline (~10 lignes) qui ouvre automatiquement les <code>&lt;details&gt;</code> cibles d&#39;un lien-ancre — un clic sur &quot;cf. RFC 0007&quot; déplie la section correspondante.</li>
+</ul>
+<h3>Outillage</h3>
+<ul>
+<li><code>marked@^18.0.4</code> ajouté en <code>devDependency</code> (uniquement utilisé par le script Node).</li>
+<li>Nouveau script npm <code>build:docs</code> (<code>tsx scripts/build-docs-index.ts</code>).</li>
+<li>Nouvelle cible <code>make docs</code> à la racine, listée dans <code>make help</code>.</li>
+<li><code>.prettierignore</code> mis à jour pour exclure <code>docs/index.html</code> (généré).</li>
+</ul>
+<h3>Discipline ajoutée à <code>CLAUDE.md</code></h3>
+<p>Trois ajouts cohérents :</p>
+<ol>
+<li>Section <strong>Commandes utiles</strong> → nouveau bloc &quot;Carnet de bord HTML&quot; avec <code>make docs</code> et la mention <strong>&quot;À lancer obligatoirement après toute modification d&#39;un fichier markdown dans <code>docs/</code> ou de <code>BRIEF.md</code>, avant le commit. L&#39;index HTML est régénéré, jamais édité à la main.&quot;</strong></li>
+<li>Section <strong>Rythme de travail</strong> → &quot;À chaque fin de session / feature : tenir à jour <code>CURRENT_STATE.md</code>, écrire une entrée de journal, <strong>puis lancer <code>make docs</code></strong>&quot;. Précision : &quot;La régénération de <code>docs/index.html</code> accompagne le commit qui modifie les markdown correspondants — pas dans un commit séparé.&quot;</li>
+<li>Section <strong>Ce que Claude Code ne fait pas</strong> → ajout de <code>docs/index.html</code> à la liste des fichiers générés à ne jamais éditer à la main.</li>
+</ol>
+<h2>Découvertes / surprises</h2>
+<ul>
+<li><strong><code>&lt;details&gt;</code> et navigation par ancre</strong> : par défaut, cliquer sur un lien vers un id à l&#39;intérieur d&#39;un <code>&lt;details&gt;</code> fermé ne le déplie pas. La spec a évolué récemment (<code>auto-expand details on text fragment</code>) mais la prise en charge est inégale. Solution : 10 lignes de JS qui remontent l&#39;arbre depuis la cible et passent <code>open = true</code> sur tous les ancêtres <code>&lt;details&gt;</code>.</li>
+<li><strong><code>marked</code> v18</strong> retourne par défaut une <code>Promise&lt;string&gt;</code>. Pour rester synchrone dans un script de build court, passer l&#39;option <code>{ async: false }</code> à <code>parse()</code> et caster vers <code>string</code>.</li>
+<li><strong><code>prettier --write</code> du script généré</strong> : Prettier reformate les template literals contenant CSS/JS multilignes. Heureusement de manière idempotente — le HTML produit reste valide.</li>
+</ul>
+<h2>Décisions prises</h2>
+<p>Aucune RFC. Choix d&#39;implémentation :</p>
+<ul>
+<li><strong>Génération à la demande</strong> plutôt que rendu à la volée côté serveur — cohérent avec l&#39;offline-first du projet, et permet d&#39;ouvrir le carnet sur n&#39;importe quelle machine sans backend.</li>
+<li><strong>Un seul fichier</strong> plutôt qu&#39;une arbo HTML — plus simple à versionner, à ouvrir, à transporter.</li>
+<li><strong><code>docs/index.html</code> commité au repo</strong> plutôt que généré-au-build. Trade-off accepté : diff bruyant à chaque modif markdown ; bénéfice : pas besoin d&#39;environnement Node pour consulter.</li>
+<li><strong>Pipeline TS dans <code>frontend/scripts/</code></strong> plutôt que <code>scripts/</code> ou <code>tools/data-pipeline/</code> au repo : infrastructure tsx + ESLint + Prettier déjà en place. Le script importe rien du code applicatif front.</li>
+</ul>
+<h2>Vérifications</h2>
+<ul>
+<li><code>make docs</code> génère <code>docs/index.html</code> (~119 KB, 8 RFC + 6 entrées de journal au moment de la première exécution).</li>
+<li><code>make test</code> / <code>make lint</code> / <code>make typecheck</code> restent verts.</li>
+</ul>
+<h2>Reste à faire / prochaines étapes</h2>
+<ul>
+<li>À chaque session future, <strong><code>make docs</code></strong> est obligatoire si un markdown sous <code>docs/</code> ou <code>BRIEF.md</code> a bougé. Couvert par la discipline dans <code>CLAUDE.md</code>.</li>
+<li>Évolutions possibles si le besoin se présente : recherche full-text in-page (Ctrl+F suffit pour l&#39;instant), filtre par statut RFC, accordéon &quot;tout déplier&quot;.</li>
+</ul>
+</div>
+</details>
+<details id="journal-2026-05-24-sourcing-hsk1">
+  <summary>2026-05-24 — Sourcing et bundling des données HSK 3.0 niveau 1</summary>
+  <div class="content"><h1>2026-05-24 — Sourcing et bundling des données HSK 3.0 niveau 1</h1>
+<h2>Objectif de la session</h2>
+<p>Première brique du Lot 1 : identifier des sources publiques fiables pour la liste HSK 3.0 niveau 1, les vendoriser dans le repo, écrire un pipeline TS qui produit un JSON conforme au schéma v1, valider la sortie avec Zod, ajouter des tests.</p>
+<h2>Ce qui a été fait</h2>
+<h3>Recherche et choix des sources</h3>
+<ul>
+<li>Cartographie de l&#39;écosystème HSK 3.0 sur GitHub : drkameleon, ivankra, krmanik, tonghuikang, nicolas-jaussaud, plaktos, LiudmilaLV, clem109.</li>
+<li>Mesures sur le fichier <code>wordlists/inclusive/new/1.json</code> de drkameleon : <strong>506 entrées</strong>, <strong>300 hanzi distincts</strong> — colle exactement au brief.</li>
+<li>Choix actés dans la nouvelle <strong><a href="#rfc-0008">RFC 0008</a></strong> :<ul>
+<li><strong>drkameleon/complete-hsk-vocabulary</strong> (MIT) comme source principale (vocabulaire + traductions EN + pinyin diacritique/numérique).</li>
+<li><strong>skishore/makemeahanzi</strong> (Arphic + Unihan/CJKlib) pour <code>stroke_count</code>, <code>radical</code>, <code>decomposition</code>.</li>
+<li>Pinning par SHA upstream (drkameleon <code>7ac65bf</code>, makemeahanzi <code>bddc96d4</code>).</li>
+</ul>
+</li>
+</ul>
+<h3>Vendoring</h3>
+<ul>
+<li><code>shared/data/sources/drkameleon-hsk30-l1.json</code> — copie verbatim (482 KB).</li>
+<li><code>shared/data/sources/makemeahanzi-hsk1-meta.jsonl</code> — sous-ensemble dérivé (300 lignes, ~45 KB) : <code>{character, hex, stroke_count, radical, decomposition, definition, pinyin}</code>.</li>
+<li><code>shared/data/sources/_provenance.json</code> — URL, SHA upstream, SHA-256 + tailles des fichiers vendorés, date.</li>
+<li><code>shared/data/sources/README.md</code> — règles.</li>
+<li>Script <code>frontend/scripts/vendor-sources.ts</code> : fetch les fichiers upstream (~30 MB graphics.txt + 2.5 MB dictionary.txt + 480 KB drkameleon) et produit le sous-ensemble. À ne rejouer que pour un bump de SHA.</li>
+</ul>
+<h3>Pipeline de génération</h3>
+<ul>
+<li><code>frontend/scripts/build-hsk1-data.ts</code> : lit les sources vendorées, transforme au format schéma v1, valide via les schémas Zod existants du domaine, écrit <code>frontend/src/data/hsk1.generated.json</code> (471 KB).</li>
+<li>Choix de mapping pinyin : on conserve la <strong>diacritique</strong> comme syllable et on extrait le ton du <strong>numeric</strong> de drkameleon. Pour les polyphones, on collecte toutes les lectures distinctes apparaissant dans n&#39;importe quelle entrée.</li>
+<li>Décomposition IDS → feuilles : on retire les opérateurs IDS (U+2FF0..U+2FFF) et les placeholders <code>？</code>. Si le résultat est vide (caractère atomique comme 一), fallback sur <code>[radical]</code> puis <code>[character]</code>.</li>
+<li>Fallback de traduction EN : (1) <code>meanings</code> de drkameleon si entrée mono-caractère, sinon (2) <code>definition</code> de makemeahanzi, sinon (3) placeholder explicite. <strong>Tous les 300 caractères ont une traduction EN non vide</strong> au final.</li>
+<li>IDs : <code>char_&lt;HEX&gt;</code> (uppercase) pour les caractères, <code>word_&lt;concat hex lowercase&gt;</code> pour les mots, <code>deck_&lt;slug&gt;</code> pour les decks.</li>
+<li>Deux decks générés : <code>deck_hsk1_words</code> (506 items) et <code>deck_hsk1_characters</code> (300 items).</li>
+</ul>
+<h3>Tests</h3>
+<ul>
+<li><code>frontend/src/data/hsk1.generated.test.ts</code> : <strong>18 nouveaux tests</strong> Vitest sur l&#39;intégrité du JSON généré.<ul>
+<li>Conformité au schéma Zod v1.</li>
+<li>Comptes : exactement 300 caractères distincts, 506 mots (avec une fourchette de tolérance 500–520), 2 decks aux IDs corrects.</li>
+<li>Intégrité référentielle : unicité des IDs caractères/mots, chaque <code>character_refs</code> pointe vers un caractère existant, chaque deck item pointe vers une entité connue.</li>
+<li>Métier : tous <code>hsk_level=1</code>, <code>stroke_count ≥ 1</code>, format <code>stroke_data_ref</code>, au moins une lecture pinyin, au moins une traduction EN non vide.</li>
+<li>Spot-check sur 你 : id <code>char_4F60</code>, 7 traits, lecture <code>nǐ</code> ton 3, contient le radical <code>亻</code>.</li>
+</ul>
+</li>
+<li>Tests totaux : <strong>42 verts</strong> (24 ex-Lot 0 + 18 nouveaux).</li>
+</ul>
+<h3>Outillage</h3>
+<ul>
+<li><code>tsx</code> ajouté en devDependency pour lancer les scripts TS directement.</li>
+<li>Override ESLint pour <code>scripts/</code> (env Node, désactive <code>no-restricted-imports</code> car les scripts vivent hors de la frontière hexagonale).</li>
+<li><code>.prettierignore</code> : exclusion des sources vendorées et des <code>*.generated.json</code>.</li>
+<li>Nouvelles cibles Makefile racine : <code>make vendor-sources</code>, <code>make build-data</code>.</li>
+<li>Scripts npm : <code>vendor:sources</code>, <code>build:data</code>.</li>
+</ul>
+<h2>Découvertes / surprises</h2>
+<ul>
+<li><strong><code>你好</code> est absent de HSK 3.0 niveau 1.</strong> Surprise au moment du spot-check. Vérifié sur la source brute drkameleon : 你好, 您好, 早上好 ne sont pas dans la liste, alors que 再见 et 不客气 le sont. Conforme à la spec HSK 3.0 2021 (les expressions figées comme 你好 ne font pas partie du vocabulaire à mémoriser ; on les considère acquises culturellement). Le user pourra ajouter une liste supplémentaire de &quot;phrases utiles&quot; hors HSK plus tard si souhaité.</li>
+<li><strong>88 caractères apparaissent uniquement dans des mots composés</strong> (300 − 212 mono-entrées), donc sans <code>meanings</code> drkameleon ; le fallback sur makemeahanzi <code>definition</code> couvre tous les cas.</li>
+<li><strong>Le <code>？</code> (U+FF1F) dans une <code>decomposition</code> makemeahanzi</strong> signale une décomposition inconnue (ex. 一). Heureusement déjà géré par le fallback radical → character.</li>
+<li><strong>Bug de doublon <code>overrides</code> dans <code>.eslintrc.cjs</code></strong> au moment de l&#39;ajout des règles <code>scripts/</code> : la deuxième clé écrasait silencieusement la première (perte des overrides existants sur <code>adapters/</code>, <code>features/</code>, tests). Détecté et fusionné en un seul bloc.</li>
+<li><strong>Erreur Prettier sur les scripts</strong> au premier passage (formatage automatique imposé) : rattrapé via <code>npm run lint:fix</code>.</li>
+</ul>
+<h2>Décisions prises</h2>
+<ul>
+<li><a href="#rfc-0008">RFC 0008 — Sourcing des données HSK 3.0 niveau 1</a>.</li>
+</ul>
+<h2>Reste à faire / prochaines étapes</h2>
+<ul>
+<li>Commits thématiques de la session (RFC + sources vendorées + pipeline + tests + makefile + doc).</li>
+<li>Lot 1 — étapes restantes :<ul>
+<li>Adapter <code>BundledDataSource</code> (port <code>DataSource</code>) qui consomme <code>hsk1.generated.json</code>.</li>
+<li>Intégration de Hanzi Writer via l&#39;adapter <code>HanziWriterRenderer</code> (port <code>CharacterRenderer</code>).</li>
+<li>Capture stylet via Pointer Events.</li>
+<li>Grilles d&#39;aide Tian/Mi/Hui Zi Ge.</li>
+<li>Modes d&#39;affichage transparent/caché.</li>
+<li>UX e-ink.</li>
+</ul>
+</li>
+<li>À considérer plus tard :<ul>
+<li>Enrichissement progressif des traductions françaises (Lot 2, glossaire).</li>
+<li>Liste supplémentaire de phrases hors HSK (你好, 您好, 早上好…) si l&#39;usage l&#39;exige.</li>
+<li>Ajout de CC-CEDICT pour des glosses plus riches si besoin.</li>
+</ul>
+</li>
+</ul>
+</div>
+</details>
+<details id="journal-2026-05-24-lot0-fondations">
+  <summary>2026-05-24 — Lot 0, fondations en place</summary>
+  <div class="content"><h1>2026-05-24 — Lot 0, fondations en place</h1>
+<h2>Objectif de la session</h2>
+<p>Dérouler les étapes 2 à 4 du Plan de démarrage : arrêter l&#39;OS de dev, initialiser le Lot 0 en TDD (schéma partagé, backend Go, frontend Vite/React, migrations), câbler le Makefile racine, valider <code>make dev/lint/test</code>, clôturer le Lot 0.</p>
+<h2>Ce qui a été fait</h2>
+<h3>Tooling et fichiers racine</h3>
+<ul>
+<li>Vérification de la toolchain : Go 1.26.2, Node 24.15, npm 11.12, GNU make 3.81, golangci-lint 2.9.0.</li>
+<li><code>.gitignore</code> (macOS, node, go, env), <code>.editorconfig</code> (tab pour Go/Makefile, 2 espaces sinon).</li>
+<li><code>Makefile</code> racine avec cibles <code>install / dev / test / lint / typecheck / build / clean</code> + variantes <code>*-front</code> / <code>*-back</code>.</li>
+</ul>
+<h3><code>shared/schema/</code></h3>
+<ul>
+<li><code>data-schema.v1.json</code> : JSON Schema Draft 2020-12, mode <code>additionalProperties: false</code>, contraintes regex sur les IDs (<code>char_…</code>, <code>word_…</code>, <code>deck_…</code>), pinyin structuré (syllabe + ton 0–4), translations indexées ISO 639-1, refs externes <code>makemeahanzi:XXXX</code> pour les tracés, champ générique <code>metadata: {}</code>.</li>
+<li><code>examples/hsk1_sample.json</code> : 2 caractères (你, 好) + 1 mot (你好) + 1 deck — sert de fixture aux tests Zod.</li>
+</ul>
+<h3><code>backend/</code> (Go, hexagonal)</h3>
+<ul>
+<li>Module <code>sinogrammes/backend</code>. Structure <code>cmd/server/</code> + <code>internal/{domain,ports,adapters/{http,sqlite},migrations,config}/</code>.</li>
+<li>Tests d&#39;abord (<code>health_test.go</code>, <code>config_test.go</code>), puis impl. Tests passent avec <code>-race</code>.</li>
+<li>Endpoint <code>/health</code> retourne <code>{&quot;status&quot;:&quot;ok&quot;,&quot;schema_version&quot;:&quot;1.0.0&quot;}</code>.</li>
+<li>Router chi avec <code>RequestID</code>, <code>Recoverer</code>. <strong><code>middleware.RealIP</code> retiré</strong> (déprécié pour vulnérabilité IP spoofing, signalé par golangci-lint).</li>
+<li>Main avec <code>signal.NotifyContext</code> + graceful shutdown, refactor en <code>run() error</code> pour éviter <code>log.Fatalf</code> après <code>defer</code> (gocritic <code>exitAfterDefer</code>).</li>
+<li><code>.golangci.yml</code> v2 strict (errcheck, gosec, staticcheck, revive, gocritic, …) — <strong>0 issue</strong> au final.</li>
+</ul>
+<h3><code>frontend/</code> (Vite/React/TS strict, hexagonal)</h3>
+<ul>
+<li><code>tsconfig.json</code> strict avec <code>noUncheckedIndexedAccess</code>, <code>exactOptionalPropertyTypes</code>, <code>noUnusedLocals/Parameters</code>.</li>
+<li>Vite 5 + React 18 + Tailwind 3 + Vitest 2 + ESLint 8 + Prettier 3, <code>i18next</code> + <code>react-i18next</code> + <code>i18next-browser-languagedetector</code> dès le démarrage.</li>
+<li>Palette Tailwind sobre (<code>ink</code>, <code>paper</code>) pensée pour l&#39;e-ink.</li>
+<li><code>App.tsx</code> : titre + greeting + toggle FR/EN, 3 tests Testing Library.</li>
+<li>Garde-fou ESLint <code>no-restricted-imports</code> : <code>src/domain/</code> ne peut pas importer <code>src/adapters/</code>. Vérifiable au lint.</li>
+<li>Ports : <code>CharacterRenderer</code>, <code>ProgressRepository</code>, <code>DataSource</code> — interfaces seules, aucune implémentation.</li>
+<li>Schéma : <code>types.ts</code> (TS) + <code>validators.ts</code> (Zod) + 15 tests (fixture HSK 1 valide + cas invalides : id mal préfixé, ton hors plage, hanzi vide ou multi-char, langue non ISO 639-1, translations vides, champ inconnu).</li>
+<li>Migrations : <code>applyMigrations</code> (chaînage, détection de boucle, vérification de <code>to</code>), <code>REGISTERED_MIGRATIONS = []</code>, 6 tests sur migrations factices, README qui figent la convention.</li>
+</ul>
+<h3>Vérifications de bout en bout</h3>
+<ul>
+<li><code>make test</code> : <strong>24 tests front passent</strong>, <strong>2 paquets back passent avec <code>-race</code></strong>.</li>
+<li><code>make lint</code> : ESLint + Prettier clean, golangci-lint 0 issue.</li>
+<li><code>make typecheck</code> : <code>tsc --noEmit</code> clean.</li>
+<li><code>make build</code> : front bundle 203 KB / 65 KB gzip, back binaire <code>bin/server</code>.</li>
+<li><code>make dev</code> : smoke-testé en background → <code>/health</code> répond JSON correct, frontend sert l&#39;<code>index.html</code> avec react-refresh.</li>
+</ul>
+<h2>Découvertes / surprises</h2>
+<ul>
+<li><strong><code>go-chi/v5</code> middleware <code>RealIP</code> est désormais déprécié</strong> (vulnérabilités IP spoofing récentes — GHSA-3fxj-6jh8-hvhx, etc.). Retiré : sur localhost et derrière un reverse proxy de confiance, RequestID + Recoverer suffisent.</li>
+<li><strong><code>revive</code> interdit <code>package http</code></strong> (collision stdlib). Renommage en <code>httpapi</code> du package, le dossier reste <code>internal/adapters/http/</code> comme prévu par le brief.</li>
+<li><strong>TypeScript project references + composite + <code>noEmit</code></strong> posent un casse-tête (<code>TS6310 may not disable emit</code>). Abandonné au profit d&#39;un <code>tsconfig.json</code> unique : suffisant pour un mono-utilisateur, supprime un point de friction inutile.</li>
+<li><strong><code>AGENTS.md</code> est apparu spontanément</strong> à la racine, miroir de <code>CLAUDE.md</code>. Probablement un hook cross-outils (convention partagée par Cursor / Aider / etc.). Laissé en l&#39;état, non intrusif.</li>
+<li>Le sous-shell <code>cd</code> persiste entre les appels <code>Bash</code> dans la même session — utile à savoir.</li>
+</ul>
+<h2>Décisions prises</h2>
+<p>Aucune nouvelle RFC. Tout reste cohérent avec les RFC 0001-0007. Les choix techniques arbitrés en cours de session sont consignés dans <code>CURRENT_STATE.md</code> (renommage de package, Module Go local, abandon des project references TS).</p>
+<h2>Reste à faire / prochaines étapes</h2>
+<ul>
+<li><strong>Premier commit du projet</strong> (pas encore effectué — à confirmer avec l&#39;utilisateur quel découpage il préfère : un commit géant &quot;Lot 0&quot; ou plusieurs commits thématiques).</li>
+<li><strong>Lot 1 — Canvas et validation de tracé</strong> (cf. RFC 0007). Tout est listé dans <code>CURRENT_STATE.md</code> section &quot;Prochaines étapes&quot;. Priorité 1 : sourcer une liste HSK 3.0 niveau 1 propre.</li>
+</ul>
+</div>
+</details>
+<details id="journal-2026-05-24-init-projet">
+  <summary>2026-05-24 — Initialisation du projet</summary>
+  <div class="content"><h1>2026-05-24 — Initialisation du projet</h1>
+<h2>Objectif de la session</h2>
+<p>Démarrer le projet sinogrammes à partir du brief de cadrage (<code>BRIEF.md</code>), en suivant l&#39;étape 1 du &quot;Plan de démarrage&quot; : créer <strong>toute la structure de documentation avant la moindre ligne de code applicatif</strong>.</p>
+<h2>Ce qui a été fait</h2>
+<ul>
+<li>Lecture intégrale du brief (<code>BRIEF.md</code>, 12 sections, ~430 lignes).</li>
+<li>Création de <strong><code>CLAUDE.md</code></strong> à la racine : court, orienté action, pointe vers <code>docs/handoff/CURRENT_STATE.md</code> comme point d&#39;entrée.</li>
+<li>Création de <strong><code>README.md</code></strong> à la racine : présentation humaine, statut, stack résumée.</li>
+<li>Création de l&#39;arborescence <code>docs/</code> :<ul>
+<li><code>docs/README.md</code> (index + conventions de navigation).</li>
+<li><code>docs/rfc/README.md</code> (index des RFC + statuts + en-tête type).</li>
+<li><code>docs/journal/README.md</code> (format des entrées + index).</li>
+<li><code>docs/handoff/CURRENT_STATE.md</code> (état initial : Lot 0 démarré, doc en place, prochaine étape = squelette frontend/backend).</li>
+</ul>
+</li>
+<li>Rédaction des <strong>sept RFC fondatrices</strong>, toutes en français, statut &quot;Accepté&quot;, datées du 2026-05-24 :<ul>
+<li><strong>RFC 0001 — Vision et périmètre</strong> : mono-utilisateur, HSK 3.0 niveau 1, tracé sur Boox, contraintes e-ink, hors périmètre.</li>
+<li><strong>RFC 0002 — Stack technique</strong> : Vite/React/TS strict/Tailwind/Zod/i18next/Vitest côté front, Go/chi/SQLite/goose/testify côté back.</li>
+<li><strong>RFC 0003 — Architecture hexagonale</strong> : domain/ports/adapters des deux côtés, ports identifiés (CharacterRenderer, ProgressRepository, DataSource).</li>
+<li><strong>RFC 0004 — Format de données et versioning</strong> : JSON Schema unique dans <code>shared/schema/</code>, SemVer strict, migrations chaînées avec backup IndexedDB, tests obligatoires sur chaque migration.</li>
+<li><strong>RFC 0005 — Stratégie i18n</strong> : séparation stricte UI (i18next) vs données (<code>translations: { fr, en }</code> dans le schéma), locales FR/EN dès le Lot 0.</li>
+<li><strong>RFC 0006 — PWA offline-first</strong> : Option B (JSON bundlé) pour le MVP, IndexedDB local + SQLite serveur, sync best-effort Last-Write-Wins, service worker au Lot 5.</li>
+<li><strong>RFC 0007 — Découpage en lots</strong> : Lot 0 fondations / 1 canvas / 2 glossaire / 3 SRS / 4 voix / 5 PWA. Critères de sortie explicites par lot.</li>
+</ul>
+</li>
+<li>Création de cette entrée de journal.</li>
+</ul>
+<h2>Découvertes / surprises</h2>
+<ul>
+<li>Le brief était déjà très complet : la rédaction des RFC consistait essentiellement à reformuler et structurer les décisions déjà actées, avec contexte / décision / conséquences / alternatives. Peu d&#39;arbitrages nouveaux à faire à ce stade.</li>
+<li>Quatre fichiers étaient déjà préinitialisés vides à la racine et dans <code>docs/rfc/</code> (<code>CLAUDE.md</code>, <code>README.md</code>, <code>0001-...</code>, <code>0002-...</code>) — sans doute prévus par l&#39;utilisateur en amont. Aucun conflit, simple remplissage.</li>
+</ul>
+<h2>Décisions prises</h2>
+<p>Toutes les décisions structurantes du jour sont formalisées dans les RFC 0001 à 0007 (cf. liste ci-dessus). Aucune décision nouvelle hors brief.</p>
+<h2>Reste à faire / prochaines étapes</h2>
+<ul>
+<li><strong>Étape 2 du Plan de démarrage</strong> : demander à l&#39;utilisateur son OS de développement (Linux / macOS / Windows) pour figer les commandes du Makefile racine. ← à enchaîner immédiatement après cette session.</li>
+<li><strong>Étape 3 — Initialisation du Lot 0 en TDD</strong> (prochaine session de travail) :<ol>
+<li><code>shared/schema/data-schema.v1.json</code> + fixture d&#39;exemple.</li>
+<li><code>backend/</code> : <code>go mod init</code>, structure de dossiers, endpoint <code>/health</code> en TDD, golangci-lint configuré.</li>
+<li><code>frontend/</code> : Vite + React + TS strict + Tailwind + ESLint + Prettier + Vitest. Composant &quot;Hello&quot; avec toggle FR/EN i18next, testé.</li>
+<li><code>frontend/src/domain/schema/</code> : types TS + validateurs Zod, tests sur fixtures.</li>
+<li>Squelette du système de migrations.</li>
+<li><code>make dev</code>, <code>make lint</code>, <code>make test</code> à la racine.</li>
+</ol>
+</li>
+<li><strong>Étape 4 — Clôture du Lot 0</strong> : mettre à jour <code>CURRENT_STATE.md</code>, écrire l&#39;entrée de journal correspondante, commit.</li>
+</ul>
+</div>
+</details>
+<details id="journal-2026-05-24-hanzi-writer-renderer">
+  <summary>2026-05-24 — Adapter Hanzi Writer Renderer</summary>
+  <div class="content"><h1>2026-05-24 — Adapter Hanzi Writer Renderer</h1>
+<h2>Objectif de la session</h2>
+<p>Poursuivre le Lot 1 après <code>BundledDataSource</code> : installer Hanzi Writer, poser l&#39;adapter <code>HanziWriterRenderer</code> derrière le port <code>CharacterRenderer</code>, et vérifier qu&#39;il reste compatible avec les contraintes offline-first et Pointer Events.</p>
+<h2>Ce qui a été fait</h2>
+<ul>
+<li>Dépendances npm ajoutées côté front :<ul>
+<li><code>hanzi-writer@3.7.3</code></li>
+<li><code>hanzi-writer-data@2.0.1</code></li>
+</ul>
+</li>
+<li><code>frontend/src/adapters/renderer/HanziWriterRenderer.ts</code> ajouté :<ul>
+<li>implémente le port <code>CharacterRenderer</code>;</li>
+<li>monte Hanzi Writer en SVG;</li>
+<li>charge les données de tracé depuis <code>hanzi-writer-data</code> via <code>import.meta.glob</code>, sans CDN runtime;</li>
+<li>expose un loader injectable pour les tests;</li>
+<li>lance le mode quiz Hanzi Writer et traduit les callbacks en <code>StrokeValidationResult</code>;</li>
+<li>désactive les timings d&#39;animation par défaut pour rester e-ink-friendly;</li>
+<li>fournit un render target SVG custom qui neutralise les listeners <code>mousedown</code> / <code>touch*</code> internes de Hanzi Writer. L&#39;entrée utilisateur sera pilotée par le futur composant canvas via Pointer Events.</li>
+</ul>
+</li>
+<li><code>frontend/src/vite-env.d.ts</code> ajouté pour typer <code>import.meta.glob</code>.</li>
+<li><code>frontend/src/adapters/renderer/HanziWriterRenderer.test.ts</code> ajouté :<ul>
+<li>8 tests Vitest/jsdom;</li>
+<li>vérification du câblage des options e-ink;</li>
+<li>loader de données injecté;</li>
+<li>neutralisation des listeners mouse/touch;</li>
+<li>validation acceptée;</li>
+<li>mapping <code>isBackwards → wrong_direction</code>;</li>
+<li>rejet d&#39;un trait trop court;</li>
+<li><code>reset()</code> et <code>unmount()</code>;</li>
+<li>smoke test sur le chargement bundlé de <code>你</code> depuis <code>hanzi-writer-data</code>.</li>
+</ul>
+</li>
+</ul>
+<h2>Découvertes / surprises</h2>
+<ul>
+<li>Hanzi Writer attache par défaut des listeners <code>mousedown</code>, <code>mousemove</code>, <code>touchstart</code>, <code>touchmove</code>, <code>mouseup</code>, <code>touchend</code>. Cela ne respecte pas la règle projet &quot;Pointer Events uniquement&quot;.</li>
+<li>Solution retenue : ne pas laisser Hanzi Writer capturer directement les entrées. L&#39;adapter fournit un render target custom dont les hooks d&#39;entrée sont no-op, puis alimente le quiz via <code>validateStroke()</code> avec les points capturés ailleurs.</li>
+<li>Le loader par défaut de Hanzi Writer utilise le CDN jsDelivr. Il est donc explicitement remplacé par un loader bundlé basé sur <code>hanzi-writer-data</code>.</li>
+<li>L&#39;environnement shell local pointe parfois vers un ancien <code>GOROOT</code> Homebrew. Les commandes Go passent avec <code>unset GOROOT</code>.</li>
+</ul>
+<h2>Décisions prises</h2>
+<p>Aucune nouvelle RFC. Les choix appliquent les RFC existantes :</p>
+<ul>
+<li>RFC 0002 : Hanzi Writer derrière abstraction.</li>
+<li>RFC 0003 : adapter concret dans <code>src/adapters/renderer/</code>.</li>
+<li>RFC 0006 : offline-first, pas de CDN runtime.</li>
+<li>RFC 0007 : Lot 1 uniquement.</li>
+</ul>
+<h2>Vérifications</h2>
+<ul>
+<li><code>env -u GOROOT make test</code> : 61 tests front + tests back <code>-race</code> verts.</li>
+<li><code>env -u GOROOT make lint</code> : ESLint + Prettier + golangci-lint verts.</li>
+<li><code>make typecheck</code> : vert.</li>
+<li><code>env -u GOROOT make build</code> : vert.</li>
+</ul>
+<h2>Reste à faire / prochaines étapes</h2>
+<ul>
+<li>Intégrer la capture stylet via Pointer Events dans <code>features/canvas/</code>.</li>
+<li>Construire le composant <code>&lt;Canvas /&gt;</code> qui capture pression/inclinaison et appelle <code>CharacterRenderer.validateStroke()</code>.</li>
+<li>Ajouter les grilles Tian Zi Ge, Mi Zi Ge, Hui Zi Ge.</li>
+<li>Ajouter les modes modèle semi-transparent / caché.</li>
+<li>Câbler ensuite <code>BundledDataSource</code> + <code>HanziWriterRenderer</code> dans une première expérience utilisable.</li>
+</ul>
+</div>
+</details>
+<details id="journal-2026-05-24-grilles-et-modes-affichage">
+  <summary>Journal : Grilles calligraphiques et modes d'affichage</summary>
+  <div class="content"><h1>Journal : Grilles calligraphiques et modes d&#39;affichage</h1>
+<ul>
+<li><strong>Date</strong> : 2026-05-24</li>
+<li><strong>Lot</strong> : 1 — Canvas et validation de tracé</li>
+<li><strong>Auteur</strong> : Enzo</li>
+</ul>
+<h2>Objectif</h2>
+<p>Finaliser le Lot 1 en ajoutant les aides visuelles indispensables au tracé (grilles calligraphiques) et les options de visibilité du modèle (outline vs character).</p>
+<h2>Travail réalisé</h2>
+<h3>1. Grilles calligraphiques (<code>CharacterGrid</code>)</h3>
+<p>Création d&#39;un composant UI dédié <code>CharacterGrid</code> utilisant SVG pour afficher trois types de grilles classiques :</p>
+<ul>
+<li><strong>Tian Zi Ge (田)</strong> : Croix centrale simple.</li>
+<li><strong>Mi Zi Ge (米)</strong> : Croix centrale + diagonales.</li>
+<li><strong>Hui Zi Ge (回)</strong> : Croix centrale + carré intérieur.</li>
+</ul>
+<p>Le composant est conçu pour l&#39;e-ink avec des traits pointillés (<code>stroke-dasharray</code>) et un contraste élevé.</p>
+<h3>2. Contrôle de la visibilité</h3>
+<p>Extension du port <code>CharacterRenderer</code> et de son implémentation <code>HanziWriterRenderer</code> pour inclure :</p>
+<ul>
+<li><code>showOutline()</code> / <code>hideOutline()</code> : pour le modèle en filigrane (gris).</li>
+<li><code>showCharacter()</code> / <code>hideCharacter()</code> : pour le caractère complet (noir).</li>
+</ul>
+<p>Ces méthodes ont été synchronisées dans le composant <code>&lt;Canvas /&gt;</code> via des props React, permettant un basculement dynamique.</p>
+<h3>3. Intégration et Démo</h3>
+<p>Mise à jour de <code>App.tsx</code> pour transformer le squelette initial en une véritable démo du Lot 1 :</p>
+<ul>
+<li>Chargement des données réelles HSK 1 via <code>BundledDataSource</code>.</li>
+<li>Sélecteur horizontal des 10 premiers caractères pour tester la réactivité et le changement de cible.</li>
+<li>Boutons de contrôle pour changer le type de grille et masquer/afficher l&#39;outline.</li>
+<li>Ajout d&#39;une utilité CSS <code>scrollbar-hide</code> pour un rendu plus propre sur tablette.</li>
+</ul>
+<h2>Validation technique</h2>
+<ul>
+<li><strong>Tests unitaires</strong> : Ajout de tests pour <code>CharacterGrid</code> (6 tests) et mise à jour de <code>Canvas.test.tsx</code> et <code>HanziWriterRenderer.test.tsx</code> pour couvrir les nouvelles fonctionnalités.</li>
+<li><strong>Typecheck</strong> : <code>tsc --noEmit</code> est passé vert après correction de quelques imports inutilisés.</li>
+<li><strong>Lint</strong> : Respect des standards Prettier/ESLint.</li>
+</ul>
+<h2>État final Lot 1</h2>
+<p>Le Lot 1 est considéré comme <strong>clôturé</strong>. L&#39;application permet désormais de :</p>
+<ol>
+<li>Choisir un caractère parmi les données HSK 1 bundlées.</li>
+<li>Le voir s&#39;afficher avec ou sans guide visuel.</li>
+<li>Choisir un type de grille d&#39;aide.</li>
+<li>Le tracer au stylet avec une validation immédiate de l&#39;ordre et de la direction.</li>
+</ol>
+<p>Prochaine étape : <strong>Lot 2 — Glossaire</strong> pour naviguer dans l&#39;intégralité du corpus HSK 1.</p>
+</div>
+</details>
+<details id="journal-2026-05-24-capture-pointer-events">
+  <summary>2026-05-24 — Capture Pointer Events du canvas</summary>
+  <div class="content"><h1>2026-05-24 — Capture Pointer Events du canvas</h1>
+<h2>Objectif de la session</h2>
+<p>Poursuivre le Lot 1 après l&#39;adapter Hanzi Writer : poser un premier composant <code>&lt;Canvas /&gt;</code> qui capture le tracé au stylet via Pointer Events et délègue la validation au port <code>CharacterRenderer</code>.</p>
+<h2>Ce qui a été fait</h2>
+<ul>
+<li><code>frontend/src/features/canvas/Canvas.tsx</code> ajouté :<ul>
+<li>reçoit un <code>CharacterRenderer</code> injecté et un <code>hanzi</code>;</li>
+<li>monte/démonte le renderer dans un calque dédié;</li>
+<li>capture <code>pointerdown</code>, <code>pointermove</code>, <code>pointerup</code>, <code>pointercancel</code>;</li>
+<li>utilise <code>setPointerCapture</code> / <code>releasePointerCapture</code> quand disponible;</li>
+<li>calcule les coordonnées locales depuis <code>getBoundingClientRect()</code>;</li>
+<li>conserve pression (<code>pressure</code>) et inclinaison (<code>tiltX</code>, <code>tiltY</code>);</li>
+<li>appelle <code>renderer.validateStroke()</code> au <code>pointerup</code>;</li>
+<li>expose <code>onStrokeValidated(result, attempt)</code> pour la future orchestration de session;</li>
+<li>dessine un retour visuel minimal en SVG : noir si accepté, gris si refusé.</li>
+</ul>
+</li>
+<li><code>frontend/src/features/canvas/Canvas.test.tsx</code> ajouté :<ul>
+<li>6 tests React/jsdom;</li>
+<li>montage/démontage du renderer;</li>
+<li>capture points + pression + inclinaison;</li>
+<li>validation au <code>pointerup</code>;</li>
+<li>rendu d&#39;un trait accepté/refusé;</li>
+<li>annulation via <code>pointercancel</code>;</li>
+<li>ignore des pointeurs non primaires.</li>
+</ul>
+</li>
+</ul>
+<h2>Découvertes / surprises</h2>
+<ul>
+<li>jsdom/Vitest ne peuple pas correctement les propriétés <code>PointerEvent</code> via <code>fireEvent.pointerDown</code>. Les tests utilisent donc un helper qui émet un <code>MouseEvent</code> nommé <code>pointerdown</code> et y définit explicitement <code>pointerId</code>, <code>pointerType</code>, <code>isPrimary</code>, <code>pressure</code>, <code>tiltX</code>, <code>tiltY</code>.</li>
+<li>Le composant reste volontairement non câblé dans <code>App.tsx</code> pour garder l&#39;étape focalisée sur la capture et le contrat avec <code>CharacterRenderer</code>.</li>
+</ul>
+<h2>Décisions prises</h2>
+<p>Aucune nouvelle RFC. L&#39;étape applique les décisions existantes : Pointer Events uniquement, logique de tracé côté client, composants front dans <code>features/</code>.</p>
+<h2>Vérifications</h2>
+<ul>
+<li><code>npm test -- Canvas</code> : 6 tests verts.</li>
+<li><code>npm test</code> côté front : 67 tests verts.</li>
+<li><code>npm run typecheck</code> côté front : vert.</li>
+<li><code>npm run lint</code> côté front : vert après format Prettier.</li>
+</ul>
+<h2>Reste à faire / prochaines étapes</h2>
+<ul>
+<li>Câbler <code>BundledDataSource</code>, <code>HanziWriterRenderer</code> et <code>&lt;Canvas /&gt;</code> dans une première expérience utilisateur.</li>
+<li>Ajouter les grilles Tian Zi Ge, Mi Zi Ge, Hui Zi Ge.</li>
+<li>Ajouter les modes modèle semi-transparent / caché.</li>
+<li>Tester l&#39;interaction réelle sur Boox avec stylet Wacom.</li>
+</ul>
+</div>
+</details>
+</section>
+
+<section id="brief">
+<h2>Brief de cadrage initial</h2>
+<details>
+  <summary>Lire le brief intégral <span class="meta">figé, source de vérité de la vision</span></summary>
+  <div class="content"><h1>PROJECT_BRIEF — Apprentissage des sinogrammes</h1>
+<blockquote>
+<p><strong>À lire en premier.</strong> Ce document est le point d&#39;entrée du projet. Il résume <strong>toutes</strong> les décisions prises lors de la phase de cadrage initiale (conversation préalable). Il est destiné à un LLM (Claude Code) ou à un humain qui reprend le projet à zéro.</p>
+<p><strong>Première action attendue après lecture</strong> : créer la structure de documentation (RFC en français, journal, CLAUDE.md, CURRENT_STATE.md) à partir des informations ci-dessous, <strong>avant tout code</strong>. Voir la section &quot;Plan de démarrage&quot; en fin de document.</p>
+</blockquote>
+<hr>
+<h2>1. Vision du projet</h2>
+<p>Application web personnelle d&#39;apprentissage des sinogrammes (caractères chinois) pour un utilisateur débutant (HSK 3.0 niveau 1). L&#39;usage principal est la <strong>pratique du tracé manuel au stylet sur une tablette e-ink Boox Air 5c</strong>, avec validation de l&#39;ordre et de la direction des traits. Les usages secondaires sont la révision visuelle (sur ordinateur et téléphone) et la consultation d&#39;un glossaire.</p>
+<p>Le projet est <strong>mono-utilisateur</strong> (pas d&#39;authentification, à la limite un système de profils local). Il est conçu pour évoluer en plusieurs lots, sans tout livrer d&#39;un coup.</p>
+<h2>2. Périmètre fonctionnel</h2>
+<h3>Fonctionnalités cibles</h3>
+<ol>
+<li><strong>Canvas de tracé</strong> avec :<ul>
+<li>Modes d&#39;affichage : sinogramme en semi-transparent (guide), ou caché (test).</li>
+<li>Grilles d&#39;aide optionnelles : Tian Zi Ge (田字格), Mi Zi Ge (米字格), Hui Zi Ge (回字格).</li>
+<li><strong>Validation de l&#39;ordre et de la direction des traits</strong> (fonctionnalité centrale, non négociable).</li>
+</ul>
+</li>
+<li><strong>Révision</strong> type Anki (répétition espacée).</li>
+<li><strong>Mode vocal</strong> : prononciation des caractères et mots via synthèse vocale du navigateur (<code>SpeechSynthesis API</code>).</li>
+<li><strong>Glossaire</strong> consultable de tous les caractères et mots.</li>
+</ol>
+<h3>Public et plateformes</h3>
+<ul>
+<li><strong>Tablette Boox Air 5c</strong> : usage principal pour le tracé au stylet Wacom. E-ink couleur, Android, Chromium 111 (mars 2023). Recommandation : installer Chrome depuis le Play Store plutôt que d&#39;utiliser le navigateur natif Boox.</li>
+<li><strong>Ordinateur de bureau et portable</strong> : usage secondaire, révision et glossaire uniquement (pas de tracé à la souris).</li>
+<li>L&#39;application doit être <strong>installable en PWA</strong> et fonctionner <strong>offline-first</strong>.</li>
+</ul>
+<h3>Contraintes liées à l&#39;e-ink</h3>
+<ul>
+<li>Refresh rate lent, ghosting marqué.</li>
+<li>Minimalisme visuel obligatoire, animations rares ou désactivables.</li>
+<li>Privilégier <code>prefers-reduced-motion</code> et <code>prefers-contrast</code> partout.</li>
+</ul>
+<h2>3. Stack technique actée</h2>
+<h3>Frontend</h3>
+<ul>
+<li><strong>Vite</strong> + <strong>React 18</strong> + <strong>TypeScript</strong> en mode <code>strict</code>.</li>
+<li><strong>Tailwind CSS</strong> pour le styling.</li>
+<li><strong>Zod</strong> pour la validation runtime du schéma de données.</li>
+<li><strong>i18next</strong> + <strong>react-i18next</strong> pour l&#39;internationalisation de l&#39;interface.</li>
+<li><strong>Vitest</strong> + <strong>Testing Library</strong> pour les tests.</li>
+<li><strong>ESLint</strong> + <strong>Prettier</strong> (configuration stricte).</li>
+<li><strong>Hanzi Writer</strong> (bibliothèque JS open-source) pour le rendu et la validation des tracés, <strong>derrière une abstraction</strong> permettant de la remplacer.</li>
+<li><strong>PWA</strong> : service worker + IndexedDB (lots ultérieurs).</li>
+<li><strong>Pointer Events</strong> (jamais Touch ou Mouse seuls) pour gérer le stylet Wacom avec pression/inclinaison.</li>
+</ul>
+<h3>Backend</h3>
+<ul>
+<li><strong>Go 1.22+</strong>.</li>
+<li><strong>chi</strong> comme routeur HTTP (remplaçable).</li>
+<li><strong>SQLite</strong> via <code>modernc.org/sqlite</code> (pas de cgo, build simplifié).</li>
+<li><strong>pressly/goose</strong> pour les migrations SQL.</li>
+<li><strong>golangci-lint</strong> en mode strict.</li>
+<li><strong>testify</strong> pour la lisibilité des tests.</li>
+<li><strong>Architecture hexagonale</strong> : <code>domain/</code> sans dépendances, <code>ports/</code> (interfaces), <code>adapters/</code> (HTTP, SQLite).</li>
+</ul>
+<h3>Données</h3>
+<ul>
+<li><strong>Source des tracés</strong> : <a href="https://github.com/skishore/makemeahanzi">Make Me a Hanzi</a> (licence MIT, ~9000 caractères avec chemins SVG par trait et lignes médianes).</li>
+<li><strong>Source des définitions</strong> : CC-CEDICT (anglais, licence CC BY-SA) au démarrage.</li>
+<li><strong>Traductions françaises</strong> : ajoutées progressivement à la main par l&#39;utilisateur.</li>
+<li><strong>Liste HSK</strong> : HSK 3.0 niveau 1 = <strong>300 caractères + 500 mots composés</strong>.</li>
+</ul>
+<h3>Hébergement</h3>
+<ul>
+<li>VPS personnel déjà disponible pour le backend Go et le service de fichiers.</li>
+<li>Frontend : à déployer sur le même VPS ou ailleurs (à décider plus tard).</li>
+</ul>
+<h2>4. Principes d&#39;architecture</h2>
+<h3>Hexagonal léger (front et back)</h3>
+<p>L&#39;utilisateur a explicitement demandé que tout soit <strong>plug-and-play</strong> : pouvoir remplacer Hanzi Writer, changer le protocole de transport, etc. sans gros refacto. L&#39;architecture hexagonale répond précisément à ce besoin.</p>
+<ul>
+<li><strong><code>domain/</code></strong> : logique métier pure, aucune dépendance externe.</li>
+<li><strong><code>ports/</code></strong> : interfaces définissant les contrats (ex : <code>CharacterRenderer</code>, <code>ProgressRepository</code>, <code>DataSource</code>).</li>
+<li><strong><code>adapters/</code></strong> : implémentations concrètes (<code>HanziWriterRenderer</code>, <code>IndexedDBProgressRepository</code>, <code>RestApiClient</code>, etc.).</li>
+</ul>
+<p>Changer Hanzi Writer = créer une nouvelle classe dans <code>adapters/renderer/</code>. Changer REST pour gRPC = ajouter <code>adapters/grpc/</code> côté back. Aucune autre partie du code ne bouge.</p>
+<h3>Offline-first</h3>
+<ul>
+<li>Toute la logique métier tourne côté client (validation, SRS, glossaire).</li>
+<li>Le backend est un <strong>simple service de persistance et synchronisation</strong>, jamais un point de passage obligé.</li>
+<li>Synchronisation <strong>best-effort</strong> : la Boox peut rester offline plusieurs jours, tout se rattrape au prochain wifi.</li>
+</ul>
+<h3>Données de référence : Option B (bundlées au build)</h3>
+<ul>
+<li>Pour le MVP : le JSON HSK 3.0 niveau 1 est <strong>bundlé dans le frontend</strong> au build. Ça marche offline dès la première ouverture.</li>
+<li>À terme : migration vers <strong>Option A</strong> (servies par le backend, cachées par le service worker). À planifier mais pas prioritaire.</li>
+<li>Le backend ne gère <strong>que les données utilisateur</strong> (progression, sessions) au démarrage.</li>
+</ul>
+<h3>Versioning du schéma de données (SemVer strict)</h3>
+<ul>
+<li><strong>PATCH</strong> : aucun changement structurel.</li>
+<li><strong>MINOR</strong> : ajout de champs optionnels, ajout d&#39;entités. <strong>Rétrocompatible obligatoirement</strong>.</li>
+<li><strong>MAJOR</strong> : changement cassant. Nécessite une migration explicite.</li>
+<li><strong>Discipline</strong> : on ne supprime/renomme jamais en MINOR. Si besoin, on bascule en MAJOR avec migration.</li>
+</ul>
+<h3>Système de migrations de données</h3>
+<ul>
+<li>Dossier <code>frontend/src/domain/migrations/</code> côté front.</li>
+<li>Une migration = un fichier exportant <code>{ from, to, migrate(oldData) -&gt; newData }</code>.</li>
+<li>Au chargement de l&#39;app : détection de la version locale → application en chaîne des migrations nécessaires → sauvegarde du résultat.</li>
+<li><strong>Backup de l&#39;ancien format</strong> dans une clé séparée d&#39;IndexedDB avant migration.</li>
+<li><strong>Tests obligatoires</strong> pour chaque migration (fixture v_n → vérification v_n+1).</li>
+<li>Côté backend : migrations SQL séparées et indépendantes via goose.</li>
+</ul>
+<h2>5. Schéma de données (v1.0.0)</h2>
+<h3>Données de référence</h3>
+<pre><code class="language-json">{
+  &quot;schema_version&quot;: &quot;1.0.0&quot;,
+  &quot;characters&quot;: [
+    {
+      &quot;id&quot;: &quot;char_4F60&quot;,
+      &quot;hanzi&quot;: &quot;你&quot;,
+      &quot;pinyin&quot;: [{ &quot;syllable&quot;: &quot;nǐ&quot;, &quot;tone&quot;: 3 }],
+      &quot;translations&quot;: {
+        &quot;fr&quot;: [&quot;tu&quot;, &quot;toi&quot;],
+        &quot;en&quot;: [&quot;you&quot;]
+      },
+      &quot;hsk_level&quot;: 1,
+      &quot;stroke_count&quot;: 7,
+      &quot;radicals&quot;: [&quot;亻&quot;, &quot;尔&quot;],
+      &quot;frequency_rank&quot;: 8,
+      &quot;tags&quot;: [],
+      &quot;stroke_data_ref&quot;: &quot;makemeahanzi:4F60&quot;,
+      &quot;metadata&quot;: {}
+    }
+  ],
+  &quot;words&quot;: [
+    {
+      &quot;id&quot;: &quot;word_nihao&quot;,
+      &quot;hanzi&quot;: &quot;你好&quot;,
+      &quot;pinyin&quot;: [
+        { &quot;syllable&quot;: &quot;nǐ&quot;, &quot;tone&quot;: 3 },
+        { &quot;syllable&quot;: &quot;hǎo&quot;, &quot;tone&quot;: 3 }
+      ],
+      &quot;translations&quot;: {
+        &quot;fr&quot;: [&quot;bonjour&quot;],
+        &quot;en&quot;: [&quot;hello&quot;]
+      },
+      &quot;hsk_level&quot;: 1,
+      &quot;character_refs&quot;: [&quot;char_4F60&quot;, &quot;char_597D&quot;],
+      &quot;examples&quot;: [],
+      &quot;tags&quot;: [],
+      &quot;metadata&quot;: {}
+    }
+  ],
+  &quot;decks&quot;: [
+    {
+      &quot;id&quot;: &quot;deck_hsk1&quot;,
+      &quot;name&quot;: &quot;HSK 1&quot;,
+      &quot;description&quot;: &quot;Vocabulaire HSK niveau 1&quot;,
+      &quot;items&quot;: [
+        { &quot;type&quot;: &quot;character&quot;, &quot;ref&quot;: &quot;char_4F60&quot; },
+        { &quot;type&quot;: &quot;word&quot;, &quot;ref&quot;: &quot;word_nihao&quot; }
+      ]
+    }
+  ]
+}
+</code></pre>
+<h3>Données utilisateur (séparées)</h3>
+<pre><code class="language-json">{
+  &quot;schema_version&quot;: &quot;1.0.0&quot;,
+  &quot;profile_id&quot;: &quot;default&quot;,
+  &quot;progress&quot;: [
+    {
+      &quot;ref&quot;: { &quot;type&quot;: &quot;character&quot;, &quot;id&quot;: &quot;char_4F60&quot; },
+      &quot;srs_state&quot;: { &quot;interval_days&quot;: 4, &quot;ease&quot;: 2.5, &quot;due&quot;: &quot;2026-05-28&quot; },
+      &quot;stats&quot;: { &quot;attempts&quot;: 12, &quot;successes&quot;: 10, &quot;last_seen&quot;: &quot;2026-05-24&quot; }
+    }
+  ],
+  &quot;sessions&quot;: [
+    {
+      &quot;id&quot;: &quot;sess_...&quot;,
+      &quot;started_at&quot;: &quot;...&quot;,
+      &quot;ended_at&quot;: &quot;...&quot;,
+      &quot;items_practiced&quot;: []
+    }
+  ]
+}
+</code></pre>
+<h3>Choix de design clés</h3>
+<ul>
+<li><code>schema_version</code> au top niveau pour les migrations.</li>
+<li><code>metadata: {}</code> générique sur chaque entité : permet d&#39;ajouter des champs futurs sans casser le schéma.</li>
+<li><code>tags: []</code> pour classification libre.</li>
+<li><code>stroke_data_ref</code> (référence externe <code>&quot;makemeahanzi:4F60&quot;</code>) plutôt que tracés inlinés : garde le JSON léger, découple la source des tracés.</li>
+<li><code>pinyin</code> structuré (syllabe + ton numérique) pour permettre tri, coloration des tons, etc.</li>
+<li><code>translations</code> indexé par langue (<code>fr</code>, <code>en</code>) plutôt que <code>translations_fr</code> : extensible sans changement de schéma.</li>
+<li><code>id</code> préfixé (<code>char_</code>, <code>word_</code>, <code>deck_</code>) pour éviter les collisions.</li>
+</ul>
+<p>Le <strong>JSON Schema officiel</strong> vit dans <code>shared/schema/data-schema.v1.json</code> et sert de source de vérité unique. Les types TS et structs Go en découlent.</p>
+<h2>6. Internationalisation</h2>
+<p>Deux dimensions distinctes :</p>
+<ol>
+<li><strong>I18n de l&#39;interface</strong> : boutons, labels, messages → gérée par <code>i18next</code> + <code>react-i18next</code>. Locales : <code>fr</code> et <code>en</code> dès le départ.</li>
+<li><strong>Multilangue des données</strong> : intégré au schéma de données via <code>translations: { fr, en }</code>. Les définitions CC-CEDICT peuplent <code>translations.en</code> automatiquement, <code>translations.fr</code> est rempli progressivement.</li>
+</ol>
+<h2>7. Découpage en lots</h2>
+<p>Le projet est <strong>explicitement</strong> découpé pour livrer de la valeur progressivement.</p>
+<ul>
+<li><strong>Lot 0 — Fondations</strong> : repo, stack, linters, structure hexagonale, schéma de données, premières fixtures, doc de base. Aucune logique métier.</li>
+<li><strong>Lot 1 — Canvas + validation de tracé</strong> : intégration Hanzi Writer derrière l&#39;abstraction <code>CharacterRenderer</code>, gestion du stylet via Pointer Events, grilles Tian/Mi/Hui Zi Ge, modes d&#39;affichage (transparent/caché).</li>
+<li><strong>Lot 2 — Glossaire</strong> : navigation dans les caractères et mots HSK 1, recherche, lien depuis le glossaire vers le canvas.</li>
+<li><strong>Lot 3 — Système de révision</strong> : SRS (algorithme <strong>SM-2</strong> au démarrage, ~100 lignes, suffisant pour mono-utilisateur), tracking de progression, sync backend.</li>
+<li><strong>Lot 4 — Synthèse vocale</strong> : intégration <code>SpeechSynthesis API</code> du navigateur, paramétrage voix/vitesse.</li>
+<li><strong>Lot 5 — Polish &amp; PWA offline complète</strong> : service worker robuste, manifest, mode hors-ligne complet, import HSK 2.</li>
+</ul>
+<h2>8. Méthodologie de travail</h2>
+<h3>Test-Driven Development (TDD pragmatique)</h3>
+<ul>
+<li><strong>Obligatoire</strong> dans <code>domain/</code> (logique pure : validation de schéma, migrations, SRS, parsing, etc.).</li>
+<li><strong>Optionnel</strong> dans <code>adapters/</code> (tests d&#39;intégration ciblés : vraies migrations sur fixtures, vrai SQLite en mémoire pour les repositories, <code>httptest</code> pour les handlers).</li>
+<li><strong>Rare</strong> dans <code>ui/</code> et <code>features/</code> (sauf pour la logique métier qui y vit, ex : hook de session).</li>
+</ul>
+<p>Cycle : red → green → refactor. Validation à chaque étape.</p>
+<h3>Documentation continue</h3>
+<p>Toute décision structurante prise pendant le développement est documentée. La doc est en <strong>français</strong> (sauf code, commentaires de code, et termes techniques standards).</p>
+<pre><code>docs/
+├── README.md                         # index de la doc
+├── rfc/
+│   ├── README.md                     # index + statuts (draft/accepted/superseded)
+│   ├── 0001-vision-et-perimetre.md
+│   ├── 0002-stack-technique.md
+│   ├── 0003-architecture-hexagonale.md
+│   ├── 0004-format-de-donnees-et-versioning.md
+│   ├── 0005-strategie-i18n.md
+│   ├── 0006-pwa-offline-first.md
+│   └── 0007-decoupage-en-lots.md
+├── journal/                          # une entrée par session de travail
+│   ├── README.md
+│   └── AAAA-MM-JJ-titre.md
+└── handoff/
+    └── CURRENT_STATE.md              # état courant, mis à jour à chaque session
+</code></pre>
+<h3>Format des RFC</h3>
+<p>En-tête standard :</p>
+<pre><code class="language-markdown"># RFC NNNN — Titre
+
+- **Statut** : Brouillon | Accepté | Remplacé | Abandonné
+- **Date** : AAAA-MM-JJ
+- **Auteur(s)** : ...
+- **Lié à** : RFC NNNN, ...
+- **Remplace** : RFC NNNN (le cas échéant)
+
+## Contexte
+## Décision
+## Conséquences
+## Alternatives considérées
+</code></pre>
+<h3>Journal de bord</h3>
+<p>Une entrée par <strong>session de travail</strong> (= grosso modo une conversation avec un LLM). Format léger :</p>
+<pre><code class="language-markdown"># AAAA-MM-JJ — Titre court
+
+## Objectif de la session
+## Ce qui a été fait
+## Découvertes / surprises
+## Décisions prises (lien vers RFC si formalisé)
+## Reste à faire / prochaines étapes
+</code></pre>
+<h3>CURRENT_STATE.md</h3>
+<p>Fichier <strong>toujours à jour</strong> qui répond à : &quot;où en est le projet, là, maintenant ?&quot;. À mettre à jour à la fin de chaque session de travail. Contenu type :</p>
+<ul>
+<li>Lot en cours</li>
+<li>Dernières décisions importantes</li>
+<li>Bloquants connus</li>
+<li>Prochaines étapes concrètes</li>
+<li>Liens vers les RFC pertinentes et la dernière entrée de journal</li>
+</ul>
+<h3>CLAUDE.md</h3>
+<p>À la racine du repo, lu automatiquement par Claude Code. Court et orienté action :</p>
+<ul>
+<li>Présentation du projet en 3 lignes</li>
+<li>Comment est organisé le repo</li>
+<li>Conventions clés (TDD, doc en français, hexagonal, etc.)</li>
+<li><strong>Pointeur vers <code>docs/handoff/CURRENT_STATE.md</code> comme point d&#39;entrée pour reprendre</strong></li>
+</ul>
+<h2>9. Arborescence cible du monorepo</h2>
+<pre><code>sinogrammes/
+├── CLAUDE.md
+├── README.md
+├── .gitignore
+├── .editorconfig
+├── Makefile                          # dev, build, lint, test pour les deux côtés
+│
+├── docs/                             # cf. section 8
+│
+├── frontend/
+│   ├── package.json
+│   ├── tsconfig.json                 # strict: true, noUncheckedIndexedAccess: true, etc.
+│   ├── tsconfig.node.json
+│   ├── vite.config.ts
+│   ├── tailwind.config.ts
+│   ├── postcss.config.js
+│   ├── .eslintrc.cjs
+│   ├── .prettierrc
+│   ├── index.html
+│   ├── public/
+│   └── src/
+│       ├── main.tsx
+│       ├── App.tsx
+│       ├── domain/
+│       │   ├── schema/
+│       │   │   ├── types.ts
+│       │   │   ├── validators.ts     # Zod
+│       │   │   └── version.ts
+│       │   ├── migrations/
+│       │   │   ├── index.ts
+│       │   │   └── README.md
+│       │   └── ports/
+│       │       ├── CharacterRenderer.ts
+│       │       ├── ProgressRepository.ts
+│       │       └── DataSource.ts
+│       ├── adapters/
+│       │   ├── renderer/             # HanziWriterRenderer.ts (lot 1)
+│       │   ├── storage/              # IndexedDBProgressRepository.ts (lot 3)
+│       │   └── api/                  # RestApiClient.ts (lot 3)
+│       ├── features/                 # canvas/, glossary/, review/ (par lot)
+│       ├── ui/                       # composants UI réutilisables
+│       ├── i18n/
+│       │   ├── index.ts
+│       │   └── locales/
+│       │       ├── fr.json
+│       │       └── en.json
+│       └── lib/
+│
+├── backend/
+│   ├── go.mod
+│   ├── go.sum
+│   ├── Makefile
+│   ├── .golangci.yml
+│   ├── cmd/
+│   │   └── server/
+│   │       └── main.go
+│   └── internal/
+│       ├── domain/
+│       ├── ports/
+│       ├── adapters/
+│       │   ├── http/
+│       │   └── sqlite/
+│       ├── migrations/               # SQL versionné par goose
+│       └── config/
+│
+└── shared/
+    ├── README.md
+    └── schema/
+        ├── data-schema.v1.json
+        └── examples/
+            └── hsk1_sample.json
+</code></pre>
+<h2>10. Questions encore ouvertes</h2>
+<p>À traiter au démarrage du Lot 0 :</p>
+<ol>
+<li><strong>OS de développement de l&#39;utilisateur</strong> : Linux / macOS / Windows ? Impacte le Makefile et les scripts. <strong>À demander.</strong></li>
+<li><strong>Granularité du journal</strong> : une entrée par session de travail recommandée (par conversation LLM), plus fin et plus utile pour les reprises.</li>
+<li><strong>RFC vs ADR</strong> : démarrer avec <strong>RFC uniquement</strong> ; ajouter ADR plus tard si besoin réel.</li>
+<li><strong>Sourcing HSK 3.0 niveau 1</strong> : trouver une liste publique propre. À gérer au moment d&#39;importer les données réelles (Lot 1+), pas au Lot 0.</li>
+</ol>
+<h2>11. Plan de démarrage (à faire avant tout code)</h2>
+<p><strong>Étape 1 — Documentation initiale</strong> (avant toute ligne de code applicatif) :</p>
+<ol>
+<li>Créer <code>CLAUDE.md</code> à la racine, court et orienté action, qui pointe vers <code>docs/handoff/CURRENT_STATE.md</code>.</li>
+<li>Créer <code>README.md</code> à la racine (présentation pour humains).</li>
+<li>Créer la structure <code>docs/</code> complète (sous-dossiers vides au besoin).</li>
+<li>Rédiger les RFC initiales en français à partir du contenu de ce brief :<ul>
+<li><code>0001-vision-et-perimetre.md</code></li>
+<li><code>0002-stack-technique.md</code></li>
+<li><code>0003-architecture-hexagonale.md</code></li>
+<li><code>0004-format-de-donnees-et-versioning.md</code></li>
+<li><code>0005-strategie-i18n.md</code></li>
+<li><code>0006-pwa-offline-first.md</code></li>
+<li><code>0007-decoupage-en-lots.md</code></li>
+</ul>
+</li>
+<li>Créer <code>docs/handoff/CURRENT_STATE.md</code> initial : &quot;Lot 0 démarré, doc en place, prochaine étape = squelette frontend&quot;.</li>
+<li>Créer la première entrée de journal <code>docs/journal/AAAA-MM-JJ-init-projet.md</code>.</li>
+</ol>
+<p><strong>Étape 2 — Demander à l&#39;utilisateur son OS</strong>, puis figer les commandes du Makefile racine.</p>
+<p><strong>Étape 3 — Initialisation du Lot 0 en TDD</strong> :</p>
+<ol>
+<li><code>shared/schema/data-schema.v1.json</code> (JSON Schema officiel) + fixture d&#39;exemple.</li>
+<li><code>backend/</code> : <code>go mod init</code>, structure de dossiers, premier endpoint <code>/health</code> testé en TDD, golangci-lint configuré.</li>
+<li><code>frontend/</code> : Vite + React + TS strict + Tailwind + ESLint + Prettier + Vitest. Premier composant &quot;Hello&quot; trivial avec toggle FR/EN via i18next, testé.</li>
+<li><code>frontend/src/domain/schema/</code> : types TS + validateurs Zod du schéma v1.0.0, <strong>avec tests unitaires sur fixtures</strong>.</li>
+<li>Squelette du système de migrations (orchestrateur + dossier vide + README expliquant la convention).</li>
+<li><code>make dev</code>, <code>make lint</code>, <code>make test</code> fonctionnels à la racine.</li>
+</ol>
+<p><strong>Étape 4 — Clôture du Lot 0</strong> : mettre à jour <code>CURRENT_STATE.md</code>, écrire l&#39;entrée de journal correspondante, commit.</p>
+<h2>12. Décisions explicitement reportées</h2>
+<p>Pour mémoire, ces points ne sont <strong>pas</strong> à traiter au Lot 0 :</p>
+<ul>
+<li>Algorithme SRS détaillé (Lot 3, par défaut <strong>SM-2</strong>).</li>
+<li>Synthèse vocale (Lot 4).</li>
+<li>Service worker et PWA installable (Lot 5).</li>
+<li>Bascule des données de référence vers le backend (post-MVP).</li>
+<li>Export/import de decks Anki (post-MVP).</li>
+<li>Docker / CI / déploiement (à introduire avant la première mise en prod).</li>
+<li>Authentification (hors scope tant que mono-utilisateur).</li>
+</ul>
+<hr>
+<p><strong>Fin du brief.</strong> Pour reprendre la main : lire ce document, puis consulter <code>docs/handoff/CURRENT_STATE.md</code> si déjà initialisé, sinon dérouler la section &quot;Plan de démarrage&quot; ci-dessus.</p>
+</div>
+</details>
+</section>
+
+<footer>
+<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-05-28 19:47 par <code>make docs</code>.</p>
+</footer>
+</div>
+
+<script>
+function openAndScroll() {
+  var hash = location.hash;
+  if (!hash) return;
+  try {
+    var target = document.querySelector(hash);
+    if (!target) return;
+    var el = target;
+    while (el) {
+      if (el.tagName === 'DETAILS') el.open = true;
+      el = el.parentElement;
+    }
+    target.scrollIntoView();
+  } catch (_e) {}
+}
+window.addEventListener('hashchange', openAndScroll);
+window.addEventListener('load', openAndScroll);
+</script>
+</body>
+</html>

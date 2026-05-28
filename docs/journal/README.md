@@ -34,6 +34,9 @@ Contenu type :
 
 ## Index (par date décroissante)
 
+- [2026-05-28 — Carnet de bord HTML autonome (outillage doc)](2026-05-28-carnet-html.md)
+- [2026-05-28 — Lot 2 (1/n) : glossaire HSK 1 avec recherche et navigation](2026-05-28-lot2-glossaire-recherche.md)
+- [2026-05-24 — Grilles calligraphiques et modes d'affichage](2026-05-24-grilles-et-modes-affichage.md)
 - [2026-05-24 — Capture Pointer Events du canvas](2026-05-24-capture-pointer-events.md)
 - [2026-05-24 — Adapter Hanzi Writer Renderer](2026-05-24-hanzi-writer-renderer.md)
 - [2026-05-24 — Sourcing et bundling des données HSK 3.0 niveau 1](2026-05-24-sourcing-hsk1.md)
