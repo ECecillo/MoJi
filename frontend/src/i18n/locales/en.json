@@ -8,5 +8,13 @@
     "toggle": "Switch language",
     "fr": "French",
     "en": "English"
+  },
+  "glossary": {
+    "title": "HSK 1 Glossary",
+    "search_placeholder": "Search (hanzi, pinyin, meaning)...",
+    "characters": "Characters",
+    "words": "Words",
+    "no_results": "No results found.",
+    "practice": "Practice"
   }
 }

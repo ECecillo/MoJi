@@ -27,7 +27,7 @@ export function CharacterGrid({ type, size, className = '' }: CharacterGridProps
     if (type === 'tian' || type === 'mi' || type === 'hui') {
       lines.push(
         <line key="v-mid" x1={mid} y1={0} x2={mid} y2={size} />,
-        <line key="h-mid" x1={0} y1={mid} x2={size} y2={mid} />
+        <line key="h-mid" x1={0} y1={mid} x2={size} y2={mid} />,
       );
     }
 
@@ -35,7 +35,7 @@ export function CharacterGrid({ type, size, className = '' }: CharacterGridProps
     if (type === 'mi') {
       lines.push(
         <line key="d1" x1={0} y1={0} x2={size} y2={size} />,
-        <line key="d2" x1={size} y1={0} x2={0} y2={size} />
+        <line key="d2" x1={size} y1={0} x2={0} y2={size} />,
       );
     }
 
@@ -51,7 +51,7 @@ export function CharacterGrid({ type, size, className = '' }: CharacterGridProps
           width={innerSize}
           height={innerSize}
           fill="none"
-        />
+        />,
       );
     }
 

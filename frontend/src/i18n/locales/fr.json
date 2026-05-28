@@ -8,5 +8,13 @@
     "toggle": "Changer de langue",
     "fr": "Français",
     "en": "Anglais"
+  },
+  "glossary": {
+    "title": "Glossaire HSK 1",
+    "search_placeholder": "Chercher (hanzi, pinyin, sens)...",
+    "characters": "Caractères",
+    "words": "Mots",
+    "no_results": "Aucun résultat pour cette recherche.",
+    "practice": "Tracer"
   }
 }

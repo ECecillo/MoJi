@@ -12,7 +12,7 @@ describe('CharacterGrid', () => {
     const { container } = render(<CharacterGrid type="tian" size={300} />);
     const svg = container.querySelector('svg');
     expect(svg).toBeInTheDocument();
-    
+
     const lines = container.querySelectorAll('line');
     expect(lines).toHaveLength(2); // Vertical and horizontal mid lines
   });
@@ -27,16 +27,14 @@ describe('CharacterGrid', () => {
     const { container } = render(<CharacterGrid type="hui" size={300} />);
     const lines = container.querySelectorAll('line');
     const rects = container.querySelectorAll('rect');
-    
+
     expect(lines).toHaveLength(2); // Central cross
     // One for the outer border (always present) and one for the inner square
-    expect(rects).toHaveLength(2); 
+    expect(rects).toHaveLength(2);
   });
 
   it('applies the provided className', () => {
-    const { container } = render(
-      <CharacterGrid type="tian" size={300} className="custom-class" />
-    );
+    const { container } = render(<CharacterGrid type="tian" size={300} className="custom-class" />);
     const svg = container.querySelector('svg');
     expect(svg).toHaveClass('custom-class');
   });
