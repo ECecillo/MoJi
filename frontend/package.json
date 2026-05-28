@@ -14,7 +14,8 @@
     "lint:fix": "eslint . --fix && prettier --write .",
     "typecheck": "tsc --noEmit",
     "vendor:sources": "tsx scripts/vendor-sources.ts",
-    "build:data": "tsx scripts/build-hsk1-data.ts"
+    "build:data": "tsx scripts/build-hsk1-data.ts",
+    "build:docs": "tsx scripts/build-docs-index.ts"
   },
   "dependencies": {
     "hanzi-writer": "^3.7.3",
@@ -44,6 +45,7 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.18",
     "jsdom": "^25.0.1",
+    "marked": "^18.0.4",
     "postcss": "^8.4.49",
     "prettier": "^3.4.2",
     "tailwindcss": "^3.4.17",

@@ -4,23 +4,25 @@
 
 SHELL := /bin/sh
 
-.PHONY: help install dev dev-front dev-back \
+.PHONY: help install dev dev-front dev-front-lan dev-back \
         test test-front test-back \
         lint lint-front lint-back \
         typecheck build build-front build-back \
-        vendor-sources build-data \
+        vendor-sources build-data docs \
         clean
 
 help:
 	@echo "Cibles disponibles :"
 	@echo "  make install     — installe les dépendances front (npm) et back (go mod)"
 	@echo "  make dev         — lance front (Vite) et back (Go) en parallèle"
+	@echo "  make dev-front-lan — lance le front accessible depuis le réseau local"
 	@echo "  make test        — exécute les tests des deux côtés"
 	@echo "  make lint        — exécute lint + format check des deux côtés"
 	@echo "  make typecheck   — typecheck strict TypeScript"
 	@echo "  make build       — compile front et back"
 	@echo "  make vendor-sources — rafraîchit shared/data/sources/ depuis les SHA upstream (rare, réseau)"
 	@echo "  make build-data  — régénère frontend/src/data/hsk1.generated.json (offline)"
+	@echo "  make docs        — régénère docs/index.html (carnet de bord HTML)"
 	@echo "  make clean       — nettoie artefacts de build et caches"
 	@echo ""
 	@echo "Cibles ciblées : *-front, *-back (ex. make test-front)."
@@ -35,6 +37,9 @@ install:
 
 dev-front:
 	cd frontend && npm run dev
+
+dev-front-lan:
+	cd frontend && npm run dev -- --host 0.0.0.0
 
 dev-back:
 	cd backend && go run ./cmd/server
@@ -89,6 +94,11 @@ vendor-sources:
 
 build-data:
 	cd frontend && npm run build:data
+
+# ─────────── carnet de bord HTML ───────────
+
+docs:
+	cd frontend && npm run build:docs
 
 # ─────────── clean ───────────
 

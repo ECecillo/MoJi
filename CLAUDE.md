@@ -85,6 +85,14 @@ Les trois doivent passer vert. En cas d'erreurs de format Prettier : `cd fronten
 | `make build-data`     | **Offline**. Régénère `frontend/src/data/hsk1.generated.json` depuis `shared/data/sources/`. Valide via Zod : si la validation échoue, aucun fichier n'est écrit. À relancer après toute modification du schéma ou des sources vendorées. |
 | `make vendor-sources` | **Réseau**, rare. Rafraîchit `shared/data/sources/` depuis les SHA upstream pinnés (drkameleon + makemeahanzi). À utiliser pour bumper une version amont. |
 
+### Carnet de bord HTML
+
+| Commande      | Effet                                                                                          |
+|---------------|------------------------------------------------------------------------------------------------|
+| `make docs`   | Régénère `docs/index.html` à partir de `BRIEF.md`, `docs/handoff/CURRENT_STATE.md`, des RFC et du journal. Fichier autonome, ouvrable directement dans un navigateur (file://). |
+
+**À lancer obligatoirement** après toute modification d'un fichier markdown dans `docs/` ou de `BRIEF.md`, avant le commit. L'index HTML est régénéré, jamais édité à la main.
+
 ### Nettoyage
 
 `make clean` — supprime `dist/`, `bin/`, coverage.
@@ -92,15 +100,16 @@ Les trois doivent passer vert. En cas d'erreurs de format Prettier : `cd fronten
 ## Rythme de travail
 
 - Découpé en **lots** (cf. [`docs/rfc/0007-decoupage-en-lots.md`](docs/rfc/0007-decoupage-en-lots.md)). On ne saute pas de lot, on ne mélange pas.
-- À chaque session : tenir à jour `CURRENT_STATE.md` et écrire une entrée de journal `docs/journal/AAAA-MM-JJ-titre.md`.
+- À chaque fin de session / feature : tenir à jour `CURRENT_STATE.md`, écrire une entrée de journal `docs/journal/AAAA-MM-JJ-titre.md`, **puis lancer `make docs`** pour rafraîchir le carnet HTML (cf. section Commandes).
 - Décision structurante = nouvelle RFC. Pas de décision implicite enterrée dans un commit.
-- **Commits thématiques** (un sujet par commit), messages en français au style Conventional Commits (`feat(scope): …`, `docs: …`, `build: …`, `fix: …`).
+- **Commits thématiques** (un sujet par commit), messages en français au style Conventional Commits (`feat(scope): …`, `docs: …`, `build: …`, `fix: …`). La régénération de `docs/index.html` accompagne le commit qui modifie les markdown correspondants — pas dans un commit séparé.
 
 ## Ce que Claude Code ne fait pas
 
 - **Pas de modification de fichiers générés ou vendorés à la main** :
   - `frontend/src/data/*.generated.json` se régénère via `make build-data`.
   - `shared/data/sources/*` se régénère via `make vendor-sources`.
+  - `docs/index.html` se régénère via `make docs` après toute modification de markdown sous `docs/` ou de `BRIEF.md`.
 - **Pas de modification du brief (`BRIEF.md`)** : document figé. Toute évolution passe par une RFC.
 - **Pas de raccourci sur l'hexagonal** : `src/domain/` n'importe jamais `src/adapters/` ; le lint le vérifie via `no-restricted-imports`.
 - **Pas de code applicatif sans correspondance avec un lot ouvert** : se référer à `CURRENT_STATE.md` pour savoir quel lot est en cours.

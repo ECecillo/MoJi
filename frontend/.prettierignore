@@ -8,3 +8,6 @@ node_modules
 
 # Données générées par scripts/build-hsk1-data.ts
 src/data/*.generated.json
+
+# Carnet de bord HTML généré par scripts/build-docs-index.ts
+../docs/index.html
