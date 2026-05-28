@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
+import { useTranslation } from 'react-i18next';
 import type {
   CharacterRenderer,
   StrokeAttempt,
@@ -46,6 +53,7 @@ export function Canvas({
   className = '',
   onStrokeValidated,
 }: CanvasProps) {
+  const { t } = useTranslation();
   const rendererLayerRef = useRef<HTMLDivElement | null>(null);
   const inputLayerRef = useRef<HTMLDivElement | null>(null);
   const activeStrokeRef = useRef<ActiveStroke | null>(null);
@@ -53,6 +61,11 @@ export function Canvas({
   const [completedStrokes, setCompletedStrokes] = useState<
     ReadonlyArray<{ points: ReadonlyArray<CapturedPoint>; accepted: boolean }>
   >([]);
+  const [verdict, setVerdict] = useState<StrokeValidationResult | null>(null);
+  // Increment after Hanzi Writer is mounted to gate the visibility effects.
+  // Keeps mount strictly tied to [hanzi, renderer] so toggling outline/character
+  // doesn't tear down and recreate the writer (and lose its quiz progress).
+  const [mountVersion, setMountVersion] = useState(0);
 
   useEffect(() => {
     const layer = rendererLayerRef.current;
@@ -62,32 +75,42 @@ export function Canvas({
     void renderer.mount(layer, hanzi).then(() => {
       if (cancelled) {
         renderer.unmount();
-      } else {
-        // Apply initial visibility
-        if (showOutline) renderer.showOutline();
-        else renderer.hideOutline();
-
-        if (showCharacter) renderer.showCharacter();
-        else renderer.hideCharacter();
+        return;
       }
+      setMountVersion((v) => v + 1);
     });
 
     return () => {
       cancelled = true;
       renderer.unmount();
+      setMountVersion(0);
     };
-  }, [hanzi, renderer, showOutline, showCharacter]);
+  }, [hanzi, renderer]);
 
-  // Sync visibility changes after mount
+  // Reset user-stroke state when the target character changes.
   useEffect(() => {
+    setCompletedStrokes([]);
+    setCurrentPoints([]);
+    setVerdict(null);
+  }, [hanzi]);
+
+  // Sync outline visibility after mount completes and on subsequent toggles.
+  useEffect(() => {
+    if (mountVersion === 0) return;
     if (showOutline) renderer.showOutline();
     else renderer.hideOutline();
-  }, [renderer, showOutline]);
+  }, [renderer, showOutline, mountVersion]);
 
   useEffect(() => {
+    if (mountVersion === 0) return;
     if (showCharacter) renderer.showCharacter();
     else renderer.hideCharacter();
-  }, [renderer, showCharacter]);
+  }, [renderer, showCharacter, mountVersion]);
+
+  const acceptedCount = useMemo(
+    () => completedStrokes.filter((s) => s.accepted).length,
+    [completedStrokes],
+  );
 
   const startStroke = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.isPrimary === false) return;
@@ -127,6 +150,7 @@ export function Canvas({
       { points: active.points, accepted: result.accepted },
     ]);
     setCurrentPoints([]);
+    setVerdict(result);
     activeStrokeRef.current = null;
     event.currentTarget.releasePointerCapture?.(event.pointerId);
     onStrokeValidated?.(result, attempt);
@@ -164,9 +188,12 @@ export function Canvas({
               points={toPolylinePoints(stroke.points)}
               fill="none"
               stroke={stroke.accepted ? '#111111' : '#888888'}
-              strokeWidth="4"
+              strokeOpacity={stroke.accepted ? 0.3 : 0.85}
+              strokeWidth={stroke.accepted ? 2 : 4}
+              strokeDasharray={stroke.accepted ? undefined : '6 4'}
               strokeLinecap="round"
               strokeLinejoin="round"
+              data-testid={stroke.accepted ? 'stroke-accepted' : 'stroke-refused'}
             />
           ))}
           {currentPoints.length > 0 ? (
@@ -191,6 +218,26 @@ export function Canvas({
           onPointerUp={finishStroke}
           onPointerCancel={cancelStroke}
         />
+      </div>
+
+      <div
+        className="flex flex-col items-center gap-1 text-sm"
+        data-testid="canvas-feedback"
+        aria-live="polite"
+      >
+        <p className="text-ink-muted" data-testid="accepted-count">
+          {t('canvas.stroke_count', { count: acceptedCount })}
+        </p>
+        {verdict !== null ? (
+          <p
+            data-testid="verdict-message"
+            className={verdict.accepted ? 'text-ink' : 'text-ink-muted italic'}
+          >
+            {verdict.accepted
+              ? t('canvas.verdict_accepted', { stroke: verdict.expectedStrokeIndex + 1 })
+              : t(`canvas.verdict_refused.${verdict.reason ?? 'default'}`)}
+          </p>
+        ) : null}
       </div>
     </section>
   );

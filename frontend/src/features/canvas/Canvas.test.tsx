@@ -1,10 +1,12 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach } from 'vitest';
 import { Canvas, type CapturedStrokeAttempt } from './Canvas';
 import type {
   CharacterRenderer,
   StrokeAttempt,
   StrokeValidationResult,
 } from '../../domain/ports/CharacterRenderer';
+import i18n from '../../i18n';
 
 class FakeRenderer implements CharacterRenderer {
   mount = vi.fn(async (_container: HTMLElement, _hanzi: string) => undefined);
@@ -72,6 +74,10 @@ function dispatchPointer(
 }
 
 describe('Canvas', () => {
+  beforeEach(async () => {
+    await i18n.changeLanguage('fr');
+  });
+
   it('monte et démonte le CharacterRenderer pour le hanzi courant', () => {
     const renderer = new FakeRenderer();
     const { unmount } = render(<Canvas hanzi="你" renderer={renderer} />);
@@ -246,14 +252,132 @@ describe('Canvas', () => {
     expect(lines).toHaveLength(4);
   });
 
-  it('pilote la visibilité du renderer au montage', async () => {
+  it('pilote la visibilité du renderer une fois le mount terminé', async () => {
     const renderer = new FakeRenderer();
     render(<Canvas hanzi="你" renderer={renderer} showOutline={true} showCharacter={false} />);
 
-    // On attend que mount soit fini
-    await Promise.resolve();
+    await waitFor(() => {
+      expect(renderer.showOutline).toHaveBeenCalled();
+      expect(renderer.hideCharacter).toHaveBeenCalled();
+    });
+  });
 
-    expect(renderer.showOutline).toHaveBeenCalled();
-    expect(renderer.hideCharacter).toHaveBeenCalled();
+  it('ne remonte pas Hanzi Writer quand showOutline change (préserve le quiz)', async () => {
+    const renderer = new FakeRenderer();
+    const { rerender } = render(<Canvas hanzi="你" renderer={renderer} showOutline={true} />);
+    await waitFor(() => expect(renderer.showOutline).toHaveBeenCalled());
+    expect(renderer.mount).toHaveBeenCalledTimes(1);
+
+    rerender(<Canvas hanzi="你" renderer={renderer} showOutline={false} />);
+    await waitFor(() => expect(renderer.hideOutline).toHaveBeenCalled());
+
+    // Critique : le mount ne doit PAS avoir été rappelé. Sinon le quiz se
+    // remet à zéro et les traits déjà validés disparaissent côté Hanzi Writer.
+    expect(renderer.mount).toHaveBeenCalledTimes(1);
+    expect(renderer.unmount).not.toHaveBeenCalled();
+  });
+
+  it('reset les traits user quand le hanzi change', () => {
+    const renderer = new FakeRenderer();
+    const { rerender } = render(<Canvas hanzi="你" renderer={renderer} />);
+    const layer = inputLayer();
+
+    dispatchPointer(layer, 'pointerdown', {
+      pointerId: 1,
+      pointerType: 'pen',
+      isPrimary: true,
+      clientX: 1,
+      clientY: 2,
+    });
+    dispatchPointer(layer, 'pointerup', {
+      pointerId: 1,
+      pointerType: 'pen',
+      clientX: 3,
+      clientY: 4,
+    });
+    expect(document.querySelector('polyline')).not.toBeNull();
+
+    rerender(<Canvas hanzi="好" renderer={renderer} />);
+    expect(document.querySelector('polyline')).toBeNull();
+  });
+
+  it('affiche le compteur "0 trait validé" au montage', async () => {
+    const renderer = new FakeRenderer();
+    render(<Canvas hanzi="你" renderer={renderer} />);
+    expect(screen.getByTestId('accepted-count')).toHaveTextContent('0 trait validé');
+  });
+
+  it('incrémente le compteur après chaque trait accepté', () => {
+    const renderer = new FakeRenderer();
+    render(<Canvas hanzi="你" renderer={renderer} />);
+    const layer = inputLayer();
+
+    for (let i = 0; i < 3; i++) {
+      dispatchPointer(layer, 'pointerdown', {
+        pointerId: i + 1,
+        pointerType: 'pen',
+        isPrimary: true,
+        clientX: 1,
+        clientY: 2,
+      });
+      dispatchPointer(layer, 'pointerup', {
+        pointerId: i + 1,
+        pointerType: 'pen',
+        clientX: 3,
+        clientY: 4,
+      });
+    }
+
+    expect(screen.getByTestId('accepted-count')).toHaveTextContent('3 traits validés');
+  });
+
+  it('affiche le verdict accepté après un trait correct', () => {
+    const renderer = new FakeRenderer();
+    renderer.validateStroke.mockReturnValue({ expectedStrokeIndex: 2, accepted: true });
+    render(<Canvas hanzi="你" renderer={renderer} />);
+    const layer = inputLayer();
+
+    dispatchPointer(layer, 'pointerdown', {
+      pointerId: 1,
+      pointerType: 'pen',
+      isPrimary: true,
+      clientX: 1,
+      clientY: 2,
+    });
+    dispatchPointer(layer, 'pointerup', {
+      pointerId: 1,
+      pointerType: 'pen',
+      clientX: 3,
+      clientY: 4,
+    });
+
+    expect(screen.getByTestId('verdict-message')).toHaveTextContent('Trait 3 validé');
+  });
+
+  it('affiche un message explicite quand le trait est dans le mauvais sens', () => {
+    const renderer = new FakeRenderer();
+    renderer.validateStroke.mockReturnValue({
+      expectedStrokeIndex: 0,
+      accepted: false,
+      reason: 'wrong_direction',
+    });
+    render(<Canvas hanzi="你" renderer={renderer} />);
+    const layer = inputLayer();
+
+    dispatchPointer(layer, 'pointerdown', {
+      pointerId: 1,
+      pointerType: 'pen',
+      isPrimary: true,
+      clientX: 1,
+      clientY: 2,
+    });
+    dispatchPointer(layer, 'pointerup', {
+      pointerId: 1,
+      pointerType: 'pen',
+      clientX: 3,
+      clientY: 4,
+    });
+
+    expect(screen.getByTestId('verdict-message')).toHaveTextContent(/mauvais sens/i);
   });
 });

@@ -16,5 +16,17 @@
     "words": "Mots",
     "no_results": "Aucun résultat pour cette recherche.",
     "practice": "Tracer"
+  },
+  "canvas": {
+    "stroke_count_one": "{{count}} trait validé",
+    "stroke_count_other": "{{count}} traits validés",
+    "verdict_accepted": "Trait {{stroke}} validé",
+    "verdict_refused": {
+      "wrong_direction": "Mauvais sens, recommence ce trait",
+      "wrong_stroke": "Mauvais trait, recommence",
+      "too_short": "Trait trop court",
+      "out_of_bounds": "Hors zone, reste dans le cadre",
+      "default": "Refusé, recommence"
+    }
   }
 }

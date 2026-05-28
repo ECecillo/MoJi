@@ -16,5 +16,17 @@
     "words": "Words",
     "no_results": "No results found.",
     "practice": "Practice"
+  },
+  "canvas": {
+    "stroke_count_one": "{{count}} stroke validated",
+    "stroke_count_other": "{{count}} strokes validated",
+    "verdict_accepted": "Stroke {{stroke}} validated",
+    "verdict_refused": {
+      "wrong_direction": "Wrong direction, try again",
+      "wrong_stroke": "Wrong stroke, try again",
+      "too_short": "Stroke too short",
+      "out_of_bounds": "Outside the canvas",
+      "default": "Refused, try again"
+    }
   }
 }
