@@ -168,14 +168,14 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <nav class="topnav"><div class="wrap">
   <a href="#etat">État courant</a>
   <a href="#rfc">RFC (8)</a>
-  <a href="#journal">Journal (8)</a>
+  <a href="#journal">Journal (9)</a>
   <a href="#brief">Brief</a>
 </div></nav>
 
 <div class="wrap">
 <header class="hero">
   <h1>Sinogrammes — Carnet de bord</h1>
-  <p class="meta">Index généré le 2026-05-28 19:47. 8 RFC · 8 entrées de journal.</p>
+  <p class="meta">Index généré le 2026-05-28 20:03. 8 RFC · 9 entrées de journal.</p>
   <p class="hint">Toutes les sections sont collapsables. Cliquez sur une ligne ou un lien interne pour ouvrir et défiler.</p>
 </header>
 
@@ -203,24 +203,35 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li>✅ <strong>i18n FR/EN</strong> : nouvelle section <code>glossary</code> (title, search_placeholder, characters, words, no_results, practice).</li>
 <li>⏳ Fiches détaillées caractère/mot (étape 4 du Lot 2, à faire).</li>
 </ul>
-<h3>Outillage doc (cette session)</h3>
+<h3>Outillage doc (session du jour)</h3>
 <p>Cf. <a href="#journal-2026-05-28-carnet-html"><code>docs/journal/2026-05-28-carnet-html.md</code></a>.</p>
 <ul>
 <li>✅ <strong>Carnet de bord HTML autonome</strong> : <code>docs/index.html</code> généré par <code>make docs</code> (script <code>frontend/scripts/build-docs-index.ts</code>). Section État courant + RFC + Journal + Brief, navigation par ancres, mode sombre, mode print.</li>
 <li>✅ <strong>Discipline <code>CLAUDE.md</code></strong> : <code>make docs</code> est obligatoire après toute modif markdown sous <code>docs/</code> ou de <code>BRIEF.md</code>, dans le même commit.</li>
 </ul>
+<h3>Correctif Canvas (session du jour, suite d&#39;un retour d&#39;usage)</h3>
+<p>Cf. <a href="#journal-2026-05-28-fix-canvas-feedback"><code>docs/journal/2026-05-28-fix-canvas-feedback.md</code></a>.</p>
+<ul>
+<li>✅ <strong>Mount Hanzi Writer stable</strong> : déps du useEffect réduites à <code>[hanzi, renderer]</code>, gating via <code>mountVersion</code>. Plus de perte du quiz quand on bascule outline/character.</li>
+<li>✅ <strong>Reset au changement de hanzi</strong> : traits user et verdict vidés quand on sélectionne un autre caractère depuis le glossaire.</li>
+<li>✅ <strong>Feedback de verdict</strong> : compteur i18n <code>N trait(s) validé(s)</code>, message explicite après chaque trait (accepté + N° / refusé + raison), bloc <code>aria-live=&quot;polite&quot;</code>.</li>
+<li>✅ <strong>Distinction visuelle</strong> : trait validé en transparent fin (laisse le trait propre Hanzi Writer dominer), trait refusé en gris épais dashed.</li>
+<li>✅ Couverture : 6 tests nouveaux dont l&#39;<strong>assertion critique</strong> que <code>mount</code> n&#39;est pas rappelé sur toggle outline (la régression aurait été détectée immédiatement).</li>
+</ul>
 <h2>Vérifications croisées</h2>
 <ul>
-<li><code>make test</code> : <strong>86 tests front passent</strong>, 2 paquets back passent avec <code>-race</code>.</li>
+<li><code>make test</code> : <strong>92 tests front passent</strong>, 2 paquets back passent avec <code>-race</code>.</li>
 <li><code>make lint</code> : ESLint + Prettier propres, golangci-lint 0 issue.</li>
 <li><code>make typecheck</code> : <code>tsc --noEmit</code> propre.</li>
-<li><code>make docs</code> : <code>docs/index.html</code> à jour (8 RFC + 8 entrées de journal après les deux nouvelles d&#39;aujourd&#39;hui).</li>
+<li><code>make docs</code> : <code>docs/index.html</code> à jour (8 RFC + 9 entrées de journal).</li>
 </ul>
 <h2>Dernières décisions importantes</h2>
 <ul>
 <li>2026-05-28 : <strong>recherche pinyin par défaut insensible aux diacritiques</strong> dans le glossaire — l&#39;utilisateur tape sur un clavier ASCII, on accepte la perte <code>nǚ → nu</code> pour la recherche tout en gardant l&#39;affichage diacritique.</li>
 <li>2026-05-28 : <strong>carnet HTML versionné dans le repo</strong> plutôt que généré-au-build. Diff bruyant accepté en échange de la facilité de consultation (double-click sur <code>docs/index.html</code>).</li>
 <li>2026-05-28 : <code>docs/index.html</code> est régénéré dans le <strong>même commit</strong> que les markdown modifiés (pas dans un commit séparé).</li>
+<li>2026-05-28 : <strong>mount Hanzi Writer strictement lié à <code>[hanzi, renderer]</code></strong> ; toute autre dépendance qui s&#39;ajouterait passe désormais par des effets de visibilité dédiés (gating via <code>mountVersion</code>).</li>
+<li>2026-05-28 : <strong>trait user validé estompé</strong> (opacity 0.3, fin) pour laisser dominer le trait propre Hanzi Writer ; trait refusé bien visible (dashed gris épais).</li>
 </ul>
 <h2>Bloquants connus</h2>
 <p>Aucun.</p>
@@ -1275,6 +1286,85 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </ul>
 </div>
 </details>
+<details id="journal-2026-05-28-fix-canvas-feedback">
+  <summary>2026-05-28 — Correctifs Canvas : mount stable et feedback de verdict</summary>
+  <div class="content"><h1>2026-05-28 — Correctifs Canvas : mount stable et feedback de verdict</h1>
+<h2>Objectif de la session</h2>
+<p>Réagir au retour d&#39;usage : sur la Boox, le premier trait semblait disparaître au démarrage du second, et la validation des traits n&#39;était pas perceptible. Correctif minimal et direct (option b), pas de RFC séparée — les choix sont documentés ici.</p>
+<h2>Ce qui a été fait</h2>
+<h3>Bug 1 — Mount instable de Hanzi Writer (Canvas.tsx:79)</h3>
+<p>Le <code>useEffect</code> qui monte Hanzi Writer avait <code>[hanzi, renderer, showOutline, showCharacter]</code> en dépendances. Conséquence : <strong>toute bascule d&#39;outline ou de mode démontait/recréait Hanzi Writer</strong>, perdant le <code>quiz._currentStrokeIndex</code> et tous les traits propres déjà dessinés. Effet visuel : &quot;le trait précédent disparaît&quot;.</p>
+<p>Correctif :</p>
+<ul>
+<li>Mount strictement lié à <code>[hanzi, renderer]</code>.</li>
+<li>Nouveau state <code>mountVersion</code> incrémenté dans le <code>.then()</code> du mount, à 0 sinon. Les useEffect de visibilité gating sur <code>mountVersion !== 0</code>. Initial sync + bascules ultérieures couvertes par un seul mécanisme.</li>
+<li>Cleanup remet <code>mountVersion = 0</code>.</li>
+</ul>
+<h3>Bug 2 — Feedback de verdict inexistant</h3>
+<p>Distinguer noir/gris ne suffisait pas, surtout sur e-ink. Ajouté :</p>
+<ul>
+<li><strong>Compteur i18n</strong> &quot;N trait(s) validé(s)&quot; sous le canvas, avec pluralisation (<code>stroke_count_one</code> / <code>stroke_count_other</code>).</li>
+<li><strong>Message de verdict</strong> après chaque trait :<ul>
+<li>Accepté : &quot;Trait N validé&quot;.</li>
+<li>Refusé : message explicite selon <code>reason</code> (<code>wrong_direction</code>, <code>wrong_stroke</code>, <code>too_short</code>, <code>out_of_bounds</code>, fallback <code>default</code>).</li>
+</ul>
+</li>
+<li><strong>Distinction visuelle des traits user</strong> :<ul>
+<li>Validé : <code>strokeOpacity: 0.3</code>, <code>strokeWidth: 2</code>. Laisse passer le trait propre Hanzi Writer.</li>
+<li>Refusé : <code>strokeOpacity: 0.85</code>, <code>strokeWidth: 4</code>, <code>strokeDasharray: &#39;6 4&#39;</code>. Bien visible pour signaler &quot;à recommencer&quot;.</li>
+</ul>
+</li>
+<li>Conteneur <code>&lt;div data-testid=&quot;canvas-feedback&quot; aria-live=&quot;polite&quot;&gt;</code> pour les lecteurs d&#39;écran.</li>
+</ul>
+<h3>Bug &quot;bonus&quot; — Pas de reset au changement de hanzi</h3>
+<p>Sélectionner un nouveau caractère depuis le glossaire ne vidait pas les traits user déjà tracés (ils restaient affichés sur le nouveau caractère). Ajouté <code>useEffect [hanzi]</code> qui reset <code>completedStrokes</code>, <code>currentPoints</code>, <code>verdict</code>.</p>
+<h3>i18n</h3>
+<p>Nouvelles clés <code>canvas.*</code> en FR et EN :</p>
+<ul>
+<li><code>stroke_count_one</code> / <code>stroke_count_other</code> (pluralisation i18next).</li>
+<li><code>verdict_accepted</code> (avec interpolation <code>{{stroke}}</code>).</li>
+<li><code>verdict_refused.{wrong_direction, wrong_stroke, too_short, out_of_bounds, default}</code>.</li>
+</ul>
+<h3>Tests Canvas</h3>
+<p>Ajout de 6 tests (14 au total dans <code>Canvas.test.tsx</code>, 92 dans tout le front) :</p>
+<ul>
+<li>Préserver le quiz : assertion <strong>critique</strong> que <code>renderer.mount</code> n&#39;est appelé qu&#39;une fois quand <code>showOutline</code> change (la régression aurait été détectée immédiatement).</li>
+<li>Reset des traits user au changement de hanzi.</li>
+<li>Compteur à <code>0 trait validé</code> au montage.</li>
+<li>Compteur à <code>3 traits validés</code> (test de pluralisation) après 3 traits acceptés.</li>
+<li>Verdict accepté avec numéro de trait correct.</li>
+<li>Verdict refusé avec message &quot;mauvais sens&quot;.</li>
+</ul>
+<p>Le test existant <code>pilote la visibilité du renderer au montage</code> réécrit avec <code>waitFor</code> pour attendre la résolution effective du mount (le <code>await Promise.resolve()</code> ne suffisait pas avec mountVersion gating).</p>
+<h2>Découvertes / surprises</h2>
+<ul>
+<li>Le <code>await Promise.resolve()</code> du test précédent <strong>flushait une seule microtask</strong> alors que <code>renderer.mount().then(setMountVersion)</code> enchaîne au moins deux microtasks + un re-render React. <code>waitFor</code> est la primitive correcte.</li>
+<li>Les warnings <code>act(...)</code> qui apparaissent dans les logs de test sont cosmétiques (liés au state update async après resolve de mount). Pas de fuites, pas de faux passages — à ignorer pour cette feature.</li>
+<li>La pluralisation i18next utilise les clés <code>_one</code> / <code>_other</code> (CLDR plural rules) — différent de l&#39;ancienne syntaxe <code>_plural</code>. Couvert d&#39;office par <code>i18next@23</code>.</li>
+</ul>
+<h2>Décisions prises</h2>
+<p>Aucune RFC. Choix internes consignés ici :</p>
+<ul>
+<li><strong>Trait validé devient discret</strong> (opacity 0.3) pour laisser apparaître le trait propre Hanzi Writer en dessous. C&#39;est la couche dominante visible.</li>
+<li><strong>Trait refusé reste bien visible</strong> (dashed gris épais) pour ne pas masquer le tracé fautif.</li>
+<li><strong>Le mount Hanzi Writer ne dépend que du couple <code>[hanzi, renderer]</code></strong> — toute autre dépendance qui s&#39;ajouterait à l&#39;avenir doit passer par des effets de visibilité dédiés.</li>
+<li><strong><code>aria-live=&quot;polite&quot;</code></strong> sur le bloc verdict : feedback lecteur d&#39;écran pour usage clavier / accessibilité future.</li>
+</ul>
+<h2>Vérifications</h2>
+<ul>
+<li><code>make test</code> : <strong>92 tests front passent</strong> (86 + 6 nouveaux Canvas), 2 paquets back avec <code>-race</code>.</li>
+<li><code>make lint</code> : ESLint + Prettier propres, golangci-lint 0 issue.</li>
+<li><code>make typecheck</code> : <code>tsc --noEmit</code> propre.</li>
+</ul>
+<h2>Reste à faire / prochaines étapes</h2>
+<ul>
+<li><strong>Tester en live sur la Boox</strong> via <code>make dev-front-lan</code> pour confirmer que le bug visuel disparaît dans des conditions réelles (stylet Wacom + écran e-ink).</li>
+<li>Si besoin : exposer un bouton &quot;Recommencer&quot; branché sur <code>renderer.reset()</code> pour permettre de repartir d&#39;une page blanche sans changer de caractère.</li>
+<li>Si l&#39;utilisateur veut savoir où il en est : afficher le <strong>total de traits attendu</strong> (le <code>stroke_count</code> du caractère depuis <code>BundledDataSource</code>). Demande un câblage supplémentaire — pas dans ce correctif.</li>
+<li>Reprendre l&#39;étape 4 du Lot 2 (fiches détaillées des caractères / mots).</li>
+</ul>
+</div>
+</details>
 <details id="journal-2026-05-28-carnet-html">
   <summary>2026-05-28 — Carnet de bord HTML autonome (outillage doc)</summary>
   <div class="content"><h1>2026-05-28 — Carnet de bord HTML autonome (outillage doc)</h1>
@@ -2116,7 +2206,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </section>
 
 <footer>
-<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-05-28 19:47 par <code>make docs</code>.</p>
+<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-05-28 20:03 par <code>make docs</code>.</p>
 </footer>
 </div>
 

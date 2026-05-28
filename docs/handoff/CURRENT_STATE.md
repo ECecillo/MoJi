@@ -29,25 +29,37 @@ Cf. [`docs/journal/2026-05-28-lot2-glossaire-recherche.md`](../journal/2026-05-2
 - ✅ **i18n FR/EN** : nouvelle section `glossary` (title, search_placeholder, characters, words, no_results, practice).
 - ⏳ Fiches détaillées caractère/mot (étape 4 du Lot 2, à faire).
 
-### Outillage doc (cette session)
+### Outillage doc (session du jour)
 
 Cf. [`docs/journal/2026-05-28-carnet-html.md`](../journal/2026-05-28-carnet-html.md).
 
 - ✅ **Carnet de bord HTML autonome** : `docs/index.html` généré par `make docs` (script `frontend/scripts/build-docs-index.ts`). Section État courant + RFC + Journal + Brief, navigation par ancres, mode sombre, mode print.
 - ✅ **Discipline `CLAUDE.md`** : `make docs` est obligatoire après toute modif markdown sous `docs/` ou de `BRIEF.md`, dans le même commit.
 
+### Correctif Canvas (session du jour, suite d'un retour d'usage)
+
+Cf. [`docs/journal/2026-05-28-fix-canvas-feedback.md`](../journal/2026-05-28-fix-canvas-feedback.md).
+
+- ✅ **Mount Hanzi Writer stable** : déps du useEffect réduites à `[hanzi, renderer]`, gating via `mountVersion`. Plus de perte du quiz quand on bascule outline/character.
+- ✅ **Reset au changement de hanzi** : traits user et verdict vidés quand on sélectionne un autre caractère depuis le glossaire.
+- ✅ **Feedback de verdict** : compteur i18n `N trait(s) validé(s)`, message explicite après chaque trait (accepté + N° / refusé + raison), bloc `aria-live="polite"`.
+- ✅ **Distinction visuelle** : trait validé en transparent fin (laisse le trait propre Hanzi Writer dominer), trait refusé en gris épais dashed.
+- ✅ Couverture : 6 tests nouveaux dont l'**assertion critique** que `mount` n'est pas rappelé sur toggle outline (la régression aurait été détectée immédiatement).
+
 ## Vérifications croisées
 
-- `make test` : **86 tests front passent**, 2 paquets back passent avec `-race`.
+- `make test` : **92 tests front passent**, 2 paquets back passent avec `-race`.
 - `make lint` : ESLint + Prettier propres, golangci-lint 0 issue.
 - `make typecheck` : `tsc --noEmit` propre.
-- `make docs` : `docs/index.html` à jour (8 RFC + 8 entrées de journal après les deux nouvelles d'aujourd'hui).
+- `make docs` : `docs/index.html` à jour (8 RFC + 9 entrées de journal).
 
 ## Dernières décisions importantes
 
 - 2026-05-28 : **recherche pinyin par défaut insensible aux diacritiques** dans le glossaire — l'utilisateur tape sur un clavier ASCII, on accepte la perte `nǚ → nu` pour la recherche tout en gardant l'affichage diacritique.
 - 2026-05-28 : **carnet HTML versionné dans le repo** plutôt que généré-au-build. Diff bruyant accepté en échange de la facilité de consultation (double-click sur `docs/index.html`).
 - 2026-05-28 : `docs/index.html` est régénéré dans le **même commit** que les markdown modifiés (pas dans un commit séparé).
+- 2026-05-28 : **mount Hanzi Writer strictement lié à `[hanzi, renderer]`** ; toute autre dépendance qui s'ajouterait passe désormais par des effets de visibilité dédiés (gating via `mountVersion`).
+- 2026-05-28 : **trait user validé estompé** (opacity 0.3, fin) pour laisser dominer le trait propre Hanzi Writer ; trait refusé bien visible (dashed gris épais).
 
 ## Bloquants connus
 
