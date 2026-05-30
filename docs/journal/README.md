@@ -34,6 +34,7 @@ Contenu type :
 
 ## Index (par date décroissante)
 
+- [2026-05-30 (3) — Clôture du Lot 2 : éditeur de traductions FR + filtres glossaire](2026-05-30-cloture-lot2.md)
 - [2026-05-30 (2) — Canvas : détection trait répété + boutons Annuler / Tout effacer](2026-05-30-canvas-undo-reset-repeat-detection.md)
 - [2026-05-30 — Fiches détaillées du glossaire + verrou E2E StrictMode](2026-05-30-fiches-detaillees-glossaire.md)
 - [2026-05-28 — Tests E2E Playwright + correction race condition StrictMode](2026-05-28-playwright-e2e.md)

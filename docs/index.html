@@ -167,15 +167,15 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <body>
 <nav class="topnav"><div class="wrap">
   <a href="#etat">État courant</a>
-  <a href="#rfc">RFC (9)</a>
-  <a href="#journal">Journal (12)</a>
+  <a href="#rfc">RFC (10)</a>
+  <a href="#journal">Journal (13)</a>
   <a href="#brief">Brief</a>
 </div></nav>
 
 <div class="wrap">
 <header class="hero">
   <h1>Sinogrammes — Carnet de bord</h1>
-  <p class="meta">Index généré le 2026-05-30 15:26. 9 RFC · 12 entrées de journal.</p>
+  <p class="meta">Index généré le 2026-05-30 15:49. 10 RFC · 13 entrées de journal.</p>
   <p class="hint">Toutes les sections sont collapsables. Cliquez sur une ligne ou un lien interne pour ouvrir et défiler.</p>
 </header>
 
@@ -185,9 +185,10 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <blockquote>
 <p><strong>Fichier toujours à jour.</strong> À mettre à jour à la fin de chaque session de travail. Répond à la question : &quot;où en est le projet, là, maintenant ?&quot;</p>
 </blockquote>
-<p><strong>Dernière mise à jour</strong> : 2026-05-30 (session 2)</p>
+<p><strong>Dernière mise à jour</strong> : 2026-05-30 (session 3)</p>
 <h2>Lot en cours</h2>
-<p><strong>Lot 2 — Glossaire</strong> : ✅ clôturé. Liste, recherche, navigation vers le tracé et fiches détaillées en place. Prochain lot à arbitrer.</p>
+<p><strong>Lot 2 — Glossaire</strong> : ✅ <strong>clôturé officiellement</strong> selon la RFC 0007. Liste, recherche, navigation vers le tracé, fiches détaillées, filtres (tags/traits/fréquence) et éditeur de traductions FR (RFC 0010) sont en place. Le filtre &quot;statut d&#39;apprentissage&quot; est reporté au Lot 3 (dépend de la progression).</p>
+<p><strong>Prochain lot</strong> : Lot 3 — Système de révision (SM-2 + <code>ProgressRepository</code> IndexedDB + sync backend). À ouvrir.</p>
 <h2>Ce qui est fait</h2>
 <h3>Lot 0 (clôturé)</h3>
 <p>Cf. <a href="#journal-2026-05-24-lot0-fondations"><code>docs/journal/2026-05-24-lot0-fondations.md</code></a>. Documentation initiale, structure du monorepo, schéma de données v1 + fixture, backend Go avec <code>/health</code> en TDD, frontend Vite/React/TS strict + Tailwind + Vitest + i18n FR/EN, ports hexagonaux, orchestrateur de migrations, Makefile racine.</p>
@@ -235,7 +236,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li>✅ <code>e2e/strict-mode-regression.spec.ts</code> (2 scénarios) : toggle outline 3× puis tracé d&#39;un trait (assert verdict visible + aucun <code>pageerror</code>/<code>console.error</code> lié à Hanzi Writer) ; stress test 10 toggles consécutifs.</li>
 <li>✅ Fiche <code>entry-detail.spec.ts</code> (3 scénarios) : navigation glossary → detail → practice → ← → detail → ← → glossary, cross-ref caractère → mot lié, cross-ref mot → caractère constitutif.</li>
 </ul>
-<h3>Canvas — détection trait répété + Annuler / Tout effacer (session du jour)</h3>
+<h3>Canvas — détection trait répété + Annuler / Tout effacer (session 2)</h3>
 <p>Cf. <a href="#journal-2026-05-30-canvas-undo-reset-repeat-detection"><code>docs/journal/2026-05-30-canvas-undo-reset-repeat-detection.md</code></a>.</p>
 <ul>
 <li>✅ <strong>Détection géométrique du trait répété</strong> dans <code>Canvas</code> : helper <code>lib/strokeSimilarity.ts</code> (comparaison des endpoints, tolérance 15 % de la taille du canvas). Si un trait refusé matche un trait précédemment validé, on requalifie le verdict en <code>repeated_stroke</code> et on ne pollue pas le SVG.</li>
@@ -243,16 +244,27 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li>✅ Port <code>CharacterRenderer</code> étendu avec <code>reason: &#39;repeated_stroke&#39;</code> (valeur synthétisée par l&#39;UI, jamais produite par l&#39;adapter).</li>
 <li>✅ Couverture : 9 tests sur le helper, 7 tests sur Canvas, 3 scénarios E2E (<code>e2e/canvas-controls.spec.ts</code>).</li>
 </ul>
+<h3>Clôture du Lot 2 — éditeur FR + filtres (session 3)</h3>
+<p>Cf. <a href="#journal-2026-05-30-cloture-lot2"><code>docs/journal/2026-05-30-cloture-lot2.md</code></a> et <a href="#rfc-0010">RFC 0010</a>.</p>
+<ul>
+<li>✅ <strong>Éditeur de traductions FR (surcharges locales)</strong> : port hexagonal <code>TranslationOverrideRepository</code> + adapter <code>LocalStorageTranslationOverrideRepository</code> (blob JSON sous clé versionnée). Helper <code>lib/translations.ts</code> pour fusionner bundle + surcharges (le bundle est remplacé pour la langue surchargée). Hook <code>useTranslationOverrides</code>. UI inline dans <code>EntryDetail</code> avec marqueur <code>✎</code> sur la langue surchargée. <code>Glossary</code> consomme aussi le hook : les traductions FR saisies sont <strong>chercheables</strong> immédiatement.</li>
+<li>✅ <strong>Filtres glossaire</strong> : helper pur <code>lib/glossaryFilters.ts</code> (matchesFilters, isFilterActive, activeFilterCount, uniqueTagsOf). Sous-composant <code>FilterPanel</code> replié par défaut, badge sur le bouton de toggle. Trois axes : tags (multi-select), nombre de traits (min/max), rang de fréquence (min/max). Caractère-only sont masqués automatiquement sur l&#39;onglet Mots.</li>
+<li>✅ <strong>RFC 0010 publiée</strong> pour formaliser le format de stockage (<code>schema_version: 1</code>, blob unique, sémantique de merge), permettre les migrations futures et préparer la bascule vers backend Lot 3+.</li>
+<li>✅ Couverture : 6 tests <code>translations.ts</code> + 10 tests adapter + 12 tests <code>glossaryFilters.ts</code> + 4 tests édition FR dans <code>EntryDetail</code> + 3 tests filtres dans <code>Glossary</code>. E2E : 3 scénarios filtres + 3 scénarios éditeur FR (persistance reload, recherche après ajout, Annuler n&#39;écrit rien).</li>
+</ul>
 <h2>Vérifications croisées</h2>
 <ul>
-<li><code>make test</code> : <strong>116 tests front passent</strong>, 2 paquets back passent avec <code>-race</code>.</li>
-<li><code>make test-e2e</code> : <strong>18/18 tests E2E verts</strong> (Chromium, ~3,6 s).</li>
+<li><code>make test</code> : <strong>151 tests front passent</strong>, 2 paquets back passent avec <code>-race</code>.</li>
+<li><code>make test-e2e</code> : <strong>24/24 tests E2E verts</strong> (Chromium, ~4,3 s).</li>
 <li><code>make lint</code> : ESLint + Prettier propres, golangci-lint 0 issue.</li>
 <li><code>make typecheck</code> : <code>tsc --noEmit</code> propre.</li>
-<li><code>make docs</code> : <code>docs/index.html</code> à jour (9 RFC + 12 entrées de journal).</li>
+<li><code>make docs</code> : <code>docs/index.html</code> à jour (10 RFC + 13 entrées de journal).</li>
 </ul>
 <h2>Dernières décisions importantes</h2>
 <ul>
+<li>2026-05-30 (s3) : <strong>port <code>TranslationOverrideRepository</code> côté domain + adapter localStorage</strong> (cf. <a href="#rfc-0010">RFC 0010</a>). Format : blob JSON unique versionné. Sémantique : la surcharge remplace intégralement le bundle pour la langue concernée (pas d&#39;empilement).</li>
+<li>2026-05-30 (s3) : <strong>édition limitée à la langue courante</strong> (l&#39;utilisateur FR édite son FR). UI inline, marqueur ✎ pour distinguer ses traductions de celles du bundle.</li>
+<li>2026-05-30 (s3) : <strong>filtres glossaire = 3 axes</strong> (tags, traits, fréquence). Le statut d&#39;apprentissage est officiellement reporté au Lot 3. Le filtre par tags est rendu même si aucun tag n&#39;est encore présent dans le bundle (extensibilité prête).</li>
 <li>2026-05-30 (s2) : <strong>détection trait répété côté UI</strong>, pas côté port. <code>Canvas</code> synthétise un <code>reason: &#39;repeated_stroke&#39;</code> quand un trait refusé matche géométriquement un trait accepté. L&#39;adapter Hanzi Writer reste agnostique.</li>
 <li>2026-05-30 (s2) : <strong>Annuler n&#39;efface que l&#39;affichage</strong>, pas l&#39;état du quiz Hanzi Writer. Pour défaire l&#39;avancement quiz, il faut Tout effacer.</li>
 <li>2026-05-30 (s2) : <strong>trait inversé ≠ trait répété</strong>. La comparaison des endpoints est ordonnée (début↔début, fin↔fin), donc tracer en sens inverse reste signalé <code>wrong_direction</code> par Hanzi Writer.</li>
@@ -270,19 +282,21 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </ul>
 <h2>Bloquants connus</h2>
 <p>Aucun.</p>
-<h2>Prochaines étapes (Lot 2 clôturé)</h2>
+<h2>Prochaines étapes — Ouverture du Lot 3 (Système de révision)</h2>
+<p>Selon la RFC 0007, le Lot 3 livre la mémorisation à long terme :</p>
 <ol>
-<li>✅ Liste HSK 1.</li>
-<li>✅ Recherche.</li>
-<li>✅ Navigation glossary → canvas.</li>
-<li>✅ Fiches détaillées (vue dédiée, cross-refs cliquables, sens par langue).</li>
+<li>Algorithme <strong>SM-2</strong> (~100 lignes, suffisant pour mono-utilisateur).</li>
+<li>Tracking de progression dans <strong><code>ProgressRepository</code></strong> (le port existe déjà ; l&#39;adapter IndexedDB est à écrire).</li>
+<li>Files de révision : dûs / nouveaux / en cours.</li>
+<li>Première itération de <strong>synchronisation backend</strong> (best-effort au focus).</li>
+<li>API REST minimale côté back, accédée via <code>RestApiClient</code>.</li>
 </ol>
-<p><strong>Le Lot 2 est terminé.</strong> Prochaines orientations possibles (à arbitrer dans une RFC dédiée quand on ouvre le Lot 3) :</p>
+<p>Critère de sortie du Lot 3 : faire une session de révision quotidienne et retrouver sa progression sur un autre appareil après sync.</p>
+<p>À arbitrer en début de Lot 3 :</p>
 <ul>
-<li>Tri/filtre du glossaire : par radical, par tag, par fréquence d&#39;apparition.</li>
-<li>Statistiques d&#39;apprentissage côté liste : % de caractères vus / pratiqués / réussis du premier coup.</li>
-<li>Persistance des sessions de tracé (backend <code>progress</code> ?), pour alimenter les stats ci-dessus.</li>
-<li>Mode révision (decks programmés, SRS basique).</li>
+<li>RFC pour le format de stockage IndexedDB (clés, indexes, schéma de versioning) — probable nécessité.</li>
+<li>RFC pour la stratégie de sync (best-effort, conflict resolution, offline-first) — probable nécessité.</li>
+<li>Décider du moment où on branche le <strong>filtre &quot;statut d&#39;apprentissage&quot;</strong> dans le glossaire (point reporté du Lot 2).</li>
 </ul>
 <h2>Liens utiles</h2>
 <ul>
@@ -352,6 +366,12 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
   <td><a href="#rfc-0009">Stratégie de tests end-to-end</a></td>
   <td><span class="status status-Accepté">Accepté</span></td>
   <td>2026-05-28</td>
+</tr>
+<tr>
+  <td><a href="#rfc-0010">0010</a></td>
+  <td><a href="#rfc-0010">Surcharges de traductions locales (éditeur FR)</a></td>
+  <td><span class="status status-Accepté">Accepté</span></td>
+  <td>2026-05-30</td>
 </tr></tbody>
 </table>
 <details id="rfc-0001">
@@ -1346,6 +1366,83 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </ul>
 </div>
 </details>
+<details id="rfc-0010">
+  <summary>RFC 0010 — Surcharges de traductions locales (éditeur FR)<span class="meta">2026-05-30 · <span class="status status-Accepté">Accepté</span></span></summary>
+  <div class="content"><h1>RFC 0010 — Surcharges de traductions locales (éditeur FR)</h1>
+<ul>
+<li><strong>Statut</strong> : Accepté</li>
+<li><strong>Date</strong> : 2026-05-30</li>
+<li><strong>Auteur(s)</strong> : Enzo</li>
+<li><strong>Lié à</strong> : RFC 0003 (hexagonale), RFC 0004 (format de données et versioning), RFC 0006 (offline-first), RFC 0007 (découpage en lots — clôture du Lot 2)</li>
+</ul>
+<h2>Contexte</h2>
+<p>Le bundle HSK 1 sourcé via <code>make build-data</code> n&#39;inclut que des traductions <code>en</code> (cf. RFC 0008). Le critère de sortie du Lot 2 (cf. RFC 0007) mentionne explicitement un <strong>&quot;outil d&#39;édition des traductions françaises (saisie manuelle progressive)&quot;</strong>. Il faut donc un mécanisme qui permette à l&#39;utilisateur de saisir ses propres traductions, sans toucher aux fichiers générés ni rendre le projet hostile à une re-génération <code>make build-data</code>.</p>
+<p>L&#39;app est mono-utilisateur, offline-first, installable en PWA. Le volume de données est petit (HSK 1 ≈ 800 entrées, quelques chaînes par entrée). Pas de synchronisation multi-appareils dans le périmètre du Lot 2.</p>
+<h2>Décision</h2>
+<h3>1. Modèle de données</h3>
+<p>Une <strong>surcharge</strong> est attachée à un <code>entryId</code> (préfixe <code>char_</code> ou <code>word_</code>, identique à l&#39;ID du bundle) et à une langue ISO 639-1. La surcharge contient la liste complète des traductions que l&#39;utilisateur veut voir pour cette langue.</p>
+<pre><code class="language-ts">// Map indexée par id d&#39;entrée
+type OverrideMap = Record&lt;EntryId, Record&lt;LanguageCode, string[]&gt;&gt;;
+</code></pre>
+<p>Sémantique du merge (<code>mergeTranslations</code>) :</p>
+<ul>
+<li>Pour chaque langue présente dans l&#39;override, la liste <strong>remplace intégralement</strong> celle du bundle. L&#39;utilisateur veut contrôler exactement ce qui s&#39;affiche en FR, pas voir s&#39;empiler ses traductions à côté des sens upstream.</li>
+<li>Pour les langues absentes de l&#39;override, la liste du bundle est gardée telle quelle.</li>
+<li>Une liste vide dans l&#39;override n&#39;est pas censée être persistée (l&#39;adapter supprime cette clé), mais si elle arrive on retombe sur la valeur bundle (no-op safe).</li>
+</ul>
+<h3>2. Port hexagonal</h3>
+<p>Un nouveau port <code>TranslationOverrideRepository</code> (<code>src/domain/ports/</code>) avec 4 méthodes asynchrones :</p>
+<pre><code class="language-ts">loadAll(): Promise&lt;OverrideMap&gt;;
+setForLanguage(entryId: EntryId, lang: LanguageCode, items: string[]): Promise&lt;void&gt;;
+clearForEntry(entryId: EntryId): Promise&lt;void&gt;;
+clearAll(): Promise&lt;void&gt;;
+</code></pre>
+<p>Le domaine ne connaît jamais le mécanisme de stockage sous-jacent. Un test peut utiliser une implémentation in-memory triviale.</p>
+<h3>3. Adapter localStorage (initial)</h3>
+<p>L&#39;adapter <code>LocalStorageTranslationOverrideRepository</code> (<code>src/adapters/storage/</code>) sérialise un <strong>blob JSON unique</strong> sous la clé <code>sinogrammes:translation_overrides</code> :</p>
+<pre><code class="language-json">{
+  &quot;schema_version&quot;: 1,
+  &quot;data&quot;: {
+    &quot;char_4F60&quot;: { &quot;fr&quot;: [&quot;tu&quot;, &quot;toi&quot;] }
+  }
+}
+</code></pre>
+<p>Choix volontaire d&#39;un blob unique vs &quot;une clé par entrée&quot; :</p>
+<ul>
+<li>Volume petit (≤ 100 Ko à HSK 1 réaliste, marge confortable sur la limite ~5 Mo de localStorage).</li>
+<li>Simplifie l&#39;export / import futur (un seul <code>JSON.stringify</code>).</li>
+<li>Permet une migration de schéma propre quand on bumpera (lire l&#39;ancienne version, transformer, écrire la nouvelle).</li>
+</ul>
+<p>Le format est validé à la lecture : version absente ou différente → on retourne une map vide plutôt que de crasher. Le contenu utilisateur peut être perdu dans le cas d&#39;un downgrade ou d&#39;une corruption JSON ; ce risque est accepté pour le Lot 2 (offline-first, mono-utilisateur, données reconstructibles à la main). Une migration formelle sera décrite dans une RFC dédiée si la <code>schema_version</code> saute.</p>
+<h3>4. UI</h3>
+<p>Dans <code>EntryDetail</code>, chaque section de langue affiche un bouton &quot;Modifier&quot; (ou &quot;Ajouter une traduction&quot; si la langue est absente du bundle). L&#39;éditeur est inline (pas de modale) :</p>
+<ul>
+<li>Liste d&#39;inputs texte avec un <code>✕</code> par ligne pour supprimer.</li>
+<li>Bouton <code>+ Ajouter une traduction</code> pour étendre la liste.</li>
+<li>Boutons <code>Enregistrer</code> / <code>Annuler</code> pour valider ou défaire.</li>
+<li>Une fois persistée, la section affiche le marqueur <code>✎</code> pour signaler &quot;traduction personnelle&quot;.</li>
+</ul>
+<p>L&#39;éditeur n&#39;est proposé que pour la langue courante (<code>i18n.resolvedLanguage</code>). Permet de garder l&#39;UI simple et focalisée sur le cas usage principal (l&#39;utilisateur en FR édite son FR). Les autres langues restent affichées en lecture seule.</p>
+<h3>5. Propagation à la recherche</h3>
+<p><code>Glossary</code> consomme le même hook <code>useTranslationOverrides</code> et applique <code>mergeTranslations</code> à la fois pour l&#39;<strong>affichage</strong> des cartes et pour la <strong>recherche</strong> par traduction. Une fois &quot;tu, toi&quot; enregistré pour <code>你</code>, taper &quot;tu&quot; dans la barre de recherche fait remonter <code>你</code>.</p>
+<h2>Conséquences</h2>
+<ul>
+<li><strong>Pas de RFC ultérieure nécessaire</strong> pour la même fonctionnalité tant que le format <code>schema_version: 1</code> tient. Migration = nouvelle RFC + bump.</li>
+<li><strong>Cohérent avec l&#39;hexagonale</strong> : le port pourra être ré-implémenté côté backend (Lot 3+) sans changer la couche feature. Un futur <code>RestApiTranslationOverrideRepository</code> est l&#39;évolution naturelle.</li>
+<li><strong>Découplé de la régénération <code>make build-data</code></strong> : régénérer le bundle ne touche pas aux surcharges utilisateur, elles vivent dans le navigateur.</li>
+<li><strong>Pas multi-appareils</strong> : changer d&#39;ordinateur efface les surcharges. C&#39;est explicite et accepté pour le Lot 2 — la sync est le sujet du Lot 3.</li>
+<li><strong>Compteur de surcharges visible</strong> : le marqueur <code>✎</code> permet à l&#39;utilisateur de distinguer ses traductions des traductions bundle, important si on veut un jour purger ses overrides en cas d&#39;erreur.</li>
+</ul>
+<h2>Alternatives considérées</h2>
+<ul>
+<li><strong>IndexedDB</strong> : refusé pour le Lot 2. Plus puissant mais plus complexe (transactions, async lourd, debug pénible). Réserver pour le Lot 3 quand on stockera de la progression SRS avec des index par date.</li>
+<li><strong>Backend Go + nouveau endpoint</strong> : refusé pour le Lot 2. Engagerait des décisions de sync (conflits, offline-first du blob, etc.) qui sortent du périmètre. Sera tranché dans une RFC future quand on aura besoin de multi-appareils.</li>
+<li><strong>Une clé localStorage par entrée</strong> : refusé. Plus simple à patcher en place mais rend l&#39;export/import et la migration de schéma chiantes. Le blob unique reste petit, la lecture/écriture intégrale n&#39;est pas un problème de perf à notre échelle.</li>
+<li><strong>Empiler les traductions overridées au-dessus des bundle</strong> : refusé. Ambigu en lecture, perd le contrôle utilisateur (l&#39;utilisateur ne peut pas masquer un sens upstream qu&#39;il trouve imprécis). Le replace intégral est cohérent avec &quot;tu décides de ce qui s&#39;affiche&quot;.</li>
+<li><strong>Édition dans toutes les langues</strong> : refusé. UI plus chargée, sans valeur dans le cas usage principal. Si besoin, on rouvrira par une RFC.</li>
+</ul>
+</div>
+</details>
 </section>
 
 <section id="journal">
@@ -1447,6 +1544,119 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li>✅ Fiches détaillées (cette session).</li>
 </ol>
 <p>Lot 2 prêt à être clôturé. Prochaine décision : ouvrir le Lot 3 (à arbitrer dans une RFC dédiée si nouveau lot, ou explorer les pistes mentionnées dans <code>CURRENT_STATE.md</code> — tri/filtre par radical, stats d&#39;apprentissage).</p>
+</div>
+</details>
+<details id="journal-2026-05-30-cloture-lot2">
+  <summary>2026-05-30 (3) — Clôture du Lot 2 : éditeur de traductions FR + filtres glossaire</summary>
+  <div class="content"><h1>2026-05-30 (3) — Clôture du Lot 2 : éditeur de traductions FR + filtres glossaire</h1>
+<h2>Objectif de la session</h2>
+<p>Fermer officiellement le Lot 2 selon la RFC 0007. Il restait deux items du critère de sortie :</p>
+<ol>
+<li><strong>Filtres glossaire</strong> (tags, fréquence, traits) — le filtre par &quot;statut d&#39;apprentissage&quot; est reporté au Lot 3 (dépend du tracking de progression).</li>
+<li><strong>Outil d&#39;édition des traductions françaises</strong> — le bundle HSK 1 vendoré n&#39;a que des traductions <code>en</code>, l&#39;éditeur permet à l&#39;utilisateur de saisir progressivement les FR.</li>
+</ol>
+<h2>Décisions structurantes</h2>
+<p>Une nouvelle RFC dédiée a été publiée : <a href="#rfc-0010">RFC 0010 — Surcharges de traductions locales (éditeur FR)</a>.</p>
+<p>Points clés :</p>
+<ul>
+<li><strong>Port hexagonal <code>TranslationOverrideRepository</code></strong> dans <code>src/domain/ports/</code>. Sémantique : la surcharge pour une langue donnée <strong>remplace intégralement</strong> la liste du bundle pour cette langue (pas d&#39;empilement).</li>
+<li><strong>Adapter localStorage</strong> comme première implémentation : blob JSON unique sous une clé versionnée <code>sinogrammes:translation_overrides</code> (<code>schema_version: 1</code>). Choix vs &quot;une clé par entrée&quot; justifié dans la RFC.</li>
+<li><strong>Helper <code>mergeTranslations</code></strong> côté domaine/lib, pur, sans dépendance — utilisé à la fois par <code>Glossary</code> (recherche + affichage) et <code>EntryDetail</code> (rendu + édition).</li>
+<li><strong>UI inline</strong> dans <code>EntryDetail</code>, pas de modale. Liste d&#39;inputs + bouton &quot;+ Ajouter&quot; + Enregistrer/Annuler. Marqueur <code>✎</code> à côté de la langue surchargée.</li>
+<li><strong>Édition limitée à la langue courante</strong> (l&#39;utilisateur FR édite son FR). Garde l&#39;UI simple ; un futur RFC pourra étendre si besoin.</li>
+</ul>
+<h2>Ce qui a été fait</h2>
+<h3>Surcharges de traductions</h3>
+<ul>
+<li><strong><code>src/domain/ports/TranslationOverrideRepository.ts</code></strong> : port avec <code>loadAll</code>, <code>setForLanguage</code>, <code>clearForEntry</code>, <code>clearAll</code>.</li>
+<li><strong><code>src/adapters/storage/LocalStorageTranslationOverrideRepository.ts</code></strong> : implémentation localStorage avec validation de version, suppression automatique des clés vides, trim des chaînes blanches. 10 tests Vitest dont les cas de corruption JSON et mismatch de version.</li>
+<li><strong><code>src/lib/translations.ts</code></strong> : <code>mergeTranslations(base, override)</code>, pur. 6 tests Vitest.</li>
+<li><strong><code>src/features/glossary/useTranslationOverrides.ts</code></strong> : hook React qui charge le repo au mount, expose une <code>OverrideMap</code> réactive et un <code>setOverride</code> qui persiste + met à jour l&#39;état.</li>
+<li><strong><code>src/features/glossary/EntryDetail.tsx</code></strong> : refactorisation en sous-composants <code>LanguageSection</code> + <code>EditableTranslations</code>. Édition inline, autofocus du dernier input via callback ref. Section FR pré-créée si absente du bundle.</li>
+<li><strong><code>src/features/glossary/Glossary.tsx</code></strong> : utilise le hook + <code>mergeTranslations</code> pour la recherche et l&#39;affichage des cartes. Une trad FR ajoutée est immédiatement chercheable.</li>
+<li><strong>i18n FR/EN</strong> : nouvelles clés <code>glossary.detail.edit_translations</code>, <code>add_translation</code>, <code>remove_translation</code>, <code>save</code>, <code>cancel</code>, <code>overridden_title</code>, <code>translation_placeholder</code>, <code>no_translations_for_language</code>.</li>
+</ul>
+<h3>Filtres glossaire</h3>
+<ul>
+<li><strong><code>src/lib/glossaryFilters.ts</code></strong> : types <code>GlossaryFilters</code> + fonctions pures <code>matchesFilters</code>, <code>isFilterActive</code>, <code>activeFilterCount</code>, <code>uniqueTagsOf</code>. 12 tests Vitest.</li>
+<li><strong><code>Glossary</code> étendu</strong> : nouveau sous-composant <code>FilterPanel</code>, replié par défaut, badge sur le bouton de toggle qui compte les axes actifs. Bouton &quot;Réinitialiser&quot; qui n&#39;apparaît qu&#39;en présence de filtres actifs.</li>
+<li><strong>Filtres implémentés</strong> :<ul>
+<li>Tags (multi-select de chips, masqué si aucune entrée n&#39;a de tag — c&#39;est le cas du bundle actuel).</li>
+<li>Nombre de traits (min/max number inputs, caractères uniquement).</li>
+<li>Rang de fréquence (min/max number inputs, caractères uniquement, exclut les entrées sans <code>frequency_rank</code>).</li>
+</ul>
+</li>
+<li>L&#39;onglet &quot;Mots&quot; masque automatiquement les filtres caractère-only.</li>
+<li><strong>i18n FR/EN</strong> : nouvelle section <code>glossary.filters</code> (toggle, reset, tags, stroke_count, frequency, no_tags, min, max).</li>
+</ul>
+<h3>Tests</h3>
+<ul>
+<li><strong>Unitaires (Vitest)</strong> : 151 tests verts. Nouveaux par rapport à la session précédente :<ul>
+<li>6 sur <code>translations.ts</code></li>
+<li>10 sur <code>LocalStorageTranslationOverrideRepository</code></li>
+<li>12 sur <code>glossaryFilters.ts</code></li>
+<li>4 sur <code>EntryDetail</code> (édition FR : ajouter, annuler, multi-traductions, marqueur surcharge)</li>
+<li>3 sur <code>Glossary</code> (filtres + reset + masquage onglet)</li>
+</ul>
+</li>
+<li><strong>E2E Playwright</strong> : 24 tests verts (4 ajoutés). Nouveaux :<ul>
+<li><code>e2e/glossary-filters.spec.ts</code> (3 scénarios) : filtre par traits, masquage caractère-only, badge actif.</li>
+<li><code>e2e/translation-editor.spec.ts</code> (3 scénarios) : ajouter + recherche FR ressort 你 ; persistance au reload ; Annuler n&#39;écrit rien dans localStorage.</li>
+</ul>
+</li>
+</ul>
+<h2>Vérifications</h2>
+<ul>
+<li><code>make test</code> : <strong>151/151</strong> verts (+35 par rapport à la dernière session).</li>
+<li><code>make test-e2e</code> : <strong>24/24</strong> verts (+6, ~4,3 s).</li>
+<li><code>make lint</code> : ESLint + Prettier propres, golangci-lint 0 issue.</li>
+<li><code>make typecheck</code> : <code>tsc --noEmit</code> propre (note : un <code>Partial&lt;Character&gt;</code> avec <code>frequency_rank: undefined</code> nécessite un <code>Omit</code> explicite à cause de <code>exactOptionalPropertyTypes</code>).</li>
+</ul>
+<h2>État du Lot 2 (RFC 0007)</h2>
+<table>
+<thead>
+<tr>
+<th>Étape</th>
+<th>État</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Liste de tous les caractères et mots HSK 1</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Recherche par pinyin, hanzi, traduction (fr / en)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Filtres : tags, plage de fréquence, nombre de traits</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Filtre : statut d&#39;apprentissage</td>
+<td>🔜 Lot 3</td>
+</tr>
+<tr>
+<td>Lien direct depuis le glossaire vers le canvas de tracé</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Outil d&#39;édition des traductions FR (saisie manuelle progressive)</td>
+<td>✅</td>
+</tr>
+</tbody></table>
+<p><strong>Critère de sortie du Lot 2 atteint</strong> : on peut feuilleter HSK 1, chercher un mot, lancer le tracé en un clic. On peut désormais ajouter ses propres traductions FR, et filtrer la liste par nombre de traits ou rang de fréquence pour cibler un sous-ensemble (les 50 caractères les plus fréquents, ou les 3-traits seulement pour démarrer).</p>
+<p>Le filtre &quot;statut d&#39;apprentissage&quot; est officiellement reporté au Lot 3 — il dépend du tracking de progression qui sera le sujet central de ce lot.</p>
+<h2>Reste à faire / prochaines étapes</h2>
+<p>Lot 3 (Système de révision) selon la RFC 0007 :</p>
+<ul>
+<li>Algorithme SM-2 (~100 lignes).</li>
+<li><code>ProgressRepository</code> adapter IndexedDB (le port existe déjà dans <code>domain/ports/</code>).</li>
+<li>Files de révision (dûs, nouveaux, en cours).</li>
+<li>Synchronisation backend best-effort.</li>
+<li>Premier <code>RestApiClient</code> pour préparer le terrain Lot 5.</li>
+</ul>
+<p>À arbitrer en début de Lot 3 : faut-il une RFC pour le format de stockage IndexedDB ? Probable oui, car il faudra penser à la sync conflict resolution. La RFC 0010 (surcharges) est un précédent qui peut guider.</p>
 </div>
 </details>
 <details id="journal-2026-05-30-canvas-undo-reset-repeat-detection">
@@ -2583,7 +2793,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </section>
 
 <footer>
-<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-05-30 15:26 par <code>make docs</code>.</p>
+<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-05-30 15:49 par <code>make docs</code>.</p>
 </footer>
 </div>
 

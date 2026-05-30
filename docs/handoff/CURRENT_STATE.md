@@ -2,11 +2,13 @@
 
 > **Fichier toujours à jour.** À mettre à jour à la fin de chaque session de travail. Répond à la question : "où en est le projet, là, maintenant ?"
 
-**Dernière mise à jour** : 2026-05-30 (session 2)
+**Dernière mise à jour** : 2026-05-30 (session 3)
 
 ## Lot en cours
 
-**Lot 2 — Glossaire** : ✅ clôturé. Liste, recherche, navigation vers le tracé et fiches détaillées en place. Prochain lot à arbitrer.
+**Lot 2 — Glossaire** : ✅ **clôturé officiellement** selon la RFC 0007. Liste, recherche, navigation vers le tracé, fiches détaillées, filtres (tags/traits/fréquence) et éditeur de traductions FR (RFC 0010) sont en place. Le filtre "statut d'apprentissage" est reporté au Lot 3 (dépend de la progression).
+
+**Prochain lot** : Lot 3 — Système de révision (SM-2 + `ProgressRepository` IndexedDB + sync backend). À ouvrir.
 
 ## Ce qui est fait
 
@@ -65,7 +67,7 @@ Cf. [`docs/journal/2026-05-30-fiches-detaillees-glossaire.md`](../journal/2026-0
 - ✅ `e2e/strict-mode-regression.spec.ts` (2 scénarios) : toggle outline 3× puis tracé d'un trait (assert verdict visible + aucun `pageerror`/`console.error` lié à Hanzi Writer) ; stress test 10 toggles consécutifs.
 - ✅ Fiche `entry-detail.spec.ts` (3 scénarios) : navigation glossary → detail → practice → ← → detail → ← → glossary, cross-ref caractère → mot lié, cross-ref mot → caractère constitutif.
 
-### Canvas — détection trait répété + Annuler / Tout effacer (session du jour)
+### Canvas — détection trait répété + Annuler / Tout effacer (session 2)
 
 Cf. [`docs/journal/2026-05-30-canvas-undo-reset-repeat-detection.md`](../journal/2026-05-30-canvas-undo-reset-repeat-detection.md).
 
@@ -74,16 +76,28 @@ Cf. [`docs/journal/2026-05-30-canvas-undo-reset-repeat-detection.md`](../journal
 - ✅ Port `CharacterRenderer` étendu avec `reason: 'repeated_stroke'` (valeur synthétisée par l'UI, jamais produite par l'adapter).
 - ✅ Couverture : 9 tests sur le helper, 7 tests sur Canvas, 3 scénarios E2E (`e2e/canvas-controls.spec.ts`).
 
+### Clôture du Lot 2 — éditeur FR + filtres (session 3)
+
+Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lot2.md) et [RFC 0010](../rfc/0010-surcharges-traductions-locales.md).
+
+- ✅ **Éditeur de traductions FR (surcharges locales)** : port hexagonal `TranslationOverrideRepository` + adapter `LocalStorageTranslationOverrideRepository` (blob JSON sous clé versionnée). Helper `lib/translations.ts` pour fusionner bundle + surcharges (le bundle est remplacé pour la langue surchargée). Hook `useTranslationOverrides`. UI inline dans `EntryDetail` avec marqueur `✎` sur la langue surchargée. `Glossary` consomme aussi le hook : les traductions FR saisies sont **chercheables** immédiatement.
+- ✅ **Filtres glossaire** : helper pur `lib/glossaryFilters.ts` (matchesFilters, isFilterActive, activeFilterCount, uniqueTagsOf). Sous-composant `FilterPanel` replié par défaut, badge sur le bouton de toggle. Trois axes : tags (multi-select), nombre de traits (min/max), rang de fréquence (min/max). Caractère-only sont masqués automatiquement sur l'onglet Mots.
+- ✅ **RFC 0010 publiée** pour formaliser le format de stockage (`schema_version: 1`, blob unique, sémantique de merge), permettre les migrations futures et préparer la bascule vers backend Lot 3+.
+- ✅ Couverture : 6 tests `translations.ts` + 10 tests adapter + 12 tests `glossaryFilters.ts` + 4 tests édition FR dans `EntryDetail` + 3 tests filtres dans `Glossary`. E2E : 3 scénarios filtres + 3 scénarios éditeur FR (persistance reload, recherche après ajout, Annuler n'écrit rien).
+
 ## Vérifications croisées
 
-- `make test` : **116 tests front passent**, 2 paquets back passent avec `-race`.
-- `make test-e2e` : **18/18 tests E2E verts** (Chromium, ~3,6 s).
+- `make test` : **151 tests front passent**, 2 paquets back passent avec `-race`.
+- `make test-e2e` : **24/24 tests E2E verts** (Chromium, ~4,3 s).
 - `make lint` : ESLint + Prettier propres, golangci-lint 0 issue.
 - `make typecheck` : `tsc --noEmit` propre.
-- `make docs` : `docs/index.html` à jour (9 RFC + 12 entrées de journal).
+- `make docs` : `docs/index.html` à jour (10 RFC + 13 entrées de journal).
 
 ## Dernières décisions importantes
 
+- 2026-05-30 (s3) : **port `TranslationOverrideRepository` côté domain + adapter localStorage** (cf. [RFC 0010](../rfc/0010-surcharges-traductions-locales.md)). Format : blob JSON unique versionné. Sémantique : la surcharge remplace intégralement le bundle pour la langue concernée (pas d'empilement).
+- 2026-05-30 (s3) : **édition limitée à la langue courante** (l'utilisateur FR édite son FR). UI inline, marqueur ✎ pour distinguer ses traductions de celles du bundle.
+- 2026-05-30 (s3) : **filtres glossaire = 3 axes** (tags, traits, fréquence). Le statut d'apprentissage est officiellement reporté au Lot 3. Le filtre par tags est rendu même si aucun tag n'est encore présent dans le bundle (extensibilité prête).
 - 2026-05-30 (s2) : **détection trait répété côté UI**, pas côté port. `Canvas` synthétise un `reason: 'repeated_stroke'` quand un trait refusé matche géométriquement un trait accepté. L'adapter Hanzi Writer reste agnostique.
 - 2026-05-30 (s2) : **Annuler n'efface que l'affichage**, pas l'état du quiz Hanzi Writer. Pour défaire l'avancement quiz, il faut Tout effacer.
 - 2026-05-30 (s2) : **trait inversé ≠ trait répété**. La comparaison des endpoints est ordonnée (début↔début, fin↔fin), donc tracer en sens inverse reste signalé `wrong_direction` par Hanzi Writer.
@@ -103,19 +117,22 @@ Cf. [`docs/journal/2026-05-30-canvas-undo-reset-repeat-detection.md`](../journal
 
 Aucun.
 
-## Prochaines étapes (Lot 2 clôturé)
+## Prochaines étapes — Ouverture du Lot 3 (Système de révision)
 
-1. ✅ Liste HSK 1.
-2. ✅ Recherche.
-3. ✅ Navigation glossary → canvas.
-4. ✅ Fiches détaillées (vue dédiée, cross-refs cliquables, sens par langue).
+Selon la RFC 0007, le Lot 3 livre la mémorisation à long terme :
 
-**Le Lot 2 est terminé.** Prochaines orientations possibles (à arbitrer dans une RFC dédiée quand on ouvre le Lot 3) :
+1. Algorithme **SM-2** (~100 lignes, suffisant pour mono-utilisateur).
+2. Tracking de progression dans **`ProgressRepository`** (le port existe déjà ; l'adapter IndexedDB est à écrire).
+3. Files de révision : dûs / nouveaux / en cours.
+4. Première itération de **synchronisation backend** (best-effort au focus).
+5. API REST minimale côté back, accédée via `RestApiClient`.
 
-- Tri/filtre du glossaire : par radical, par tag, par fréquence d'apparition.
-- Statistiques d'apprentissage côté liste : % de caractères vus / pratiqués / réussis du premier coup.
-- Persistance des sessions de tracé (backend `progress` ?), pour alimenter les stats ci-dessus.
-- Mode révision (decks programmés, SRS basique).
+Critère de sortie du Lot 3 : faire une session de révision quotidienne et retrouver sa progression sur un autre appareil après sync.
+
+À arbitrer en début de Lot 3 :
+- RFC pour le format de stockage IndexedDB (clés, indexes, schéma de versioning) — probable nécessité.
+- RFC pour la stratégie de sync (best-effort, conflict resolution, offline-first) — probable nécessité.
+- Décider du moment où on branche le **filtre "statut d'apprentissage"** dans le glossaire (point reporté du Lot 2).
 
 ## Liens utiles
 
