@@ -15,7 +15,23 @@
     "characters": "Characters",
     "words": "Words",
     "no_results": "No results found.",
-    "practice": "Practice"
+    "practice": "Practice",
+    "details": "Details",
+    "detail": {
+      "back": "Glossary",
+      "practice": "Practice",
+      "facts": "Facts",
+      "hsk": "HSK level",
+      "stroke_count": "Stroke count",
+      "radicals": "Radicals",
+      "frequency": "Frequency rank",
+      "meanings": "Meanings",
+      "no_translations": "No translations available.",
+      "appears_in_words": "Appears in words",
+      "constituent_characters": "Constituent characters",
+      "examples": "Examples",
+      "not_found": "Entry not found."
+    }
   },
   "canvas": {
     "stroke_count_one": "{{count}} stroke validated",

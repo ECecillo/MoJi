@@ -9,9 +9,10 @@ type EntryType = 'character' | 'word';
 
 interface GlossaryProps {
   onSelect: (hanzi: string) => void;
+  onShowDetail: (entryId: string) => void;
 }
 
-export function Glossary({ onSelect }: GlossaryProps) {
+export function Glossary({ onSelect, onShowDetail }: GlossaryProps) {
   const { t, i18n } = useTranslation();
   const [type, setType] = useState<EntryType>('character');
   const [search, setSearch] = useState('');
@@ -118,12 +119,21 @@ export function Glossary({ onSelect }: GlossaryProps) {
                     </span>
                   </div>
                 </div>
-                <button
-                  onClick={() => onSelect(item.hanzi)}
-                  className="ml-2 border border-ink px-2 py-1 text-xs font-bold uppercase tracking-wider hover:bg-ink hover:text-paper"
-                >
-                  {t('glossary.practice')}
-                </button>
+                <div className="ml-2 flex shrink-0 flex-col gap-1">
+                  <button
+                    onClick={() => onShowDetail(item.id)}
+                    className="border border-ink px-2 py-1 text-xs font-bold uppercase tracking-wider hover:bg-ink hover:text-paper"
+                    data-testid="glossary-detail-button"
+                  >
+                    {t('glossary.details')}
+                  </button>
+                  <button
+                    onClick={() => onSelect(item.hanzi)}
+                    className="border border-ink px-2 py-1 text-xs font-bold uppercase tracking-wider hover:bg-ink hover:text-paper"
+                  >
+                    {t('glossary.practice')}
+                  </button>
+                </div>
               </div>
             ))}
           </div>

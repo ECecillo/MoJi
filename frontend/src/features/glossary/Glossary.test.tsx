@@ -10,9 +10,10 @@ describe('Glossary', () => {
   });
 
   const onSelect = vi.fn();
+  const onShowDetail = vi.fn();
 
   it('affiche les caractères par défaut et permet de chercher', async () => {
-    render(<Glossary onSelect={onSelect} />);
+    render(<Glossary onSelect={onSelect} onShowDetail={onShowDetail} />);
     const user = userEvent.setup();
 
     // Attendre le chargement
@@ -36,7 +37,7 @@ describe('Glossary', () => {
   });
 
   it('permet de basculer entre caractères et mots', async () => {
-    render(<Glossary onSelect={onSelect} />);
+    render(<Glossary onSelect={onSelect} onShowDetail={onShowDetail} />);
     const user = userEvent.setup();
 
     await screen.findByText(/Caractères/i);
@@ -49,12 +50,26 @@ describe('Glossary', () => {
   });
 
   it('appelle onSelect quand on clique sur Tracer', async () => {
-    render(<Glossary onSelect={onSelect} />);
+    render(<Glossary onSelect={onSelect} onShowDetail={onShowDetail} />);
     const user = userEvent.setup();
 
     const practiceButtons = await screen.findAllByRole('button', { name: /Tracer/i });
     await user.click(practiceButtons[0]!);
 
     expect(onSelect).toHaveBeenCalled();
+  });
+
+  it('appelle onShowDetail quand on clique sur Détails', async () => {
+    const onShowDetailSpy = vi.fn();
+    render(<Glossary onSelect={onSelect} onShowDetail={onShowDetailSpy} />);
+    const user = userEvent.setup();
+
+    const detailButtons = await screen.findAllByRole('button', { name: /Détails/i });
+    await user.click(detailButtons[0]!);
+
+    expect(onShowDetailSpy).toHaveBeenCalled();
+    // L'id passé est bien un id de la forme char_XXXX ou word_XXXX
+    const firstArg = onShowDetailSpy.mock.calls[0]![0] as string;
+    expect(firstArg).toMatch(/^(char|word)_/);
   });
 });

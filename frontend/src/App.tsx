@@ -3,10 +3,11 @@ import { useMemo, useState } from 'react';
 import { type SupportedLanguage } from './i18n';
 import { Canvas } from './features/canvas/Canvas';
 import { Glossary } from './features/glossary/Glossary';
+import { EntryDetail } from './features/glossary/EntryDetail';
 import { HanziWriterRenderer } from './adapters/renderer/HanziWriterRenderer';
 import type { GridType } from './ui/CharacterGrid';
 
-type View = 'glossary' | 'practice';
+type View = 'glossary' | 'detail' | 'practice';
 
 export function App() {
   const { t, i18n } = useTranslation();
@@ -17,6 +18,7 @@ export function App() {
   const [gridType, setGridType] = useState<GridType>('tian');
   const [showOutline, setShowOutline] = useState(true);
   const [selectedHanzi, setSelectedHanzi] = useState('你');
+  const [detailEntryId, setDetailEntryId] = useState<string | null>(null);
 
   const renderer = useMemo(() => new HanziWriterRenderer(), []);
 
@@ -29,13 +31,31 @@ export function App() {
     setView('practice');
   };
 
+  const handleShowDetail = (entryId: string) => {
+    setDetailEntryId(entryId);
+    setView('detail');
+  };
+
+  const handleBackToGlossary = () => {
+    setDetailEntryId(null);
+    setView('glossary');
+  };
+
+  const handleBackFromPractice = () => {
+    if (detailEntryId !== null) {
+      setView('detail');
+    } else {
+      setView('glossary');
+    }
+  };
+
   return (
     <main className="mx-auto flex h-full max-w-xl flex-col items-center gap-4 p-4 overflow-hidden bg-paper text-ink">
       <header className="flex w-full justify-between items-center px-2 shrink-0">
         <div className="flex items-center gap-2">
           {view === 'practice' && (
             <button
-              onClick={() => setView('glossary')}
+              onClick={handleBackFromPractice}
               className="mr-2 border border-ink px-2 py-1 text-xs font-bold"
             >
               ←
@@ -55,7 +75,14 @@ export function App() {
 
       <div className="flex-1 w-full overflow-hidden flex flex-col">
         {view === 'glossary' ? (
-          <Glossary onSelect={handleSelect} />
+          <Glossary onSelect={handleSelect} onShowDetail={handleShowDetail} />
+        ) : view === 'detail' && detailEntryId !== null ? (
+          <EntryDetail
+            entryId={detailEntryId}
+            onBack={handleBackToGlossary}
+            onPractice={handleSelect}
+            onShowDetail={handleShowDetail}
+          />
         ) : (
           <div className="flex flex-col items-center gap-4 py-4 w-full overflow-y-auto scrollbar-hide">
             <Canvas

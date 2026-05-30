@@ -15,7 +15,23 @@
     "characters": "Caractères",
     "words": "Mots",
     "no_results": "Aucun résultat pour cette recherche.",
-    "practice": "Tracer"
+    "practice": "Tracer",
+    "details": "Détails",
+    "detail": {
+      "back": "Glossaire",
+      "practice": "Tracer",
+      "facts": "Informations",
+      "hsk": "Niveau HSK",
+      "stroke_count": "Nombre de traits",
+      "radicals": "Radicaux",
+      "frequency": "Rang de fréquence",
+      "meanings": "Sens",
+      "no_translations": "Aucune traduction disponible.",
+      "appears_in_words": "Présent dans les mots",
+      "constituent_characters": "Caractères constitutifs",
+      "examples": "Exemples",
+      "not_found": "Entrée introuvable."
+    }
   },
   "canvas": {
     "stroke_count_one": "{{count}} trait validé",
