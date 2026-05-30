@@ -3,7 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { BundledDataSource } from '../../adapters/data/BundledDataSource';
 import hsk1Data from '../../data/hsk1.generated.json';
 import { pinyinToAscii, pinyinToString } from '../../lib/pinyin';
+import { mergeTranslations } from '../../lib/translations';
+import { useTranslationOverrides } from './useTranslationOverrides';
+import {
+  activeFilterCount,
+  matchesFilters,
+  uniqueTagsOf,
+  type GlossaryFilters,
+} from '../../lib/glossaryFilters';
 import type { Character, Word } from '../../domain/schema/types';
+import type { EntryId } from '../../domain/ports/TranslationOverrideRepository';
 
 type EntryType = 'character' | 'word';
 
@@ -21,6 +30,10 @@ export function Glossary({ onSelect, onShowDetail }: GlossaryProps) {
   const [loading, setLoading] = useState(true);
 
   const dataSource = useMemo(() => new BundledDataSource(hsk1Data), []);
+  const { overrides } = useTranslationOverrides();
+
+  const [filters, setFilters] = useState<GlossaryFilters>({});
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -39,25 +52,30 @@ export function Glossary({ onSelect, onShowDetail }: GlossaryProps) {
 
   const currentLang = i18n.resolvedLanguage || 'fr';
 
+  const allItems = type === 'character' ? characters : words;
+  const availableTags = useMemo(() => uniqueTagsOf(allItems), [allItems]);
+
   const filteredItems = useMemo(() => {
     const query = search.toLowerCase().trim();
-    const items = type === 'character' ? characters : words;
 
-    if (!query) return items;
+    return allItems.filter((item) => {
+      if (!matchesFilters(item, filters)) return false;
+      if (!query) return true;
 
-    return items.filter((item) => {
       const hanziMatch = item.hanzi.includes(query);
       // Recherche pinyin insensible aux diacritiques : tape "ni" et "nǐ" matche.
       const pinyinAscii = pinyinToAscii(item.pinyin).toLowerCase();
       const pinyinWithTones = pinyinToString(item.pinyin).toLowerCase();
       const pinyinMatch = pinyinAscii.includes(query) || pinyinWithTones.includes(query);
 
-      const allTranslations = Object.values(item.translations).flat();
+      // Recherche sur les traductions mergées (bundle + surcharges utilisateur).
+      const merged = mergeTranslations(item.translations, overrides[item.id as EntryId]);
+      const allTranslations = Object.values(merged).flat();
       const meaningMatch = allTranslations.some((t) => t.toLowerCase().includes(query));
 
       return hanziMatch || pinyinMatch || meaningMatch;
     });
-  }, [type, search, characters, words]);
+  }, [allItems, search, filters, overrides]);
 
   if (loading) {
     return <div className="p-8 text-center animate-pulse text-ink-muted">...</div>;
@@ -77,6 +95,15 @@ export function Glossary({ onSelect, onShowDetail }: GlossaryProps) {
             className="w-full border-2 border-ink bg-paper px-3 py-2 text-ink placeholder:text-ink-faint focus:outline-none"
           />
         </div>
+
+        <FilterPanel
+          type={type}
+          availableTags={availableTags}
+          filters={filters}
+          setFilters={setFilters}
+          open={filtersOpen}
+          setOpen={setFiltersOpen}
+        />
 
         <div className="flex border-b border-ink">
           <button
@@ -103,42 +130,215 @@ export function Glossary({ onSelect, onShowDetail }: GlossaryProps) {
           <p className="py-8 text-center text-ink-muted">{t('glossary.no_results')}</p>
         ) : (
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {filteredItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between border border-ink bg-paper p-3"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl font-hanzi text-ink">{item.hanzi}</span>
-                  <div className="flex flex-col">
-                    <span className="text-xs font-medium text-ink-muted">
-                      {pinyinToString(item.pinyin)}
-                    </span>
-                    <span className="line-clamp-1 text-xs text-ink-faint">
-                      {(item.translations[currentLang] || item.translations['en'] || []).join(', ')}
-                    </span>
+            {filteredItems.map((item) => {
+              const merged = mergeTranslations(item.translations, overrides[item.id as EntryId]);
+              const meaning = (merged[currentLang] || merged['en'] || []).join(', ');
+              return (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between border border-ink bg-paper p-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl font-hanzi text-ink">{item.hanzi}</span>
+                    <div className="flex flex-col">
+                      <span className="text-xs font-medium text-ink-muted">
+                        {pinyinToString(item.pinyin)}
+                      </span>
+                      <span className="line-clamp-1 text-xs text-ink-faint">{meaning}</span>
+                    </div>
+                  </div>
+                  <div className="ml-2 flex shrink-0 flex-col gap-1">
+                    <button
+                      onClick={() => onShowDetail(item.id)}
+                      className="border border-ink px-2 py-1 text-xs font-bold uppercase tracking-wider hover:bg-ink hover:text-paper"
+                      data-testid="glossary-detail-button"
+                    >
+                      {t('glossary.details')}
+                    </button>
+                    <button
+                      onClick={() => onSelect(item.hanzi)}
+                      className="border border-ink px-2 py-1 text-xs font-bold uppercase tracking-wider hover:bg-ink hover:text-paper"
+                    >
+                      {t('glossary.practice')}
+                    </button>
                   </div>
                 </div>
-                <div className="ml-2 flex shrink-0 flex-col gap-1">
-                  <button
-                    onClick={() => onShowDetail(item.id)}
-                    className="border border-ink px-2 py-1 text-xs font-bold uppercase tracking-wider hover:bg-ink hover:text-paper"
-                    data-testid="glossary-detail-button"
-                  >
-                    {t('glossary.details')}
-                  </button>
-                  <button
-                    onClick={() => onSelect(item.hanzi)}
-                    className="border border-ink px-2 py-1 text-xs font-bold uppercase tracking-wider hover:bg-ink hover:text-paper"
-                  >
-                    {t('glossary.practice')}
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+interface FilterPanelProps {
+  type: EntryType;
+  availableTags: string[];
+  filters: GlossaryFilters;
+  setFilters: (next: GlossaryFilters) => void;
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}
+
+function FilterPanel({
+  type,
+  availableTags,
+  filters,
+  setFilters,
+  open,
+  setOpen,
+}: FilterPanelProps) {
+  const { t } = useTranslation();
+  const activeCount = activeFilterCount(filters);
+  const isCharacterTab = type === 'character';
+
+  const toggleTag = (tag: string) => {
+    const set = new Set(filters.tags ?? []);
+    if (set.has(tag)) set.delete(tag);
+    else set.add(tag);
+    setFilters({ ...filters, tags: set });
+  };
+
+  const updateStrokeRange = (key: 'min' | 'max', raw: string) => {
+    const parsed = raw === '' ? null : Number.parseInt(raw, 10);
+    const value = parsed === null || Number.isNaN(parsed) ? null : parsed;
+    setFilters({ ...filters, strokeCount: { ...filters.strokeCount, [key]: value } });
+  };
+
+  const updateFrequencyRange = (key: 'min' | 'max', raw: string) => {
+    const parsed = raw === '' ? null : Number.parseInt(raw, 10);
+    const value = parsed === null || Number.isNaN(parsed) ? null : parsed;
+    setFilters({ ...filters, frequencyRank: { ...filters.frequencyRank, [key]: value } });
+  };
+
+  const reset = () => setFilters({});
+
+  return (
+    <div className="flex flex-col gap-2" data-testid="filter-panel">
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          className="border border-ink px-2 py-1 text-xs font-medium hover:bg-ink hover:text-paper"
+          data-testid="filter-toggle"
+          aria-expanded={open}
+        >
+          {t('glossary.filters.toggle')}
+          {activeCount > 0 && (
+            <span className="ml-1 inline-block min-w-[1.5em] rounded bg-ink px-1 text-paper">
+              {activeCount}
+            </span>
+          )}
+        </button>
+        {activeCount > 0 && (
+          <button
+            type="button"
+            onClick={reset}
+            className="text-xs text-ink-muted underline hover:text-ink"
+            data-testid="filter-reset"
+          >
+            {t('glossary.filters.reset')}
+          </button>
+        )}
+      </div>
+
+      {open && (
+        <div
+          className="flex flex-col gap-3 border border-ink p-3 text-sm"
+          data-testid="filter-body"
+        >
+          {availableTags.length > 0 ? (
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-medium uppercase tracking-wider text-ink-muted">
+                {t('glossary.filters.tags')}
+              </span>
+              <div className="flex flex-wrap gap-1">
+                {availableTags.map((tag) => {
+                  const selected = filters.tags?.has(tag) ?? false;
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => toggleTag(tag)}
+                      className={`border border-ink px-2 py-1 text-xs ${
+                        selected ? 'bg-ink text-paper' : ''
+                      }`}
+                      data-testid={`tag-${tag}`}
+                    >
+                      {tag}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs italic text-ink-faint">{t('glossary.filters.no_tags')}</p>
+          )}
+
+          {isCharacterTab && (
+            <>
+              <div className="flex flex-col gap-1">
+                <span className="text-xs font-medium uppercase tracking-wider text-ink-muted">
+                  {t('glossary.filters.stroke_count')}
+                </span>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={1}
+                    inputMode="numeric"
+                    placeholder={t('glossary.filters.min') ?? 'min'}
+                    value={filters.strokeCount?.min ?? ''}
+                    onChange={(e) => updateStrokeRange('min', e.target.value)}
+                    className="w-20 border border-ink bg-paper px-2 py-1 text-sm focus:outline-none"
+                    data-testid="filter-stroke-min"
+                  />
+                  <span className="text-ink-muted">–</span>
+                  <input
+                    type="number"
+                    min={1}
+                    inputMode="numeric"
+                    placeholder={t('glossary.filters.max') ?? 'max'}
+                    value={filters.strokeCount?.max ?? ''}
+                    onChange={(e) => updateStrokeRange('max', e.target.value)}
+                    className="w-20 border border-ink bg-paper px-2 py-1 text-sm focus:outline-none"
+                    data-testid="filter-stroke-max"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <span className="text-xs font-medium uppercase tracking-wider text-ink-muted">
+                  {t('glossary.filters.frequency')}
+                </span>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={1}
+                    inputMode="numeric"
+                    placeholder={t('glossary.filters.min') ?? 'min'}
+                    value={filters.frequencyRank?.min ?? ''}
+                    onChange={(e) => updateFrequencyRange('min', e.target.value)}
+                    className="w-20 border border-ink bg-paper px-2 py-1 text-sm focus:outline-none"
+                    data-testid="filter-frequency-min"
+                  />
+                  <span className="text-ink-muted">–</span>
+                  <input
+                    type="number"
+                    min={1}
+                    inputMode="numeric"
+                    placeholder={t('glossary.filters.max') ?? 'max'}
+                    value={filters.frequencyRank?.max ?? ''}
+                    onChange={(e) => updateFrequencyRange('max', e.target.value)}
+                    className="w-20 border border-ink bg-paper px-2 py-1 text-sm focus:outline-none"
+                    data-testid="filter-frequency-max"
+                  />
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

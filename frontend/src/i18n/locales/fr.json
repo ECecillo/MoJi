@@ -17,6 +17,16 @@
     "no_results": "Aucun résultat pour cette recherche.",
     "practice": "Tracer",
     "details": "Détails",
+    "filters": {
+      "toggle": "Filtres",
+      "reset": "Réinitialiser",
+      "tags": "Tags",
+      "no_tags": "Aucun tag dans les données pour l'instant.",
+      "stroke_count": "Nombre de traits",
+      "frequency": "Rang de fréquence",
+      "min": "min",
+      "max": "max"
+    },
     "detail": {
       "back": "Glossaire",
       "practice": "Tracer",
@@ -27,10 +37,18 @@
       "frequency": "Rang de fréquence",
       "meanings": "Sens",
       "no_translations": "Aucune traduction disponible.",
+      "no_translations_for_language": "Aucune traduction en {{lang}} pour l'instant.",
       "appears_in_words": "Présent dans les mots",
       "constituent_characters": "Caractères constitutifs",
       "examples": "Exemples",
-      "not_found": "Entrée introuvable."
+      "not_found": "Entrée introuvable.",
+      "edit_translations": "Modifier",
+      "add_translation": "Ajouter une traduction",
+      "remove_translation": "Supprimer cette traduction",
+      "translation_placeholder": "Saisir une traduction…",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "overridden_title": "Traduction personnelle"
     }
   },
   "canvas": {

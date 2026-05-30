@@ -7,6 +7,7 @@ import i18n from '../../i18n';
 describe('EntryDetail', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('fr');
+    window.localStorage.clear();
   });
 
   const onBack = vi.fn();
@@ -153,5 +154,103 @@ describe('EntryDetail', () => {
     );
 
     expect(await screen.findByText(/Entrée introuvable/i)).toBeInTheDocument();
+  });
+
+  describe('édition des traductions FR (surcharges locales)', () => {
+    it('affiche un bouton "Ajouter une traduction" quand FR est absent du bundle', async () => {
+      // Le bundle HSK 1 n'a pas de fr pour char_4F60 → on doit voir l'invite
+      // d'ajout dans la section français.
+      render(
+        <EntryDetail
+          entryId="char_4F60"
+          onBack={onBack}
+          onPractice={onPractice}
+          onShowDetail={onShowDetail}
+        />,
+      );
+
+      await screen.findByTestId('detail-hanzi');
+      expect(screen.getByTestId('translations-fr')).toBeInTheDocument();
+      expect(screen.getByTestId('edit-translations-fr')).toHaveTextContent(/ajouter/i);
+    });
+
+    it("permet d'ajouter une traduction FR et de la persister", async () => {
+      const user = userEvent.setup();
+      render(
+        <EntryDetail
+          entryId="char_4F60"
+          onBack={onBack}
+          onPractice={onPractice}
+          onShowDetail={onShowDetail}
+        />,
+      );
+
+      await screen.findByTestId('detail-hanzi');
+      await user.click(screen.getByTestId('edit-translations-fr'));
+
+      // Un input vide pré-rempli est présent
+      const input = await screen.findByTestId('translation-input');
+      await user.type(input, 'tu, toi');
+      await user.click(screen.getByTestId('save-translations'));
+
+      // Hors mode édition, la valeur saisie apparaît dans la liste
+      expect(await screen.findByText('tu, toi')).toBeInTheDocument();
+      // Marqueur de surcharge affiché
+      expect(screen.getByTestId('override-marker-fr')).toBeInTheDocument();
+      // Et persisté en localStorage (clé versionnée)
+      const raw = window.localStorage.getItem('sinogrammes:translation_overrides');
+      expect(raw).toContain('tu, toi');
+    });
+
+    it('ajoute plusieurs traductions via le bouton + Ajouter', async () => {
+      const user = userEvent.setup();
+      render(
+        <EntryDetail
+          entryId="char_4F60"
+          onBack={onBack}
+          onPractice={onPractice}
+          onShowDetail={onShowDetail}
+        />,
+      );
+
+      await screen.findByTestId('detail-hanzi');
+      await user.click(screen.getByTestId('edit-translations-fr'));
+
+      const firstInput = await screen.findByTestId('translation-input');
+      await user.type(firstInput, 'tu');
+      await user.click(screen.getByTestId('add-translation'));
+
+      const inputs = await screen.findAllByTestId('translation-input');
+      expect(inputs).toHaveLength(2);
+      await user.type(inputs[1]!, 'toi');
+      await user.click(screen.getByTestId('save-translations'));
+
+      expect(await screen.findByText('tu')).toBeInTheDocument();
+      expect(screen.getByText('toi')).toBeInTheDocument();
+    });
+
+    it("le bouton Annuler revient à l'état initial sans persister", async () => {
+      const user = userEvent.setup();
+      render(
+        <EntryDetail
+          entryId="char_4F60"
+          onBack={onBack}
+          onPractice={onPractice}
+          onShowDetail={onShowDetail}
+        />,
+      );
+
+      await screen.findByTestId('detail-hanzi');
+      await user.click(screen.getByTestId('edit-translations-fr'));
+
+      const input = await screen.findByTestId('translation-input');
+      await user.type(input, 'devrait disparaître');
+      await user.click(screen.getByTestId('cancel-translations'));
+
+      expect(screen.queryByText('devrait disparaître')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('override-marker-fr')).not.toBeInTheDocument();
+      // Aucune écriture localStorage
+      expect(window.localStorage.getItem('sinogrammes:translation_overrides')).toBeNull();
+    });
   });
 });

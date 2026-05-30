@@ -17,6 +17,16 @@
     "no_results": "No results found.",
     "practice": "Practice",
     "details": "Details",
+    "filters": {
+      "toggle": "Filters",
+      "reset": "Reset",
+      "tags": "Tags",
+      "no_tags": "No tags in the data yet.",
+      "stroke_count": "Stroke count",
+      "frequency": "Frequency rank",
+      "min": "min",
+      "max": "max"
+    },
     "detail": {
       "back": "Glossary",
       "practice": "Practice",
@@ -27,10 +37,18 @@
       "frequency": "Frequency rank",
       "meanings": "Meanings",
       "no_translations": "No translations available.",
+      "no_translations_for_language": "No translation in {{lang}} yet.",
       "appears_in_words": "Appears in words",
       "constituent_characters": "Constituent characters",
       "examples": "Examples",
-      "not_found": "Entry not found."
+      "not_found": "Entry not found.",
+      "edit_translations": "Edit",
+      "add_translation": "Add translation",
+      "remove_translation": "Remove this translation",
+      "translation_placeholder": "Enter a translation…",
+      "save": "Save",
+      "cancel": "Cancel",
+      "overridden_title": "Personal translation"
     }
   },
   "canvas": {

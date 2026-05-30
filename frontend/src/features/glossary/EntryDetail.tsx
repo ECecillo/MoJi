@@ -3,7 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { BundledDataSource } from '../../adapters/data/BundledDataSource';
 import hsk1Data from '../../data/hsk1.generated.json';
 import { pinyinToString } from '../../lib/pinyin';
-import type { Character, Word } from '../../domain/schema/types';
+import { mergeTranslations } from '../../lib/translations';
+import { useTranslationOverrides } from './useTranslationOverrides';
+import type { Character, Translations, Word } from '../../domain/schema/types';
+import type { EntryId, OverrideMap } from '../../domain/ports/TranslationOverrideRepository';
 
 interface EntryDetailProps {
   entryId: string;
@@ -22,6 +25,7 @@ export function EntryDetail({ entryId, onBack, onPractice, onShowDetail }: Entry
 
   const dataSource = useMemo(() => new BundledDataSource(hsk1Data), []);
   const currentLang = i18n.resolvedLanguage || 'fr';
+  const { overrides, setOverride } = useTranslationOverrides();
 
   useEffect(() => {
     let cancelled = false;
@@ -74,7 +78,11 @@ export function EntryDetail({ entryId, onBack, onPractice, onShowDetail }: Entry
   }
 
   const { hanzi, pinyin, translations } = entry.data;
-  const translationsByLang = Object.entries(translations);
+  const mergedTranslations: Translations = mergeTranslations(
+    translations,
+    overrides[entry.data.id],
+  );
+  const translationsByLang = Object.entries(mergedTranslations);
 
   return (
     <div
@@ -136,31 +144,39 @@ export function EntryDetail({ entryId, onBack, onPractice, onShowDetail }: Entry
         </dl>
       </section>
 
-      <section className="flex flex-col gap-2">
+      <section className="flex flex-col gap-3">
         <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-muted">
           {t('glossary.detail.meanings')}
         </h3>
-        {translationsByLang.length === 0 ? (
+        {translationsByLang.length === 0 &&
+        !translationsByLang.some(([lang]) => lang === currentLang) ? (
           <p className="text-sm text-ink-faint">{t('glossary.detail.no_translations')}</p>
-        ) : (
-          translationsByLang
-            .sort(([a], [b]) => {
-              if (a === currentLang) return -1;
-              if (b === currentLang) return 1;
-              return a.localeCompare(b);
-            })
-            .map(([lang, items]) => (
-              <div key={lang} className="flex flex-col gap-1">
-                <span className="text-xs font-medium uppercase tracking-wider text-ink-muted">
-                  {t(`language.${lang}`, { defaultValue: lang })}
-                </span>
-                <ul className="ml-4 list-disc text-sm text-ink">
-                  {items.map((meaning, idx) => (
-                    <li key={`${lang}-${idx}`}>{meaning}</li>
-                  ))}
-                </ul>
-              </div>
-            ))
+        ) : null}
+
+        {sortLanguagesWithCurrentFirst(translationsByLang, currentLang).map(([lang, items]) => (
+          <LanguageSection
+            key={lang}
+            entryId={entry.data.id as EntryId}
+            lang={lang}
+            items={items}
+            isOverridden={Boolean(overrides[entry.data.id as EntryId]?.[lang])}
+            currentLang={currentLang}
+            onSave={(values) => setOverride(entry.data.id as EntryId, lang, values)}
+          />
+        ))}
+
+        {/* Permettre d'ajouter une langue absente du bundle (typiquement FR
+            quand le bundle n'a que de l'anglais). Affichée seulement si la
+            langue courante n'est pas déjà présente. */}
+        {!translationsByLang.some(([lang]) => lang === currentLang) && (
+          <LanguageSection
+            entryId={entry.data.id as EntryId}
+            lang={currentLang}
+            items={[]}
+            isOverridden={false}
+            currentLang={currentLang}
+            onSave={(values) => setOverride(entry.data.id as EntryId, currentLang, values)}
+          />
         )}
       </section>
 
@@ -168,6 +184,7 @@ export function EntryDetail({ entryId, onBack, onPractice, onShowDetail }: Entry
         <CharacterWordsSection
           characterId={entry.data.id}
           words={words}
+          overrides={overrides}
           currentLang={currentLang}
           onShowDetail={onShowDetail}
         />
@@ -207,9 +224,213 @@ export function EntryDetail({ entryId, onBack, onPractice, onShowDetail }: Entry
   );
 }
 
+function sortLanguagesWithCurrentFirst<T>(
+  pairs: Array<[string, T]>,
+  currentLang: string,
+): Array<[string, T]> {
+  return [...pairs].sort(([a], [b]) => {
+    if (a === currentLang) return -1;
+    if (b === currentLang) return 1;
+    return a.localeCompare(b);
+  });
+}
+
+interface LanguageSectionProps {
+  entryId: EntryId;
+  lang: string;
+  items: string[];
+  isOverridden: boolean;
+  currentLang: string;
+  onSave: (values: string[]) => Promise<void>;
+}
+
+function LanguageSection({
+  entryId,
+  lang,
+  items,
+  isOverridden,
+  currentLang,
+  onSave,
+}: LanguageSectionProps) {
+  const { t } = useTranslation();
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<string[]>(items);
+  const [saving, setSaving] = useState(false);
+
+  // Si les items changent depuis l'extérieur (autre lang ajoutée par exemple),
+  // refléter dans le draft tant qu'on n'édite pas.
+  useEffect(() => {
+    if (!editing) setDraft(items);
+  }, [items, editing]);
+
+  const startEdit = () => {
+    setDraft(items.length === 0 ? [''] : [...items]);
+    setEditing(true);
+  };
+
+  const cancel = () => {
+    setEditing(false);
+    setDraft(items);
+  };
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await onSave(draft.map((s) => s.trim()).filter((s) => s.length > 0));
+      setEditing(false);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const langLabel = t(`language.${lang}`, { defaultValue: lang });
+  const isCurrent = lang === currentLang;
+  const showOverrideMark = isOverridden;
+
+  return (
+    <div className="flex flex-col gap-1" data-testid={`translations-${lang}`}>
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium uppercase tracking-wider text-ink-muted">
+          {langLabel}
+          {showOverrideMark && (
+            <span
+              className="ml-2 normal-case text-ink-faint"
+              data-testid={`override-marker-${lang}`}
+              title={t('glossary.detail.overridden_title') ?? ''}
+            >
+              ✎
+            </span>
+          )}
+        </span>
+        {!editing && isCurrent && (
+          <button
+            type="button"
+            onClick={startEdit}
+            className="border border-ink px-2 py-0.5 text-xs hover:bg-ink hover:text-paper"
+            data-testid={`edit-translations-${lang}`}
+          >
+            {items.length === 0
+              ? t('glossary.detail.add_translation')
+              : t('glossary.detail.edit_translations')}
+          </button>
+        )}
+      </div>
+
+      {!editing ? (
+        items.length > 0 ? (
+          <ul className="ml-4 list-disc text-sm text-ink">
+            {items.map((meaning, idx) => (
+              <li key={`${lang}-${idx}`}>{meaning}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="ml-4 text-xs italic text-ink-faint">
+            {t('glossary.detail.no_translations_for_language', { lang: langLabel })}
+          </p>
+        )
+      ) : (
+        <EditableTranslations
+          entryId={entryId}
+          lang={lang}
+          draft={draft}
+          setDraft={setDraft}
+          onSave={save}
+          onCancel={cancel}
+          saving={saving}
+        />
+      )}
+    </div>
+  );
+}
+
+interface EditableTranslationsProps {
+  entryId: EntryId;
+  lang: string;
+  draft: string[];
+  setDraft: (next: string[]) => void;
+  onSave: () => Promise<void> | void;
+  onCancel: () => void;
+  saving: boolean;
+}
+
+function EditableTranslations({
+  entryId,
+  lang,
+  draft,
+  setDraft,
+  onSave,
+  onCancel,
+  saving,
+}: EditableTranslationsProps) {
+  const { t } = useTranslation();
+
+  const update = (idx: number, value: string) =>
+    setDraft(draft.map((v, i) => (i === idx ? value : v)));
+  const remove = (idx: number) => setDraft(draft.filter((_, i) => i !== idx));
+  const add = () => setDraft([...draft, '']);
+
+  return (
+    <div className="ml-2 flex flex-col gap-2" data-testid={`edit-mode-${entryId}-${lang}`}>
+      {draft.map((value, idx) => (
+        <div key={idx} className="flex items-center gap-2">
+          <input
+            type="text"
+            value={value}
+            onChange={(e) => update(idx, e.target.value)}
+            className="flex-1 border border-ink bg-paper px-2 py-1 text-sm focus:outline-none"
+            placeholder={t('glossary.detail.translation_placeholder') ?? ''}
+            data-testid="translation-input"
+            ref={(el) => {
+              if (el && idx === draft.length - 1) el.focus();
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => remove(idx)}
+            className="border border-ink px-2 py-1 text-xs hover:bg-ink hover:text-paper"
+            aria-label={t('glossary.detail.remove_translation') ?? ''}
+          >
+            ✕
+          </button>
+        </div>
+      ))}
+
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={add}
+          className="border border-ink px-2 py-1 text-xs hover:bg-ink hover:text-paper"
+          data-testid="add-translation"
+        >
+          + {t('glossary.detail.add_translation')}
+        </button>
+        <button
+          type="button"
+          onClick={() => void onSave()}
+          disabled={saving}
+          className="border-2 border-ink bg-ink px-3 py-1 text-xs font-bold uppercase text-paper disabled:opacity-50"
+          data-testid="save-translations"
+        >
+          {t('glossary.detail.save')}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={saving}
+          className="border border-ink px-3 py-1 text-xs disabled:opacity-50"
+          data-testid="cancel-translations"
+        >
+          {t('glossary.detail.cancel')}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 interface CharacterWordsSectionProps {
   characterId: string;
   words: Word[];
+  overrides: OverrideMap;
   currentLang: string;
   onShowDetail: (id: string) => void;
 }
@@ -217,6 +438,7 @@ interface CharacterWordsSectionProps {
 function CharacterWordsSection({
   characterId,
   words,
+  overrides,
   currentLang,
   onShowDetail,
 }: CharacterWordsSectionProps) {
@@ -231,21 +453,23 @@ function CharacterWordsSection({
         {t('glossary.detail.appears_in_words')} ({related.length})
       </h3>
       <ul className="flex flex-col gap-1">
-        {related.map((w) => (
-          <li key={w.id}>
-            <button
-              onClick={() => onShowDetail(w.id)}
-              className="flex w-full items-baseline gap-2 border border-ink bg-paper p-2 text-left hover:bg-ink hover:text-paper"
-              data-testid="related-word"
-            >
-              <span className="font-hanzi text-lg">{w.hanzi}</span>
-              <span className="text-xs text-ink-muted">{pinyinToString(w.pinyin)}</span>
-              <span className="line-clamp-1 flex-1 text-xs text-ink-faint">
-                {(w.translations[currentLang] || w.translations['en'] || []).slice(0, 2).join(', ')}
-              </span>
-            </button>
-          </li>
-        ))}
+        {related.map((w) => {
+          const merged = mergeTranslations(w.translations, overrides[w.id as EntryId]);
+          const display = (merged[currentLang] || merged['en'] || []).slice(0, 2).join(', ');
+          return (
+            <li key={w.id}>
+              <button
+                onClick={() => onShowDetail(w.id)}
+                className="flex w-full items-baseline gap-2 border border-ink bg-paper p-2 text-left hover:bg-ink hover:text-paper"
+                data-testid="related-word"
+              >
+                <span className="font-hanzi text-lg">{w.hanzi}</span>
+                <span className="text-xs text-ink-muted">{pinyinToString(w.pinyin)}</span>
+                <span className="line-clamp-1 flex-1 text-xs text-ink-faint">{display}</span>
+              </button>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );
