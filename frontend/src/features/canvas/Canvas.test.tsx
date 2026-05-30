@@ -354,6 +354,165 @@ describe('Canvas', () => {
     expect(screen.getByTestId('verdict-message')).toHaveTextContent('Trait 3 validé');
   });
 
+  describe('détection trait répété', () => {
+    function traceStroke(
+      layer: HTMLElement,
+      pointerId: number,
+      from: [number, number],
+      to: [number, number],
+    ) {
+      dispatchPointer(layer, 'pointerdown', {
+        pointerId,
+        pointerType: 'pen',
+        isPrimary: true,
+        clientX: from[0],
+        clientY: from[1],
+      });
+      dispatchPointer(layer, 'pointerup', {
+        pointerId,
+        pointerType: 'pen',
+        clientX: to[0],
+        clientY: to[1],
+      });
+    }
+
+    it('requalifie un trait refusé en "trait déjà tracé" s\'il ressemble à un trait accepté', () => {
+      const renderer = new FakeRenderer();
+      render(<Canvas hanzi="你" renderer={renderer} size={320} />);
+      const layer = inputLayer();
+
+      // 1er trait : accepté
+      renderer.validateStroke.mockReturnValueOnce({ expectedStrokeIndex: 0, accepted: true });
+      traceStroke(layer, 1, [50, 50], [100, 100]);
+
+      // 2ᵉ trait : Hanzi Writer refuse, mais on retrace exactement les mêmes
+      // endpoints — Canvas doit le détecter comme un trait déjà tracé.
+      renderer.validateStroke.mockReturnValueOnce({
+        expectedStrokeIndex: 1,
+        accepted: false,
+        reason: 'wrong_stroke',
+      });
+      traceStroke(layer, 2, [52, 48], [101, 99]);
+
+      // Message non-punitif
+      expect(screen.getByTestId('verdict-message')).toHaveTextContent(/déjà tracé/i);
+
+      // L'affichage n'a PAS été pollué par le re-trace (un seul polyline,
+      // celui du trait validé en fin de ligne)
+      const polylines = document.querySelectorAll('polyline');
+      expect(polylines).toHaveLength(1);
+    });
+
+    it("un trait refusé loin d'un trait accepté reste affiché comme refusé", () => {
+      const renderer = new FakeRenderer();
+      render(<Canvas hanzi="你" renderer={renderer} size={320} />);
+      const layer = inputLayer();
+
+      renderer.validateStroke.mockReturnValueOnce({ expectedStrokeIndex: 0, accepted: true });
+      traceStroke(layer, 1, [10, 10], [20, 20]);
+
+      renderer.validateStroke.mockReturnValueOnce({
+        expectedStrokeIndex: 1,
+        accepted: false,
+        reason: 'wrong_stroke',
+      });
+      traceStroke(layer, 2, [250, 250], [300, 280]);
+
+      expect(screen.getByTestId('verdict-message')).toHaveTextContent(/mauvais trait/i);
+      const polylines = document.querySelectorAll('polyline');
+      expect(polylines).toHaveLength(2);
+    });
+  });
+
+  describe('boutons Annuler / Tout effacer', () => {
+    it('Annuler retire le dernier trait du SVG et efface le verdict', () => {
+      const renderer = new FakeRenderer();
+      render(<Canvas hanzi="你" renderer={renderer} />);
+      const layer = inputLayer();
+
+      dispatchPointer(layer, 'pointerdown', {
+        pointerId: 1,
+        pointerType: 'pen',
+        isPrimary: true,
+        clientX: 1,
+        clientY: 2,
+      });
+      dispatchPointer(layer, 'pointerup', {
+        pointerId: 1,
+        pointerType: 'pen',
+        clientX: 3,
+        clientY: 4,
+      });
+      expect(document.querySelectorAll('polyline')).toHaveLength(1);
+      expect(screen.queryByTestId('verdict-message')).not.toBeNull();
+
+      fireEvent.click(screen.getByTestId('undo-last'));
+      expect(document.querySelectorAll('polyline')).toHaveLength(0);
+      expect(screen.queryByTestId('verdict-message')).toBeNull();
+    });
+
+    it('Tout effacer vide les traits, le verdict ET appelle renderer.reset()', () => {
+      const renderer = new FakeRenderer();
+      render(<Canvas hanzi="你" renderer={renderer} />);
+      const layer = inputLayer();
+
+      for (let i = 0; i < 2; i++) {
+        dispatchPointer(layer, 'pointerdown', {
+          pointerId: i + 1,
+          pointerType: 'pen',
+          isPrimary: true,
+          clientX: 1,
+          clientY: 2,
+        });
+        dispatchPointer(layer, 'pointerup', {
+          pointerId: i + 1,
+          pointerType: 'pen',
+          clientX: 3,
+          clientY: 4,
+        });
+      }
+      // 2 polylines avant reset (les deux acceptés via la valeur par défaut du mock)
+      expect(document.querySelectorAll('polyline').length).toBeGreaterThan(0);
+
+      fireEvent.click(screen.getByTestId('reset-all'));
+
+      expect(document.querySelectorAll('polyline')).toHaveLength(0);
+      expect(screen.getByTestId('accepted-count')).toHaveTextContent('0 trait validé');
+      expect(renderer.reset).toHaveBeenCalledTimes(1);
+    });
+
+    it("les deux boutons sont désactivés tant qu'aucun trait n'a été tracé", () => {
+      const renderer = new FakeRenderer();
+      render(<Canvas hanzi="你" renderer={renderer} />);
+
+      expect(screen.getByTestId('undo-last')).toBeDisabled();
+      expect(screen.getByTestId('reset-all')).toBeDisabled();
+    });
+
+    it("les deux boutons s'activent après un premier trait", () => {
+      const renderer = new FakeRenderer();
+      render(<Canvas hanzi="你" renderer={renderer} />);
+      const layer = inputLayer();
+
+      dispatchPointer(layer, 'pointerdown', {
+        pointerId: 1,
+        pointerType: 'pen',
+        isPrimary: true,
+        clientX: 1,
+        clientY: 2,
+      });
+      dispatchPointer(layer, 'pointerup', {
+        pointerId: 1,
+        pointerType: 'pen',
+        clientX: 3,
+        clientY: 4,
+      });
+
+      expect(screen.getByTestId('undo-last')).not.toBeDisabled();
+      expect(screen.getByTestId('reset-all')).not.toBeDisabled();
+    });
+  });
+
   it('affiche un message explicite quand le trait est dans le mauvais sens', () => {
     const renderer = new FakeRenderer();
     renderer.validateStroke.mockReturnValue({

@@ -42,7 +42,10 @@
       "wrong_stroke": "Mauvais trait, recommence",
       "too_short": "Trait trop court",
       "out_of_bounds": "Hors zone, reste dans le cadre",
+      "repeated_stroke": "Trait déjà tracé, passe au suivant",
       "default": "Refusé, recommence"
-    }
+    },
+    "undo_last": "Annuler le dernier trait",
+    "reset_all": "Tout effacer"
   }
 }

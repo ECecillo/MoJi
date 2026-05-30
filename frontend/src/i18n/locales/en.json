@@ -42,7 +42,10 @@
       "wrong_stroke": "Wrong stroke, try again",
       "too_short": "Stroke too short",
       "out_of_bounds": "Outside the canvas",
+      "repeated_stroke": "Already drawn, move on to the next stroke",
       "default": "Refused, try again"
-    }
+    },
+    "undo_last": "Undo last stroke",
+    "reset_all": "Clear all"
   }
 }

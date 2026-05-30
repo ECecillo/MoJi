@@ -19,8 +19,11 @@ export interface StrokeValidationResult {
   expectedStrokeIndex: number;
   /** True si le tracé est accepté (bon trait, bonne direction). */
   accepted: boolean;
-  /** Si refusé, raison machine-readable destinée à l'UI. */
-  reason?: 'wrong_stroke' | 'wrong_direction' | 'too_short' | 'out_of_bounds';
+  /** Si refusé, raison machine-readable destinée à l'UI.
+   *  - `repeated_stroke` est synthétisé par la couche UI (Canvas) quand le
+   *    trait refusé ressemble géométriquement à un trait déjà accepté.
+   *    L'adapter de port ne le produit jamais directement. */
+  reason?: 'wrong_stroke' | 'wrong_direction' | 'too_short' | 'out_of_bounds' | 'repeated_stroke';
 }
 
 export interface CharacterRenderer {

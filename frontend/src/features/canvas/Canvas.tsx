@@ -12,6 +12,7 @@ import type {
   StrokeValidationResult,
 } from '../../domain/ports/CharacterRenderer';
 import { CharacterGrid, type GridType } from '../../ui/CharacterGrid';
+import { endpointToleranceFromCanvasSize, strokesAreSimilar } from '../../lib/strokeSimilarity';
 
 export interface CapturedStrokeAttempt extends StrokeAttempt {
   tilts: ReadonlyArray<{ x: number; y: number }>;
@@ -154,11 +155,32 @@ export function Canvas({
     }
 
     const attempt = toAttempt(active);
-    const result = renderer.validateStroke(attempt);
-    setCompletedStrokes((strokes) => [
-      ...strokes,
-      { points: active.points, accepted: result.accepted },
-    ]);
+    const rawResult = renderer.validateStroke(attempt);
+
+    // Si Hanzi Writer refuse, on vérifie si le tracé ressemble géométriquement
+    // à un trait déjà validé. Cas typique : l'utilisateur retrace par erreur
+    // (ou exprès, pour s'entraîner) un trait qu'il vient de valider. On
+    // requalifie alors le verdict en `repeated_stroke` pour ne pas confondre
+    // l'utilisateur, et on n'ajoute PAS ce tracé à la liste affichée
+    // (la polyline pâle du trait original suffit).
+    const tolerance = endpointToleranceFromCanvasSize(size);
+    const acceptedStrokes = completedStrokes.filter((s) => s.accepted);
+    const isRepeat =
+      !rawResult.accepted &&
+      acceptedStrokes.some((s) =>
+        strokesAreSimilar(s.points, active.points, { endpointToleranceInPx: tolerance }),
+      );
+
+    const result: StrokeValidationResult = isRepeat
+      ? { ...rawResult, reason: 'repeated_stroke' }
+      : rawResult;
+
+    if (!isRepeat) {
+      setCompletedStrokes((strokes) => [
+        ...strokes,
+        { points: active.points, accepted: result.accepted },
+      ]);
+    }
     setCurrentPoints([]);
     setVerdict(result);
     activeStrokeRef.current = null;
@@ -169,6 +191,26 @@ export function Canvas({
     }
     onStrokeValidated?.(result, attempt);
     event.preventDefault();
+  };
+
+  const undoLastStroke = () => {
+    setCompletedStrokes((strokes) => {
+      if (strokes.length === 0) return strokes;
+      // On retire le dernier en date, qu'il soit accepté ou refusé. Un trait
+      // accepté retiré ne ré-engage PAS le quiz côté Hanzi Writer (qui a déjà
+      // avancé) — c'est volontaire : Annuler n'efface que l'affichage, pour
+      // un reset complet utiliser "Tout effacer".
+      return strokes.slice(0, -1);
+    });
+    setVerdict(null);
+  };
+
+  const resetAll = () => {
+    renderer.reset();
+    setCompletedStrokes([]);
+    setCurrentPoints([]);
+    setVerdict(null);
+    activeStrokeRef.current = null;
   };
 
   const cancelStroke = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -257,6 +299,27 @@ export function Canvas({
               : t(`canvas.verdict_refused.${verdict.reason ?? 'default'}`)}
           </p>
         ) : null}
+      </div>
+
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={undoLastStroke}
+          disabled={completedStrokes.length === 0}
+          className="border border-ink px-3 py-1 text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+          data-testid="undo-last"
+        >
+          {t('canvas.undo_last')}
+        </button>
+        <button
+          type="button"
+          onClick={resetAll}
+          disabled={completedStrokes.length === 0 && verdict === null}
+          className="border border-ink px-3 py-1 text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+          data-testid="reset-all"
+        >
+          {t('canvas.reset_all')}
+        </button>
       </div>
     </section>
   );
