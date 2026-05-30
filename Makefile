@@ -5,7 +5,7 @@
 SHELL := /bin/sh
 
 .PHONY: help install dev dev-front dev-front-lan dev-back \
-        test test-front test-back \
+        test test-front test-back test-e2e \
         lint lint-front lint-back \
         typecheck build build-front build-back \
         vendor-sources build-data docs \
@@ -16,7 +16,8 @@ help:
 	@echo "  make install     — installe les dépendances front (npm) et back (go mod)"
 	@echo "  make dev         — lance front (Vite) et back (Go) en parallèle"
 	@echo "  make dev-front-lan — lance le front accessible depuis le réseau local"
-	@echo "  make test        — exécute les tests des deux côtés"
+	@echo "  make test        — exécute les tests unitaires des deux côtés"
+	@echo "  make test-e2e    — exécute les tests E2E Playwright (Chromium)"
 	@echo "  make lint        — exécute lint + format check des deux côtés"
 	@echo "  make typecheck   — typecheck strict TypeScript"
 	@echo "  make build       — compile front et back"
@@ -61,6 +62,11 @@ test-back:
 	cd backend && go test ./... -race -count=1
 
 test: test-front test-back
+
+# Tests end-to-end (Playwright, Chromium). Plus lents, à lancer
+# manuellement avant un push (cf. RFC 0009).
+test-e2e:
+	cd frontend && npm run test:e2e
 
 # ─────────── lint ───────────
 

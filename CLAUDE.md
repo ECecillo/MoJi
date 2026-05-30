@@ -68,6 +68,14 @@ Toutes les commandes se lancent **depuis la racine du repo** via `make`. `make h
 
 Les trois doivent passer vert. En cas d'erreurs de format Prettier : `cd frontend && npm run lint:fix`.
 
+### À lancer avant tout push (et après changements de UI / flows)
+
+| Commande         | Effet                                                             |
+|------------------|-------------------------------------------------------------------|
+| `make test-e2e`  | Playwright (Chromium), ~10s. Lance Vite automatiquement. Cf. [RFC 0009](docs/rfc/0009-tests-e2e.md). |
+
+Recommandé après tout changement à `features/`, `adapters/`, ou un flux utilisateur. Pas obligatoire pour les modifications purement domain/backend/tooling.
+
 ### Développement
 
 | Commande           | Effet                                                             |

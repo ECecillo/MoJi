@@ -71,5 +71,15 @@ module.exports = {
       },
     },
   ],
-  ignorePatterns: ['dist', 'node_modules', 'coverage', '*.cjs', 'postcss.config.js'],
+  ignorePatterns: [
+    'dist',
+    'node_modules',
+    'coverage',
+    '*.cjs',
+    'postcss.config.js',
+    'playwright.config.ts',
+    'e2e/**',
+    'test-results',
+    'playwright-report',
+  ],
 };

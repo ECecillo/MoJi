@@ -19,6 +19,12 @@ frontend/.vite/
 frontend/.eslintcache
 *.tsbuildinfo
 
+# Playwright E2E
+frontend/test-results/
+frontend/playwright-report/
+frontend/blob-report/
+frontend/.playwright/
+
 # Go / backend
 backend/bin/
 backend/coverage.out

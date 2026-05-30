@@ -11,3 +11,9 @@ src/data/*.generated.json
 
 # Carnet de bord HTML généré par scripts/build-docs-index.ts
 ../docs/index.html
+
+# Artefacts Playwright (rapports, traces, screenshots)
+test-results
+playwright-report
+blob-report
+.playwright

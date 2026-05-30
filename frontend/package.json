@@ -15,7 +15,10 @@
     "typecheck": "tsc --noEmit",
     "vendor:sources": "tsx scripts/vendor-sources.ts",
     "build:data": "tsx scripts/build-hsk1-data.ts",
-    "build:docs": "tsx scripts/build-docs-index.ts"
+    "build:docs": "tsx scripts/build-docs-index.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "hanzi-writer": "^3.7.3",
@@ -28,6 +31,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@testing-library/user-event": "^14.5.2",
