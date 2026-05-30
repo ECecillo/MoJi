@@ -73,10 +73,12 @@ export function Canvas({
     let cancelled = false;
 
     void renderer.mount(layer, hanzi).then(() => {
-      if (cancelled) {
-        renderer.unmount();
-        return;
-      }
+      // ⚠ Race StrictMode : la 1ʳᵉ mount() peut se résoudre APRÈS son cleanup.
+      // Si on appelle renderer.unmount() ici, on clobber la 2ᵉ mount déjà en
+      // cours qui partage la même instance de renderer. Le cleanup du
+      // useEffect s'occupe déjà du démontage réel ; on se contente de NE PAS
+      // signaler le mount comme prêt si on a été annulé entre-temps.
+      if (cancelled) return;
       setMountVersion((v) => v + 1);
     });
 
@@ -121,7 +123,15 @@ export function Canvas({
       points: [point],
     };
     setCurrentPoints([point]);
-    event.currentTarget.setPointerCapture?.(event.pointerId);
+    // setPointerCapture peut lever NotFoundError sur des PointerEvent
+    // synthétiques (tests E2E, dispatchEvent). On l'absorbe : la capture
+    // est un bonus pour suivre un pointeur qui sort du composant, pas
+    // indispensable au flux de tracé.
+    try {
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+    } catch {
+      // ignored
+    }
     event.preventDefault();
   };
 
@@ -152,7 +162,11 @@ export function Canvas({
     setCurrentPoints([]);
     setVerdict(result);
     activeStrokeRef.current = null;
-    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    try {
+      event.currentTarget.releasePointerCapture?.(event.pointerId);
+    } catch {
+      // ignored (cf. note dans startStroke).
+    }
     onStrokeValidated?.(result, attempt);
     event.preventDefault();
   };
@@ -162,7 +176,11 @@ export function Canvas({
     if (!active || active.pointerId !== event.pointerId) return;
     activeStrokeRef.current = null;
     setCurrentPoints([]);
-    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    try {
+      event.currentTarget.releasePointerCapture?.(event.pointerId);
+    } catch {
+      // ignored
+    }
     event.preventDefault();
   };
 
@@ -213,6 +231,7 @@ export function Canvas({
           role="application"
           tabIndex={0}
           aria-label={`Zone de saisie stylet pour ${hanzi}`}
+          data-renderer-mounted={mountVersion > 0 ? 'true' : 'false'}
           onPointerDown={startStroke}
           onPointerMove={continueStroke}
           onPointerUp={finishStroke}
