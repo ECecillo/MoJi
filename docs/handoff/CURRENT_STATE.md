@@ -2,13 +2,13 @@
 
 > **Fichier toujours à jour.** À mettre à jour à la fin de chaque session de travail. Répond à la question : "où en est le projet, là, maintenant ?"
 
-**Dernière mise à jour** : 2026-05-30 (session 3)
+**Dernière mise à jour** : 2026-05-30 (session 4)
 
 ## Lot en cours
 
-**Lot 2 — Glossaire** : ✅ **clôturé officiellement** selon la RFC 0007. Liste, recherche, navigation vers le tracé, fiches détaillées, filtres (tags/traits/fréquence) et éditeur de traductions FR (RFC 0010) sont en place. Le filtre "statut d'apprentissage" est reporté au Lot 3 (dépend de la progression).
+**Lot 3 — Système de révision** : 🟡 **en cours**, sprint 1 livré (SM-2 pur, `ProgressRepository` localStorage, hookup canvas, bouton Réviser). Reste : tableau de bord / statuts d'apprentissage, sync backend, puis IndexedDB si le volume ou les besoins de query le justifient.
 
-**Prochain lot** : Lot 3 — Système de révision (SM-2 + `ProgressRepository` IndexedDB + sync backend). À ouvrir.
+**Lot 2** : ✅ clôturé officiellement (RFC 0007 + RFC 0010).
 
 ## Ce qui est fait
 
@@ -76,6 +76,20 @@ Cf. [`docs/journal/2026-05-30-canvas-undo-reset-repeat-detection.md`](../journal
 - ✅ Port `CharacterRenderer` étendu avec `reason: 'repeated_stroke'` (valeur synthétisée par l'UI, jamais produite par l'adapter).
 - ✅ Couverture : 9 tests sur le helper, 7 tests sur Canvas, 3 scénarios E2E (`e2e/canvas-controls.spec.ts`).
 
+### Lot 3 sprint 1 — SM-2 + ProgressRepository localStorage (session 4)
+
+Cf. [`docs/journal/2026-05-30-lot3-sprint1.md`](../journal/2026-05-30-lot3-sprint1.md).
+
+- ✅ **Bibliothèque SRS pure** (`src/lib/srs/`) : `sm2.ts` (applyReview, ease minoré 1.3, intervalle SM-2 standard), `quality.ts` (mapping refusals → quality 0-5, abandon → 0), `dueQueue.ts` (isDue, countDue, pickNextDue). 23 tests Vitest.
+- ✅ **Adapter `LocalStorageProgressRepository`** : implémente le port `ProgressRepository` (Lot 0). Blob JSON sous `sinogrammes:progress`, `schema_version: 1`, retombe sur `[]` en cas de corruption / version inconnue. 9 tests.
+- ✅ **Renderer port étendu** avec `setOnComplete(callback): () => unregister`. Implémenté côté Hanzi Writer via `QuizOptions.onComplete`.
+- ✅ **Canvas** : compteur de refus authentiques (hors `repeated_stroke`) via `useRef`, émission `onCharacterCompleted({refusals, completed: true})` une seule fois par session, reset au changement de hanzi et à `resetAll`. 5 tests sur l'émission.
+- ✅ **Hook `useProgress`** : charge la progression, expose `entries` réactif et `recordSession(ref, session, today?)` qui applique SM-2 + persiste. 5 tests d'intégration (création, cumul, abandon, persistance reload).
+- ✅ **App** : charge le bundle pour résoudre hanzi ↔ id, gère `onCharacterCompleted` du Canvas, expose un bouton **"Réviser (N)"** dans le header qui ouvre le caractère le plus en retard via `pickNextDue`. Désactivé si N=0.
+- ✅ **i18n** : section `review.button_*` avec pluralisation.
+- ✅ **E2E** (`e2e/srs-review.spec.ts`, 4 scénarios) : seed localStorage + assertions sur le compteur, l'ouverture du bon caractère, la persistance au reload.
+- ⚠ **Déviation explicite à RFC 0007** : localStorage au lieu d'IndexedDB pour le sprint 1. Justifications dans le journal (parité RFC 0010, volume petit, migration future via le port). Décision tracée sans nouvelle RFC.
+
 ### Clôture du Lot 2 — éditeur FR + filtres (session 3)
 
 Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lot2.md) et [RFC 0010](../rfc/0010-surcharges-traductions-locales.md).
@@ -87,14 +101,17 @@ Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lo
 
 ## Vérifications croisées
 
-- `make test` : **151 tests front passent**, 2 paquets back passent avec `-race`.
-- `make test-e2e` : **24/24 tests E2E verts** (Chromium, ~4,3 s).
+- `make test` : **193 tests front passent**, 2 paquets back passent avec `-race`.
+- `make test-e2e` : **28/28 tests E2E verts** (Chromium, ~4,9 s).
 - `make lint` : ESLint + Prettier propres, golangci-lint 0 issue.
 - `make typecheck` : `tsc --noEmit` propre.
-- `make docs` : `docs/index.html` à jour (10 RFC + 13 entrées de journal).
+- `make docs` : `docs/index.html` à jour (10 RFC + 14 entrées de journal).
 
 ## Dernières décisions importantes
 
+- 2026-05-30 (s4) : **déviation à RFC 0007 sur la persistance du Lot 3** : localStorage au lieu d'IndexedDB pour le sprint 1. Justifié par parité avec RFC 0010, volume petit, migration future possible via le port `ProgressRepository`. Décision tracée dans le journal, pas de nouvelle RFC pour cette première itération.
+- 2026-05-30 (s4) : **SM-2 = unité de progression au caractère, pas au mot**. Les mots ne sont pas tracés en propre dans le Lot 1-2 ; les ajouter à la file SRS demanderait une UX dédiée (tracé séquentiel des constituants) qui sortirait du périmètre.
+- 2026-05-30 (s4) : **convention SM-2 : update ease avant compute interval** (vs l'inverse présent dans certaines références). Effet : intervalles très légèrement plus grands ; négligeable mono-utilisateur.
 - 2026-05-30 (s3) : **port `TranslationOverrideRepository` côté domain + adapter localStorage** (cf. [RFC 0010](../rfc/0010-surcharges-traductions-locales.md)). Format : blob JSON unique versionné. Sémantique : la surcharge remplace intégralement le bundle pour la langue concernée (pas d'empilement).
 - 2026-05-30 (s3) : **édition limitée à la langue courante** (l'utilisateur FR édite son FR). UI inline, marqueur ✎ pour distinguer ses traductions de celles du bundle.
 - 2026-05-30 (s3) : **filtres glossaire = 3 axes** (tags, traits, fréquence). Le statut d'apprentissage est officiellement reporté au Lot 3. Le filtre par tags est rendu même si aucun tag n'est encore présent dans le bundle (extensibilité prête).
@@ -117,22 +134,15 @@ Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lo
 
 Aucun.
 
-## Prochaines étapes — Ouverture du Lot 3 (Système de révision)
+## Prochaines étapes — Lot 3 sprints suivants
 
-Selon la RFC 0007, le Lot 3 livre la mémorisation à long terme :
+Sprint 1 livré (session 4). Reste :
 
-1. Algorithme **SM-2** (~100 lignes, suffisant pour mono-utilisateur).
-2. Tracking de progression dans **`ProgressRepository`** (le port existe déjà ; l'adapter IndexedDB est à écrire).
-3. Files de révision : dûs / nouveaux / en cours.
-4. Première itération de **synchronisation backend** (best-effort au focus).
-5. API REST minimale côté back, accédée via `RestApiClient`.
+- **UI tableau de bord / statuts** : vue dédiée "aujourd'hui / cette semaine / en retard", historique d'attempts par caractère sur la fiche détaillée, badge "déjà vu N fois" sur les cartes du glossaire, filtre "statut d'apprentissage" reporté du Lot 2.
+- **Sync backend** : RFC pour la stratégie de sync (conflict resolution, best-effort, offline-first), schéma SQL côté Go, endpoint REST `/progress`, `RestApiClient`, sync au focus de l'app.
+- **IndexedDB (quand justifié)** : bascule de localStorage vers IndexedDB si le volume ou les besoins de query (indexes par date, transactions) le justifient. Nécessitera une RFC qui documente le schéma et la migration depuis localStorage.
 
-Critère de sortie du Lot 3 : faire une session de révision quotidienne et retrouver sa progression sur un autre appareil après sync.
-
-À arbitrer en début de Lot 3 :
-- RFC pour le format de stockage IndexedDB (clés, indexes, schéma de versioning) — probable nécessité.
-- RFC pour la stratégie de sync (best-effort, conflict resolution, offline-first) — probable nécessité.
-- Décider du moment où on branche le **filtre "statut d'apprentissage"** dans le glossaire (point reporté du Lot 2).
+Critère de sortie du Lot 3 (cf. RFC 0007) : faire une session de révision quotidienne et retrouver sa progression sur un autre appareil après sync. Le sprint 1 ne couvre que la révision locale ; la sync est l'objectif de la prochaine phase backend.
 
 ## Liens utiles
 

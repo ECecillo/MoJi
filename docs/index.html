@@ -168,14 +168,14 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <nav class="topnav"><div class="wrap">
   <a href="#etat">État courant</a>
   <a href="#rfc">RFC (10)</a>
-  <a href="#journal">Journal (13)</a>
+  <a href="#journal">Journal (14)</a>
   <a href="#brief">Brief</a>
 </div></nav>
 
 <div class="wrap">
 <header class="hero">
   <h1>Sinogrammes — Carnet de bord</h1>
-  <p class="meta">Index généré le 2026-05-30 15:49. 10 RFC · 13 entrées de journal.</p>
+  <p class="meta">Index généré le 2026-05-30 16:38. 10 RFC · 14 entrées de journal.</p>
   <p class="hint">Toutes les sections sont collapsables. Cliquez sur une ligne ou un lien interne pour ouvrir et défiler.</p>
 </header>
 
@@ -185,10 +185,10 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <blockquote>
 <p><strong>Fichier toujours à jour.</strong> À mettre à jour à la fin de chaque session de travail. Répond à la question : &quot;où en est le projet, là, maintenant ?&quot;</p>
 </blockquote>
-<p><strong>Dernière mise à jour</strong> : 2026-05-30 (session 3)</p>
+<p><strong>Dernière mise à jour</strong> : 2026-05-30 (session 4)</p>
 <h2>Lot en cours</h2>
-<p><strong>Lot 2 — Glossaire</strong> : ✅ <strong>clôturé officiellement</strong> selon la RFC 0007. Liste, recherche, navigation vers le tracé, fiches détaillées, filtres (tags/traits/fréquence) et éditeur de traductions FR (RFC 0010) sont en place. Le filtre &quot;statut d&#39;apprentissage&quot; est reporté au Lot 3 (dépend de la progression).</p>
-<p><strong>Prochain lot</strong> : Lot 3 — Système de révision (SM-2 + <code>ProgressRepository</code> IndexedDB + sync backend). À ouvrir.</p>
+<p><strong>Lot 3 — Système de révision</strong> : 🟡 <strong>en cours</strong>, sprint 1 livré (SM-2 pur, <code>ProgressRepository</code> localStorage, hookup canvas, bouton Réviser). Reste : tableau de bord / statuts d&#39;apprentissage, sync backend, puis IndexedDB si le volume ou les besoins de query le justifient.</p>
+<p><strong>Lot 2</strong> : ✅ clôturé officiellement (RFC 0007 + RFC 0010).</p>
 <h2>Ce qui est fait</h2>
 <h3>Lot 0 (clôturé)</h3>
 <p>Cf. <a href="#journal-2026-05-24-lot0-fondations"><code>docs/journal/2026-05-24-lot0-fondations.md</code></a>. Documentation initiale, structure du monorepo, schéma de données v1 + fixture, backend Go avec <code>/health</code> en TDD, frontend Vite/React/TS strict + Tailwind + Vitest + i18n FR/EN, ports hexagonaux, orchestrateur de migrations, Makefile racine.</p>
@@ -244,6 +244,19 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li>✅ Port <code>CharacterRenderer</code> étendu avec <code>reason: &#39;repeated_stroke&#39;</code> (valeur synthétisée par l&#39;UI, jamais produite par l&#39;adapter).</li>
 <li>✅ Couverture : 9 tests sur le helper, 7 tests sur Canvas, 3 scénarios E2E (<code>e2e/canvas-controls.spec.ts</code>).</li>
 </ul>
+<h3>Lot 3 sprint 1 — SM-2 + ProgressRepository localStorage (session 4)</h3>
+<p>Cf. <a href="#journal-2026-05-30-lot3-sprint1"><code>docs/journal/2026-05-30-lot3-sprint1.md</code></a>.</p>
+<ul>
+<li>✅ <strong>Bibliothèque SRS pure</strong> (<code>src/lib/srs/</code>) : <code>sm2.ts</code> (applyReview, ease minoré 1.3, intervalle SM-2 standard), <code>quality.ts</code> (mapping refusals → quality 0-5, abandon → 0), <code>dueQueue.ts</code> (isDue, countDue, pickNextDue). 23 tests Vitest.</li>
+<li>✅ <strong>Adapter <code>LocalStorageProgressRepository</code></strong> : implémente le port <code>ProgressRepository</code> (Lot 0). Blob JSON sous <code>sinogrammes:progress</code>, <code>schema_version: 1</code>, retombe sur <code>[]</code> en cas de corruption / version inconnue. 9 tests.</li>
+<li>✅ <strong>Renderer port étendu</strong> avec <code>setOnComplete(callback): () =&gt; unregister</code>. Implémenté côté Hanzi Writer via <code>QuizOptions.onComplete</code>.</li>
+<li>✅ <strong>Canvas</strong> : compteur de refus authentiques (hors <code>repeated_stroke</code>) via <code>useRef</code>, émission <code>onCharacterCompleted({refusals, completed: true})</code> une seule fois par session, reset au changement de hanzi et à <code>resetAll</code>. 5 tests sur l&#39;émission.</li>
+<li>✅ <strong>Hook <code>useProgress</code></strong> : charge la progression, expose <code>entries</code> réactif et <code>recordSession(ref, session, today?)</code> qui applique SM-2 + persiste. 5 tests d&#39;intégration (création, cumul, abandon, persistance reload).</li>
+<li>✅ <strong>App</strong> : charge le bundle pour résoudre hanzi ↔ id, gère <code>onCharacterCompleted</code> du Canvas, expose un bouton <strong>&quot;Réviser (N)&quot;</strong> dans le header qui ouvre le caractère le plus en retard via <code>pickNextDue</code>. Désactivé si N=0.</li>
+<li>✅ <strong>i18n</strong> : section <code>review.button_*</code> avec pluralisation.</li>
+<li>✅ <strong>E2E</strong> (<code>e2e/srs-review.spec.ts</code>, 4 scénarios) : seed localStorage + assertions sur le compteur, l&#39;ouverture du bon caractère, la persistance au reload.</li>
+<li>⚠ <strong>Déviation explicite à RFC 0007</strong> : localStorage au lieu d&#39;IndexedDB pour le sprint 1. Justifications dans le journal (parité RFC 0010, volume petit, migration future via le port). Décision tracée sans nouvelle RFC.</li>
+</ul>
 <h3>Clôture du Lot 2 — éditeur FR + filtres (session 3)</h3>
 <p>Cf. <a href="#journal-2026-05-30-cloture-lot2"><code>docs/journal/2026-05-30-cloture-lot2.md</code></a> et <a href="#rfc-0010">RFC 0010</a>.</p>
 <ul>
@@ -254,14 +267,17 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </ul>
 <h2>Vérifications croisées</h2>
 <ul>
-<li><code>make test</code> : <strong>151 tests front passent</strong>, 2 paquets back passent avec <code>-race</code>.</li>
-<li><code>make test-e2e</code> : <strong>24/24 tests E2E verts</strong> (Chromium, ~4,3 s).</li>
+<li><code>make test</code> : <strong>193 tests front passent</strong>, 2 paquets back passent avec <code>-race</code>.</li>
+<li><code>make test-e2e</code> : <strong>28/28 tests E2E verts</strong> (Chromium, ~4,9 s).</li>
 <li><code>make lint</code> : ESLint + Prettier propres, golangci-lint 0 issue.</li>
 <li><code>make typecheck</code> : <code>tsc --noEmit</code> propre.</li>
-<li><code>make docs</code> : <code>docs/index.html</code> à jour (10 RFC + 13 entrées de journal).</li>
+<li><code>make docs</code> : <code>docs/index.html</code> à jour (10 RFC + 14 entrées de journal).</li>
 </ul>
 <h2>Dernières décisions importantes</h2>
 <ul>
+<li>2026-05-30 (s4) : <strong>déviation à RFC 0007 sur la persistance du Lot 3</strong> : localStorage au lieu d&#39;IndexedDB pour le sprint 1. Justifié par parité avec RFC 0010, volume petit, migration future possible via le port <code>ProgressRepository</code>. Décision tracée dans le journal, pas de nouvelle RFC pour cette première itération.</li>
+<li>2026-05-30 (s4) : <strong>SM-2 = unité de progression au caractère, pas au mot</strong>. Les mots ne sont pas tracés en propre dans le Lot 1-2 ; les ajouter à la file SRS demanderait une UX dédiée (tracé séquentiel des constituants) qui sortirait du périmètre.</li>
+<li>2026-05-30 (s4) : <strong>convention SM-2 : update ease avant compute interval</strong> (vs l&#39;inverse présent dans certaines références). Effet : intervalles très légèrement plus grands ; négligeable mono-utilisateur.</li>
 <li>2026-05-30 (s3) : <strong>port <code>TranslationOverrideRepository</code> côté domain + adapter localStorage</strong> (cf. <a href="#rfc-0010">RFC 0010</a>). Format : blob JSON unique versionné. Sémantique : la surcharge remplace intégralement le bundle pour la langue concernée (pas d&#39;empilement).</li>
 <li>2026-05-30 (s3) : <strong>édition limitée à la langue courante</strong> (l&#39;utilisateur FR édite son FR). UI inline, marqueur ✎ pour distinguer ses traductions de celles du bundle.</li>
 <li>2026-05-30 (s3) : <strong>filtres glossaire = 3 axes</strong> (tags, traits, fréquence). Le statut d&#39;apprentissage est officiellement reporté au Lot 3. Le filtre par tags est rendu même si aucun tag n&#39;est encore présent dans le bundle (extensibilité prête).</li>
@@ -282,22 +298,14 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </ul>
 <h2>Bloquants connus</h2>
 <p>Aucun.</p>
-<h2>Prochaines étapes — Ouverture du Lot 3 (Système de révision)</h2>
-<p>Selon la RFC 0007, le Lot 3 livre la mémorisation à long terme :</p>
-<ol>
-<li>Algorithme <strong>SM-2</strong> (~100 lignes, suffisant pour mono-utilisateur).</li>
-<li>Tracking de progression dans <strong><code>ProgressRepository</code></strong> (le port existe déjà ; l&#39;adapter IndexedDB est à écrire).</li>
-<li>Files de révision : dûs / nouveaux / en cours.</li>
-<li>Première itération de <strong>synchronisation backend</strong> (best-effort au focus).</li>
-<li>API REST minimale côté back, accédée via <code>RestApiClient</code>.</li>
-</ol>
-<p>Critère de sortie du Lot 3 : faire une session de révision quotidienne et retrouver sa progression sur un autre appareil après sync.</p>
-<p>À arbitrer en début de Lot 3 :</p>
+<h2>Prochaines étapes — Lot 3 sprints suivants</h2>
+<p>Sprint 1 livré (session 4). Reste :</p>
 <ul>
-<li>RFC pour le format de stockage IndexedDB (clés, indexes, schéma de versioning) — probable nécessité.</li>
-<li>RFC pour la stratégie de sync (best-effort, conflict resolution, offline-first) — probable nécessité.</li>
-<li>Décider du moment où on branche le <strong>filtre &quot;statut d&#39;apprentissage&quot;</strong> dans le glossaire (point reporté du Lot 2).</li>
+<li><strong>UI tableau de bord / statuts</strong> : vue dédiée &quot;aujourd&#39;hui / cette semaine / en retard&quot;, historique d&#39;attempts par caractère sur la fiche détaillée, badge &quot;déjà vu N fois&quot; sur les cartes du glossaire, filtre &quot;statut d&#39;apprentissage&quot; reporté du Lot 2.</li>
+<li><strong>Sync backend</strong> : RFC pour la stratégie de sync (conflict resolution, best-effort, offline-first), schéma SQL côté Go, endpoint REST <code>/progress</code>, <code>RestApiClient</code>, sync au focus de l&#39;app.</li>
+<li><strong>IndexedDB (quand justifié)</strong> : bascule de localStorage vers IndexedDB si le volume ou les besoins de query (indexes par date, transactions) le justifient. Nécessitera une RFC qui documente le schéma et la migration depuis localStorage.</li>
 </ul>
+<p>Critère de sortie du Lot 3 (cf. RFC 0007) : faire une session de révision quotidienne et retrouver sa progression sur un autre appareil après sync. Le sprint 1 ne couvre que la révision locale ; la sync est l&#39;objectif de la prochaine phase backend.</p>
 <h2>Liens utiles</h2>
 <ul>
 <li>Brief figé : <a href="#brief"><code>../../BRIEF.md</code></a></li>
@@ -1447,6 +1455,95 @@ clearAll(): Promise&lt;void&gt;;
 
 <section id="journal">
 <h2>Journal de bord</h2>
+<details id="journal-2026-05-30-lot3-sprint1">
+  <summary>2026-05-30 (4) — Lot 3 sprint 1 : SM-2 + ProgressRepository localStorage + bouton Réviser</summary>
+  <div class="content"><h1>2026-05-30 (4) — Lot 3 sprint 1 : SM-2 + ProgressRepository localStorage + bouton Réviser</h1>
+<h2>Objectif de la session</h2>
+<p>Ouvrir le Lot 3 (Système de révision, cf. RFC 0007). Premier sprint actionnable et visible côté utilisateur :</p>
+<ol>
+<li>Algorithme SM-2 pur et testable.</li>
+<li>Mapping des sessions de tracé (refusals + completed) vers une quality SM-2.</li>
+<li>Persistance de la progression en local.</li>
+<li>Hookup du canvas : à chaque caractère terminé, on enregistre la session.</li>
+<li>Bouton <strong>Réviser (N)</strong> dans le header du glossaire, qui ouvre le prochain item dû.</li>
+</ol>
+<p>Hors périmètre de ce sprint : backend Go + sync, UI de tableau de bord de révision, filtre &quot;statut d&#39;apprentissage&quot; dans le glossaire.</p>
+<h2>Décision structurante — déviation à la RFC 0007 sur le stockage</h2>
+<p>La RFC 0007 indique IndexedDB pour le <code>ProgressRepository</code>. <strong>Pour ce sprint, on dévie volontairement vers <code>localStorage</code></strong>, pour les raisons suivantes :</p>
+<ul>
+<li><strong>Parité avec la RFC 0010</strong> (surcharges de traduction) qui vient d&#39;être actée. Même pattern : blob JSON unique sous une clé versionnée, validation au read, retombe sur vide en cas de corruption / mismatch de version.</li>
+<li><strong>Volume petit</strong> à HSK 1 (~150 caractères × quelques octets par entrée). Limite localStorage (~5 Mo) très largement au-dessus.</li>
+<li><strong>Migration future possible via le port</strong> <code>ProgressRepository</code> : le domaine n&#39;importe pas l&#39;adapter, on plug un <code>IndexedDBProgressRepository</code> quand le volume ou les besoins de query (indexes par date, sync) le justifient.</li>
+<li><strong>Pas de RFC supplémentaire</strong> : décision discutée explicitement à l&#39;ouverture du sprint, tracée ici. Une RFC dédiée serait écrite si le format de stockage évolue (schema_version bump, migration nécessaire) ou si on bascule sur IndexedDB.</li>
+</ul>
+<p>Le port <code>ProgressRepository</code> lui-même n&#39;est pas touché : il existait déjà depuis le Lot 0. On ne fait qu&#39;écrire son premier adapter.</p>
+<h2>Ce qui a été fait</h2>
+<h3>Bibliothèque SRS pure (<code>src/lib/srs/</code>)</h3>
+<ul>
+<li><strong><code>sm2.ts</code></strong> — <code>applyReview(state | null, quality, today): SrsState</code>. Formule SM-2 standard, ease minoré à 1.3, premier rappel → interval=1 si succès / 0 si échec, deuxième succès → interval=6, suivants <code>interval * ease</code>. Pure, déterministe : <code>today</code> est explicite. 9 tests.</li>
+<li><strong><code>quality.ts</code></strong> — <code>qualityFromSession({refusals, completed}): 0..5</code>. Barème :<ul>
+<li>0 refus → 5, 1 refus → 4, 2 refus → 3 (limite succès/échec), 3-4 → 2, 5+ → 1, non complété → 0. 6 tests.</li>
+</ul>
+</li>
+<li><strong><code>dueQueue.ts</code></strong> — <code>isDue</code>, <code>countDue</code>, <code>pickNextDue</code>. Tri : due plus ancienne d&#39;abord, puis moins de successes, puis ordre d&#39;insertion. 8 tests.</li>
+</ul>
+<h3>Persistance (<code>src/adapters/storage/</code>)</h3>
+<ul>
+<li><strong><code>LocalStorageProgressRepository.ts</code></strong> — implémente le port <code>ProgressRepository</code> (Lot 0). Blob JSON sous <code>sinogrammes:progress</code>, <code>schema_version: 1</code>. Validation : versions inconnues et JSON corrompu retombent sur <code>[]</code>. 9 tests.</li>
+</ul>
+<h3>Renderer port + Hanzi Writer (<code>src/domain/ports/</code>, <code>src/adapters/renderer/</code>)</h3>
+<ul>
+<li><strong><code>CharacterRenderer</code></strong> étendu avec <code>setOnComplete(callback): () =&gt; unregister</code>. Le port autorise plusieurs callbacks via un Set (utile si on en a besoin plus tard pour stats / log).</li>
+<li><strong><code>HanziWriterRenderer.setOnComplete</code></strong> implémenté en câblant le <code>onComplete</code> de la <code>QuizOptions</code> de Hanzi Writer. Les erreurs dans les callbacks sont attrapées et loguées sans faire planter le renderer.</li>
+</ul>
+<h3>Canvas (<code>src/features/canvas/Canvas.tsx</code>)</h3>
+<ul>
+<li>Compteur de <strong>refus authentiques</strong> dans une <code>useRef</code> (pas de re-render à chaque incrément). Un <code>repeated_stroke</code> (synthétisé côté UI) ne compte pas comme refus.</li>
+<li>Émission de <code>onCharacterCompleted({refusals, completed: true})</code> quand Hanzi Writer signale la fin du quiz. Garde-fou <code>completionFiredRef</code> pour ne pas émettre plusieurs fois la même session.</li>
+<li>Reset au changement de hanzi et au <code>resetAll</code> (Tout effacer ouvre une nouvelle session).</li>
+<li>Couverture : 5 tests sur <code>onCharacterCompleted</code> (succès, refus comptés, repeat ignoré, reset, anti-doublon, ré-émission après Tout effacer).</li>
+</ul>
+<h3>Hook + App</h3>
+<ul>
+<li><strong><code>src/features/progress/useProgress.ts</code></strong> — charge la liste au mount via le <code>ProgressRepository</code>, expose <code>entries</code> (réactif) et <code>recordSession(ref, session, today?)</code> qui applique SM-2 + persiste + met à jour <code>entries</code>. Repo injectable pour les tests. 5 tests d&#39;intégration (création, cumul, abandon, persistance reload).</li>
+<li><strong><code>App.tsx</code></strong> — charge <code>characters</code>/<code>words</code> du bundle pour résoudre <code>hanzi → entryId</code> et <code>entryId → hanzi</code>. Reçoit <code>onCharacterCompleted</code> du Canvas, résout le <code>Character</code> par hanzi, appelle <code>recordSession</code>. <strong>Bouton &quot;Réviser (N)&quot;</strong> dans le header de la vue glossaire, désactivé si N=0, clique → <code>pickNextDue</code> → ouvre la vue practice avec ce caractère.</li>
+</ul>
+<h3>i18n FR/EN</h3>
+<ul>
+<li>Section <code>review.button_*</code> avec pluralisation (<code>zero</code>, <code>one</code>, <code>other</code>).</li>
+<li>Footer mis à jour : &quot;Lot 3 — Révision (sprint 1)&quot;.</li>
+</ul>
+<h3>Tests E2E (<code>e2e/srs-review.spec.ts</code>)</h3>
+<p>Compléter un vrai caractère via Pointer Events serait fragile (il faudrait tracer N traits exacts). On vérifie plutôt la chaîne <strong>persistance → file → bouton Réviser</strong> en pré-seedant <code>localStorage</code> :</p>
+<ul>
+<li>Réviser désactivé sans progression.</li>
+<li>Compteur reflète le nombre d&#39;items dus.</li>
+<li>Cliquer ouvre le canvas sur le caractère le plus en retard.</li>
+<li>Compteur survit à un reload.</li>
+</ul>
+<p>La complétion réelle (Hanzi Writer → onComplete → SM-2) est couverte exhaustivement par les tests unitaires Canvas + useProgress.</p>
+<h2>Vérifications</h2>
+<ul>
+<li><code>make test</code> : <strong>193 tests front passent</strong>, 2 paquets back passent avec <code>-race</code>.</li>
+<li><code>make test-e2e</code> : <strong>28/28 tests E2E verts</strong> (~4,9 s).</li>
+<li><code>make lint</code> / <code>make typecheck</code> propres.</li>
+</ul>
+<h2>Notes / surprises</h2>
+<ul>
+<li>Le format de date stocké est ISO 8601 sans heure (<code>YYYY-MM-DD</code>). Comparaison lexicographique = correcte pour ce format. Évite les bagarres de fuseau horaire.</li>
+<li>L&#39;ordre <code>update ease puis compute interval</code> vs <code>compute interval avec old ease puis update ease</code> n&#39;est pas universellement standardisé dans SM-2 (Wikipedia fait l&#39;un, le papier original l&#39;autre, Anki encore autre). On a choisi la première forme (utilise le nouveau ease). Effet : intervalles très légèrement plus grands. Pour mono-utilisateur l&#39;écart est négligeable.</li>
+<li>Le bouton Réviser est dans le header (à côté du toggle de langue) plutôt que dans le glossaire — pour rester visible/accessible quoi qu&#39;il arrive. Caché pendant la vue practice/detail pour éviter de distraire pendant le tracé.</li>
+<li>L&#39;unité de progression actuelle est <strong>le caractère uniquement</strong>. Les mots ne sont pas tracés en propre dans le Lot 1-2 ; les ajouter à la file SRS demanderait une UX dédiée (tracé séquentiel des caractères constitutifs ?), reportable.</li>
+</ul>
+<h2>Reste à faire (Lot 3 — sprints suivants)</h2>
+<ul>
+<li>UI plus riche pour la révision : tableau de bord &quot;aujourd&#39;hui / cette semaine / en retard&quot;, historique d&#39;attempts par caractère sur la fiche détaillée, badge &quot;déjà vu N fois&quot; sur les cartes du glossaire.</li>
+<li>Filtre &quot;statut d&#39;apprentissage&quot; dans le glossaire (jamais vu / dû / en cours / appris), point reporté du Lot 2 maintenant que la progression existe.</li>
+<li>Sync backend : RFC pour la stratégie de sync, schéma SQL, endpoint <code>/progress</code>, <code>RestApiClient</code>, sync best-effort au focus.</li>
+<li>Au moment où le volume ou les besoins de query le justifient : RFC IndexedDB + adapter de migration depuis localStorage.</li>
+</ul>
+</div>
+</details>
 <details id="journal-2026-05-30-fiches-detaillees-glossaire">
   <summary>2026-05-30 — Fiches détaillées du glossaire + verrou E2E StrictMode</summary>
   <div class="content"><h1>2026-05-30 — Fiches détaillées du glossaire + verrou E2E StrictMode</h1>
@@ -2793,7 +2890,7 @@ clearAll(): Promise&lt;void&gt;;
 </section>
 
 <footer>
-<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-05-30 15:49 par <code>make docs</code>.</p>
+<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-05-30 16:38 par <code>make docs</code>.</p>
 </footer>
 </div>
 
