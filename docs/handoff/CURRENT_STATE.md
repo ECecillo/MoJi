@@ -2,11 +2,11 @@
 
 > **Fichier toujours à jour.** À mettre à jour à la fin de chaque session de travail. Répond à la question : "où en est le projet, là, maintenant ?"
 
-**Dernière mise à jour** : 2026-05-28
+**Dernière mise à jour** : 2026-05-30
 
 ## Lot en cours
 
-**Lot 2 — Glossaire** : 🟡 en cours. Liste, recherche et navigation vers le tracé en place. Reste les fiches détaillées.
+**Lot 2 — Glossaire** : ✅ clôturé. Liste, recherche, navigation vers le tracé et fiches détaillées en place. Prochain lot à arbitrer.
 
 ## Ce qui est fait
 
@@ -18,16 +18,17 @@ Cf. [`docs/journal/2026-05-24-lot0-fondations.md`](../journal/2026-05-24-lot0-fo
 
 Cf. journal Lot 1 : sourcing HSK 1, `BundledDataSource`, `HanziWriterRenderer`, capture Pointer Events, grilles calligraphiques et modes d'affichage. L'app permet de choisir un caractère, le tracer au stylet, valider l'ordre des traits.
 
-### Lot 2 (en cours) — Glossaire
+### Lot 2 (clôturé) — Glossaire
 
-Cf. [`docs/journal/2026-05-28-lot2-glossaire-recherche.md`](../journal/2026-05-28-lot2-glossaire-recherche.md).
+Cf. [`docs/journal/2026-05-28-lot2-glossaire-recherche.md`](../journal/2026-05-28-lot2-glossaire-recherche.md) et [`docs/journal/2026-05-30-fiches-detaillees-glossaire.md`](../journal/2026-05-30-fiches-detaillees-glossaire.md).
 
 - ✅ **Composant `Glossary`** (`src/features/glossary/`) : liste HSK 1 navigable, deux onglets `caractères` / `mots`, compteurs, état `loading` pendant le parse Zod.
 - ✅ **Recherche unique** sur hanzi + pinyin (diacritique et ASCII) + traductions toutes langues confondues.
 - ✅ **Helper pinyin** (`src/lib/pinyin.ts`) : `pinyinToString` (diacritique) + `pinyinToAscii` (insensible aux tons et au tréma).
-- ✅ **Routing app** glossary ↔ practice : `App.tsx` orchestre via état local, bouton retour `←`, mémoïsation du `HanziWriterRenderer`.
-- ✅ **i18n FR/EN** : nouvelle section `glossary` (title, search_placeholder, characters, words, no_results, practice).
-- ⏳ Fiches détaillées caractère/mot (étape 4 du Lot 2, à faire).
+- ✅ **Routing app** glossary ↔ detail ↔ practice : `App.tsx` orchestre via état local et `detailEntryId`, back-stack à 3 niveaux (depuis practice on revient à la fiche si on est passé par elle, sinon directement au glossaire).
+- ✅ **Composant `EntryDetail`** (`src/features/glossary/EntryDetail.tsx`) : vue dédiée plein écran, header hanzi/pinyin, infos (HSK, traits, radicaux, fréquence), sens groupés par langue avec langue courante d'abord, cross-refs cliquables (caractère → mots qui le contiennent / mot → caractères constitutifs), section examples conditionnelle.
+- ✅ **Bouton "Détails" séparé de "Tracer"** sur chaque carte du glossaire (cibles stylet larges et non ambiguës).
+- ✅ **i18n FR/EN** : nouvelle clé `glossary.details` + sous-objet `glossary.detail.*` (back, practice, facts, hsk, stroke_count, radicals, frequency, meanings, no_translations, appears_in_words, constituent_characters, examples, not_found).
 
 ### Outillage doc (session du jour)
 
@@ -57,16 +58,27 @@ Cf. [RFC 0009](../rfc/0009-tests-e2e.md) et [`docs/journal/2026-05-28-playwright
 - ✅ Signal `data-renderer-mounted` sur la couche d'input pour gate les tests.
 - ✅ Discipline ajoutée à CLAUDE.md : `make test-e2e` recommandé avant push après changement de UI/flow.
 
+### Verrou E2E StrictMode (session du jour)
+
+Cf. [`docs/journal/2026-05-30-fiches-detaillees-glossaire.md`](../journal/2026-05-30-fiches-detaillees-glossaire.md).
+
+- ✅ `e2e/strict-mode-regression.spec.ts` (2 scénarios) : toggle outline 3× puis tracé d'un trait (assert verdict visible + aucun `pageerror`/`console.error` lié à Hanzi Writer) ; stress test 10 toggles consécutifs.
+- ✅ Fiche `entry-detail.spec.ts` (3 scénarios) : navigation glossary → detail → practice → ← → detail → ← → glossary, cross-ref caractère → mot lié, cross-ref mot → caractère constitutif.
+
 ## Vérifications croisées
 
-- `make test` : **92 tests front passent**, 2 paquets back passent avec `-race`.
-- `make test-e2e` : **10/10 tests E2E verts** (Chromium, ~10s).
+- `make test` : **101 tests front passent**, 2 paquets back passent avec `-race`.
+- `make test-e2e` : **15/15 tests E2E verts** (Chromium, ~4,4 s).
 - `make lint` : ESLint + Prettier propres, golangci-lint 0 issue.
 - `make typecheck` : `tsc --noEmit` propre.
-- `make docs` : `docs/index.html` à jour (9 RFC + 10 entrées de journal).
+- `make docs` : `docs/index.html` à jour (9 RFC + 11 entrées de journal).
 
 ## Dernières décisions importantes
 
+- 2026-05-30 : **fiche détaillée = vue dédiée plein écran** (pas modale ni panneau latéral). Cohérent avec le pattern existant glossary ↔ practice, zéro transparence pour l'e-ink, zéro animation latérale.
+- 2026-05-30 : **deux boutons séparés "Détails" + "Tracer"** sur chaque carte du glossaire — plus explicite que clic-carte avec un seul bouton ; cibles stylet plus larges et sans ambiguïté.
+- 2026-05-30 : **back-stack à 3 niveaux** (glossary → detail → practice). Le retour depuis practice ramène à la fiche si on est passé par elle, sinon directement au glossaire.
+- 2026-05-30 : **verrou E2E explicite du bug StrictMode** via `pageerror` + filtre `console.error` (quiz/hanzi/TypeError). Filet de sécurité durable même si quelqu'un refactorise le mount sans le savoir.
 - 2026-05-28 : **recherche pinyin par défaut insensible aux diacritiques** dans le glossaire — l'utilisateur tape sur un clavier ASCII, on accepte la perte `nǚ → nu` pour la recherche tout en gardant l'affichage diacritique.
 - 2026-05-28 : **carnet HTML versionné dans le repo** plutôt que généré-au-build. Diff bruyant accepté en échange de la facilité de consultation (double-click sur `docs/index.html`).
 - 2026-05-28 : `docs/index.html` est régénéré dans le **même commit** que les markdown modifiés (pas dans un commit séparé).
@@ -79,14 +91,19 @@ Cf. [RFC 0009](../rfc/0009-tests-e2e.md) et [`docs/journal/2026-05-28-playwright
 
 Aucun.
 
-## Prochaines étapes (Lot 2)
+## Prochaines étapes (Lot 2 clôturé)
 
 1. ✅ Liste HSK 1.
 2. ✅ Recherche.
 3. ✅ Navigation glossary → canvas.
-4. **Fiches détaillées** : afficher pinyin complet, toutes les traductions, exemples si disponibles, character_refs cliquables (mot → ses caractères constitutifs). À arbitrer : modale, page dédiée, ou panneau latéral.
+4. ✅ Fiches détaillées (vue dédiée, cross-refs cliquables, sens par langue).
 
-Pistes pour plus tard : tri/filtre par radical, par tag, par fréquence ; statistiques d'apprentissage côté liste (% des caractères vus / pratiqués).
+**Le Lot 2 est terminé.** Prochaines orientations possibles (à arbitrer dans une RFC dédiée quand on ouvre le Lot 3) :
+
+- Tri/filtre du glossaire : par radical, par tag, par fréquence d'apparition.
+- Statistiques d'apprentissage côté liste : % de caractères vus / pratiqués / réussis du premier coup.
+- Persistance des sessions de tracé (backend `progress` ?), pour alimenter les stats ci-dessus.
+- Mode révision (decks programmés, SRS basique).
 
 ## Liens utiles
 

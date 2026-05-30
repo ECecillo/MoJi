@@ -168,14 +168,14 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <nav class="topnav"><div class="wrap">
   <a href="#etat">État courant</a>
   <a href="#rfc">RFC (9)</a>
-  <a href="#journal">Journal (10)</a>
+  <a href="#journal">Journal (11)</a>
   <a href="#brief">Brief</a>
 </div></nav>
 
 <div class="wrap">
 <header class="hero">
   <h1>Sinogrammes — Carnet de bord</h1>
-  <p class="meta">Index généré le 2026-05-28 20:47. 9 RFC · 10 entrées de journal.</p>
+  <p class="meta">Index généré le 2026-05-30 15:08. 9 RFC · 11 entrées de journal.</p>
   <p class="hint">Toutes les sections sont collapsables. Cliquez sur une ligne ou un lien interne pour ouvrir et défiler.</p>
 </header>
 
@@ -185,23 +185,24 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <blockquote>
 <p><strong>Fichier toujours à jour.</strong> À mettre à jour à la fin de chaque session de travail. Répond à la question : &quot;où en est le projet, là, maintenant ?&quot;</p>
 </blockquote>
-<p><strong>Dernière mise à jour</strong> : 2026-05-28</p>
+<p><strong>Dernière mise à jour</strong> : 2026-05-30</p>
 <h2>Lot en cours</h2>
-<p><strong>Lot 2 — Glossaire</strong> : 🟡 en cours. Liste, recherche et navigation vers le tracé en place. Reste les fiches détaillées.</p>
+<p><strong>Lot 2 — Glossaire</strong> : ✅ clôturé. Liste, recherche, navigation vers le tracé et fiches détaillées en place. Prochain lot à arbitrer.</p>
 <h2>Ce qui est fait</h2>
 <h3>Lot 0 (clôturé)</h3>
 <p>Cf. <a href="#journal-2026-05-24-lot0-fondations"><code>docs/journal/2026-05-24-lot0-fondations.md</code></a>. Documentation initiale, structure du monorepo, schéma de données v1 + fixture, backend Go avec <code>/health</code> en TDD, frontend Vite/React/TS strict + Tailwind + Vitest + i18n FR/EN, ports hexagonaux, orchestrateur de migrations, Makefile racine.</p>
 <h3>Lot 1 (clôturé) — Canvas et validation de tracé</h3>
 <p>Cf. journal Lot 1 : sourcing HSK 1, <code>BundledDataSource</code>, <code>HanziWriterRenderer</code>, capture Pointer Events, grilles calligraphiques et modes d&#39;affichage. L&#39;app permet de choisir un caractère, le tracer au stylet, valider l&#39;ordre des traits.</p>
-<h3>Lot 2 (en cours) — Glossaire</h3>
-<p>Cf. <a href="#journal-2026-05-28-lot2-glossaire-recherche"><code>docs/journal/2026-05-28-lot2-glossaire-recherche.md</code></a>.</p>
+<h3>Lot 2 (clôturé) — Glossaire</h3>
+<p>Cf. <a href="#journal-2026-05-28-lot2-glossaire-recherche"><code>docs/journal/2026-05-28-lot2-glossaire-recherche.md</code></a> et <a href="#journal-2026-05-30-fiches-detaillees-glossaire"><code>docs/journal/2026-05-30-fiches-detaillees-glossaire.md</code></a>.</p>
 <ul>
 <li>✅ <strong>Composant <code>Glossary</code></strong> (<code>src/features/glossary/</code>) : liste HSK 1 navigable, deux onglets <code>caractères</code> / <code>mots</code>, compteurs, état <code>loading</code> pendant le parse Zod.</li>
 <li>✅ <strong>Recherche unique</strong> sur hanzi + pinyin (diacritique et ASCII) + traductions toutes langues confondues.</li>
 <li>✅ <strong>Helper pinyin</strong> (<code>src/lib/pinyin.ts</code>) : <code>pinyinToString</code> (diacritique) + <code>pinyinToAscii</code> (insensible aux tons et au tréma).</li>
-<li>✅ <strong>Routing app</strong> glossary ↔ practice : <code>App.tsx</code> orchestre via état local, bouton retour <code>←</code>, mémoïsation du <code>HanziWriterRenderer</code>.</li>
-<li>✅ <strong>i18n FR/EN</strong> : nouvelle section <code>glossary</code> (title, search_placeholder, characters, words, no_results, practice).</li>
-<li>⏳ Fiches détaillées caractère/mot (étape 4 du Lot 2, à faire).</li>
+<li>✅ <strong>Routing app</strong> glossary ↔ detail ↔ practice : <code>App.tsx</code> orchestre via état local et <code>detailEntryId</code>, back-stack à 3 niveaux (depuis practice on revient à la fiche si on est passé par elle, sinon directement au glossaire).</li>
+<li>✅ <strong>Composant <code>EntryDetail</code></strong> (<code>src/features/glossary/EntryDetail.tsx</code>) : vue dédiée plein écran, header hanzi/pinyin, infos (HSK, traits, radicaux, fréquence), sens groupés par langue avec langue courante d&#39;abord, cross-refs cliquables (caractère → mots qui le contiennent / mot → caractères constitutifs), section examples conditionnelle.</li>
+<li>✅ <strong>Bouton &quot;Détails&quot; séparé de &quot;Tracer&quot;</strong> sur chaque carte du glossaire (cibles stylet larges et non ambiguës).</li>
+<li>✅ <strong>i18n FR/EN</strong> : nouvelle clé <code>glossary.details</code> + sous-objet <code>glossary.detail.*</code> (back, practice, facts, hsk, stroke_count, radicals, frequency, meanings, no_translations, appears_in_words, constituent_characters, examples, not_found).</li>
 </ul>
 <h3>Outillage doc (session du jour)</h3>
 <p>Cf. <a href="#journal-2026-05-28-carnet-html"><code>docs/journal/2026-05-28-carnet-html.md</code></a>.</p>
@@ -228,16 +229,26 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li>✅ Signal <code>data-renderer-mounted</code> sur la couche d&#39;input pour gate les tests.</li>
 <li>✅ Discipline ajoutée à CLAUDE.md : <code>make test-e2e</code> recommandé avant push après changement de UI/flow.</li>
 </ul>
+<h3>Verrou E2E StrictMode (session du jour)</h3>
+<p>Cf. <a href="#journal-2026-05-30-fiches-detaillees-glossaire"><code>docs/journal/2026-05-30-fiches-detaillees-glossaire.md</code></a>.</p>
+<ul>
+<li>✅ <code>e2e/strict-mode-regression.spec.ts</code> (2 scénarios) : toggle outline 3× puis tracé d&#39;un trait (assert verdict visible + aucun <code>pageerror</code>/<code>console.error</code> lié à Hanzi Writer) ; stress test 10 toggles consécutifs.</li>
+<li>✅ Fiche <code>entry-detail.spec.ts</code> (3 scénarios) : navigation glossary → detail → practice → ← → detail → ← → glossary, cross-ref caractère → mot lié, cross-ref mot → caractère constitutif.</li>
+</ul>
 <h2>Vérifications croisées</h2>
 <ul>
-<li><code>make test</code> : <strong>92 tests front passent</strong>, 2 paquets back passent avec <code>-race</code>.</li>
-<li><code>make test-e2e</code> : <strong>10/10 tests E2E verts</strong> (Chromium, ~10s).</li>
+<li><code>make test</code> : <strong>101 tests front passent</strong>, 2 paquets back passent avec <code>-race</code>.</li>
+<li><code>make test-e2e</code> : <strong>15/15 tests E2E verts</strong> (Chromium, ~4,4 s).</li>
 <li><code>make lint</code> : ESLint + Prettier propres, golangci-lint 0 issue.</li>
 <li><code>make typecheck</code> : <code>tsc --noEmit</code> propre.</li>
-<li><code>make docs</code> : <code>docs/index.html</code> à jour (9 RFC + 10 entrées de journal).</li>
+<li><code>make docs</code> : <code>docs/index.html</code> à jour (9 RFC + 11 entrées de journal).</li>
 </ul>
 <h2>Dernières décisions importantes</h2>
 <ul>
+<li>2026-05-30 : <strong>fiche détaillée = vue dédiée plein écran</strong> (pas modale ni panneau latéral). Cohérent avec le pattern existant glossary ↔ practice, zéro transparence pour l&#39;e-ink, zéro animation latérale.</li>
+<li>2026-05-30 : <strong>deux boutons séparés &quot;Détails&quot; + &quot;Tracer&quot;</strong> sur chaque carte du glossaire — plus explicite que clic-carte avec un seul bouton ; cibles stylet plus larges et sans ambiguïté.</li>
+<li>2026-05-30 : <strong>back-stack à 3 niveaux</strong> (glossary → detail → practice). Le retour depuis practice ramène à la fiche si on est passé par elle, sinon directement au glossaire.</li>
+<li>2026-05-30 : <strong>verrou E2E explicite du bug StrictMode</strong> via <code>pageerror</code> + filtre <code>console.error</code> (quiz/hanzi/TypeError). Filet de sécurité durable même si quelqu&#39;un refactorise le mount sans le savoir.</li>
 <li>2026-05-28 : <strong>recherche pinyin par défaut insensible aux diacritiques</strong> dans le glossaire — l&#39;utilisateur tape sur un clavier ASCII, on accepte la perte <code>nǚ → nu</code> pour la recherche tout en gardant l&#39;affichage diacritique.</li>
 <li>2026-05-28 : <strong>carnet HTML versionné dans le repo</strong> plutôt que généré-au-build. Diff bruyant accepté en échange de la facilité de consultation (double-click sur <code>docs/index.html</code>).</li>
 <li>2026-05-28 : <code>docs/index.html</code> est régénéré dans le <strong>même commit</strong> que les markdown modifiés (pas dans un commit séparé).</li>
@@ -248,14 +259,20 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </ul>
 <h2>Bloquants connus</h2>
 <p>Aucun.</p>
-<h2>Prochaines étapes (Lot 2)</h2>
+<h2>Prochaines étapes (Lot 2 clôturé)</h2>
 <ol>
 <li>✅ Liste HSK 1.</li>
 <li>✅ Recherche.</li>
 <li>✅ Navigation glossary → canvas.</li>
-<li><strong>Fiches détaillées</strong> : afficher pinyin complet, toutes les traductions, exemples si disponibles, character_refs cliquables (mot → ses caractères constitutifs). À arbitrer : modale, page dédiée, ou panneau latéral.</li>
+<li>✅ Fiches détaillées (vue dédiée, cross-refs cliquables, sens par langue).</li>
 </ol>
-<p>Pistes pour plus tard : tri/filtre par radical, par tag, par fréquence ; statistiques d&#39;apprentissage côté liste (% des caractères vus / pratiqués).</p>
+<p><strong>Le Lot 2 est terminé.</strong> Prochaines orientations possibles (à arbitrer dans une RFC dédiée quand on ouvre le Lot 3) :</p>
+<ul>
+<li>Tri/filtre du glossaire : par radical, par tag, par fréquence d&#39;apparition.</li>
+<li>Statistiques d&#39;apprentissage côté liste : % de caractères vus / pratiqués / réussis du premier coup.</li>
+<li>Persistance des sessions de tracé (backend <code>progress</code> ?), pour alimenter les stats ci-dessus.</li>
+<li>Mode révision (decks programmés, SRS basique).</li>
+</ul>
 <h2>Liens utiles</h2>
 <ul>
 <li>Brief figé : <a href="#brief"><code>../../BRIEF.md</code></a></li>
@@ -1322,6 +1339,105 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 
 <section id="journal">
 <h2>Journal de bord</h2>
+<details id="journal-2026-05-30-fiches-detaillees-glossaire">
+  <summary>2026-05-30 — Fiches détaillées du glossaire + verrou E2E StrictMode</summary>
+  <div class="content"><h1>2026-05-30 — Fiches détaillées du glossaire + verrou E2E StrictMode</h1>
+<h2>Objectif de la session</h2>
+<p>Boucler l&#39;étape 4 du Lot 2 : depuis le glossaire, ouvrir une <strong>fiche détaillée</strong> pour un caractère ou un mot (pinyin complet, infos clés, sens groupés par langue, cross-refs cliquables). Et au passage, <strong>verrouiller par un scénario E2E dédié</strong> la non-régression du bug race condition StrictMode corrigé le 28/05 (toggle outline + tracé).</p>
+<h2>Décisions de design</h2>
+<ul>
+<li><strong>Vue dédiée</strong>, pas modale ni panneau latéral. Cohérent avec le pattern existant (<code>glossary ↔ practice</code>), zéro transparence donc compatible e-ink Boox, anim nulle. Ajout d&#39;un troisième état dans le <code>View</code> de <code>App.tsx</code> : <code>&#39;glossary&#39; | &#39;detail&#39; | &#39;practice&#39;</code>.</li>
+<li><strong>Bouton &quot;Détails&quot; séparé</strong> de &quot;Tracer&quot; sur chaque carte du glossaire. Plus explicite ; deux cibles de stylet larges, faciles à toucher sans ambiguïté.</li>
+<li><strong>Back-stack à trois niveaux</strong> : depuis practice, le ← ramène à la fiche détail si on est arrivé par là, ou directement au glossaire si on a cliqué &quot;Tracer&quot; directement dans la liste.</li>
+<li>Sens <strong>groupés par langue</strong>, langue courante d&#39;abord. Évite la confusion FR/EN dans une seule liste à plat.</li>
+<li>Cross-refs <strong>cliquables</strong> :<ul>
+<li>sur la fiche d&#39;un caractère → liste des mots où il apparaît (filtre sur <code>character_refs</code>).</li>
+<li>sur la fiche d&#39;un mot → caractères constitutifs sous forme de pavés (cliquer ouvre la fiche du caractère).</li>
+</ul>
+</li>
+<li>Section <strong>examples</strong> rendue uniquement si non vide (la majorité des entrées HSK 1 ont <code>examples: []</code> dans le bundle actuel ; pas de garbage UI si vide).</li>
+</ul>
+<h2>Ce qui a été fait</h2>
+<h3><code>src/features/glossary/EntryDetail.tsx</code></h3>
+<ul>
+<li>Composant <code>EntryDetail</code> paramétré par <code>entryId</code> (<code>char_XXXX</code> ou <code>word_XXXX</code>). Charge les données via <code>BundledDataSource</code> (même cache que <code>Glossary</code>, pas de double parse).</li>
+<li>Discrimination de l&#39;entry via préfixe d&#39;<code>id</code> puis <code>find</code> dans <code>characters</code> ou <code>words</code>.</li>
+<li>Sections : header (hanzi + pinyin), infos (HSK, traits, radicaux, fréquence), sens groupés par langue, mots associés (caractère) ou caractères constitutifs (mot), exemples conditionnels.</li>
+<li>Tous les éléments cliquables ont un <code>data-testid</code> (<code>detail-hanzi</code>, <code>detail-pinyin</code>, <code>detail-back</code>, <code>detail-practice</code>, <code>related-word</code>, <code>constituent-character</code>, <code>entry-detail</code>).</li>
+<li>Fallback <code>Entrée introuvable</code> si l&#39;<code>entryId</code> ne matche aucun caractère ni mot.</li>
+</ul>
+<h3><code>src/features/glossary/Glossary.tsx</code></h3>
+<ul>
+<li>Ajout de la prop <code>onShowDetail: (entryId: string) =&gt; void</code>.</li>
+<li>Chaque carte de la liste a maintenant deux boutons empilés : <code>Détails</code> (gris) et <code>Tracer</code> (gris). Marge <code>gap-1</code> pour rester confortable au stylet.</li>
+<li>Le <code>data-testid=&quot;glossary-detail-button&quot;</code> permet de cibler le bouton dans les tests E2E.</li>
+</ul>
+<h3><code>src/App.tsx</code></h3>
+<ul>
+<li><code>View</code> étendu en <code>&#39;glossary&#39; | &#39;detail&#39; | &#39;practice&#39;</code>. Ajout de <code>detailEntryId: string | null</code>.</li>
+<li>Trois handlers : <code>handleShowDetail</code> (glossary → detail), <code>handleBackToGlossary</code> (detail → glossary, vide <code>detailEntryId</code>), <code>handleBackFromPractice</code> (practice → detail si on vient de la fiche, sinon → glossary).</li>
+<li>Rendu conditionnel : <code>Glossary | EntryDetail | Canvas</code> selon la vue.</li>
+</ul>
+<h3>i18n</h3>
+<ul>
+<li><code>fr.json</code> / <code>en.json</code> : nouvelle clé <code>glossary.details</code> (bouton) et sous-objet <code>glossary.detail.*</code> (<code>back</code>, <code>practice</code>, <code>facts</code>, <code>hsk</code>, <code>stroke_count</code>, <code>radicals</code>, <code>frequency</code>, <code>meanings</code>, <code>no_translations</code>, <code>appears_in_words</code>, <code>constituent_characters</code>, <code>examples</code>, <code>not_found</code>).</li>
+</ul>
+<h3>Tests unitaires (Vitest)</h3>
+<ul>
+<li><code>EntryDetail.test.tsx</code> (8 tests) :<ul>
+<li>rendu d&#39;un caractère (<code>char_4F60</code> = 你) avec hanzi, pinyin diacritique, section infos.</li>
+<li>sens groupés par langue.</li>
+<li>liste des mots associés non vide.</li>
+<li>clic sur &quot;Tracer&quot; → <code>onPractice(hanzi)</code> reçu.</li>
+<li>clic sur ← → <code>onBack()</code> reçu.</li>
+<li>clic sur un mot lié → <code>onShowDetail(word_id)</code> reçu.</li>
+<li>rendu d&#39;un mot (<code>word_4f604eec</code> = 你们) avec 2 caractères constitutifs cliquables.</li>
+<li>id inconnu → message &quot;Entrée introuvable&quot;.</li>
+</ul>
+</li>
+<li><code>Glossary.test.tsx</code> : nouveau test <code>appelle onShowDetail quand on clique sur Détails</code> + signature des autres tests mise à jour avec la nouvelle prop.</li>
+</ul>
+<h3>Tests E2E Playwright</h3>
+<ul>
+<li><p><code>entry-detail.spec.ts</code> (3 scénarios) :</p>
+<ul>
+<li><code>glossary → detail → practice → ← (detail) → ← (glossary)</code> : vérifie la back-stack à trois niveaux.</li>
+<li>depuis la fiche d&#39;un caractère, cliquer un mot lié change l&#39;entry affichée en restant sur <code>entry-detail</code>.</li>
+<li>depuis la fiche d&#39;un mot, les caractères constitutifs sont cliquables et ouvrent leur fiche.</li>
+</ul>
+</li>
+<li><p><code>strict-mode-regression.spec.ts</code> (2 scénarios) — verrou explicite du bug du 28/05 :</p>
+<ul>
+<li><strong>Toggle outline 3× puis tracer un trait</strong> : assert <code>verdict-message</code> visible <strong>et</strong> aucun <code>pageerror</code> ni <code>console.error</code> contenant <code>quiz</code> / <code>hanzi</code> / <code>TypeError</code> / <code>cannot read</code>. Si la race condition revenait, l&#39;erreur <code>Quiz is not ready</code> se déclencherait dans <code>validateStroke</code> et le verdict ne s&#39;afficherait pas.</li>
+<li><strong>Toggle outline 10× consécutivement</strong> : stress test, l&#39;instance reste <code>data-renderer-mounted=&quot;true&quot;</code>, zone d&#39;input visible, aucun pageerror.</li>
+</ul>
+</li>
+</ul>
+<h2>Vérifications</h2>
+<ul>
+<li><code>make test</code> : <strong>101/101</strong> unit tests verts (front 11 fichiers, back 2 paquets avec <code>-race</code>).</li>
+<li><code>make test-e2e</code> : <strong>15/15</strong> scénarios E2E verts (Chromium, ~4.4 s). Soit 10 anciens + 3 fiche détaillée + 2 régression StrictMode.</li>
+<li><code>make lint</code> : ESLint + Prettier propres, golangci-lint 0 issue.</li>
+<li><code>make typecheck</code> : <code>tsc --noEmit</code> propre.</li>
+</ul>
+<h2>Notes de mise en œuvre</h2>
+<ul>
+<li><strong>Loading state séparé</strong> dans <code>EntryDetail</code> : même pattern que <code>Glossary</code>. Le cache de <code>BundledDataSource</code> rend le second appel immédiat ; on garde le state pour l&#39;asymétrie StrictMode / production cohérente.</li>
+<li><strong>Tri des langues</strong> : langue courante en premier puis tri alphabétique. Comme aujourd&#39;hui le bundle HSK 1 n&#39;a que <code>en</code> côté traductions, l&#39;effet est invisible en pratique — mais le code est prêt pour le jour où on enrichira avec d&#39;autres langues.</li>
+<li><strong>Sécurité du cross-ref</strong> : le <code>character_refs</code> stocké en uppercase hex tandis que le <code>word_id</code> est en lowercase. Pas de fragilité côté UI car on compare à l&#39;<code>id</code> complet ; détecté au moment d&#39;écrire les tests, ids vérifiés contre le bundle réel.</li>
+<li><strong>E2E regression</strong> : on capture explicitement <code>page.on(&#39;pageerror&#39;)</code> et <code>page.on(&#39;console&#39;)</code>. Si une exception non capturée traversait le boundary React (cas du bug original), elle apparaîtrait dans <code>pageErrors</code> et ferait échouer le test. C&#39;est ce filet de sécurité qui verrouille la non-régression durablement.</li>
+</ul>
+<h2>État final du Lot 2</h2>
+<p>Les 4 étapes initiales sont <strong>closes</strong> :</p>
+<ol>
+<li>✅ Liste HSK 1.</li>
+<li>✅ Recherche pinyin/hanzi/sens.</li>
+<li>✅ Navigation glossary → canvas.</li>
+<li>✅ Fiches détaillées (cette session).</li>
+</ol>
+<p>Lot 2 prêt à être clôturé. Prochaine décision : ouvrir le Lot 3 (à arbitrer dans une RFC dédiée si nouveau lot, ou explorer les pistes mentionnées dans <code>CURRENT_STATE.md</code> — tri/filtre par radical, stats d&#39;apprentissage).</p>
+</div>
+</details>
 <details id="journal-2026-05-28-playwright-e2e">
   <summary>2026-05-28 — Tests E2E Playwright + correction race condition StrictMode</summary>
   <div class="content"><h1>2026-05-28 — Tests E2E Playwright + correction race condition StrictMode</h1>
@@ -2390,7 +2506,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </section>
 
 <footer>
-<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-05-28 20:47 par <code>make docs</code>.</p>
+<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-05-30 15:08 par <code>make docs</code>.</p>
 </footer>
 </div>
 
