@@ -14,6 +14,7 @@ Une RFC documente **une décision structurante** : contexte, décision, conséqu
 | 0006  | [PWA et offline-first](0006-pwa-offline-first.md)                     | Accepté   | 2026-05-24 |
 | 0007  | [Découpage en lots](0007-decoupage-en-lots.md)                        | Accepté   | 2026-05-24 |
 | 0008  | [Sourcing des données HSK 3.0 niveau 1](0008-sourcing-hsk1.md)        | Accepté   | 2026-05-24 |
+| 0009  | [Stratégie de tests end-to-end (Playwright)](0009-tests-e2e.md)       | Accepté   | 2026-05-28 |
 
 ## Statuts possibles
 
