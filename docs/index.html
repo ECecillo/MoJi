@@ -168,14 +168,14 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <nav class="topnav"><div class="wrap">
   <a href="#etat">État courant</a>
   <a href="#rfc">RFC (10)</a>
-  <a href="#journal">Journal (14)</a>
+  <a href="#journal">Journal (15)</a>
   <a href="#brief">Brief</a>
 </div></nav>
 
 <div class="wrap">
 <header class="hero">
   <h1>Sinogrammes — Carnet de bord</h1>
-  <p class="meta">Index généré le 2026-05-30 16:38. 10 RFC · 14 entrées de journal.</p>
+  <p class="meta">Index généré le 2026-05-30 16:39. 10 RFC · 15 entrées de journal.</p>
   <p class="hint">Toutes les sections sont collapsables. Cliquez sur une ligne ou un lien interne pour ouvrir et défiler.</p>
 </header>
 
@@ -185,7 +185,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <blockquote>
 <p><strong>Fichier toujours à jour.</strong> À mettre à jour à la fin de chaque session de travail. Répond à la question : &quot;où en est le projet, là, maintenant ?&quot;</p>
 </blockquote>
-<p><strong>Dernière mise à jour</strong> : 2026-05-30 (session 4)</p>
+<p><strong>Dernière mise à jour</strong> : 2026-05-30 (session 5)</p>
 <h2>Lot en cours</h2>
 <p><strong>Lot 3 — Système de révision</strong> : 🟡 <strong>en cours</strong>, sprint 1 livré (SM-2 pur, <code>ProgressRepository</code> localStorage, hookup canvas, bouton Réviser). Reste : tableau de bord / statuts d&#39;apprentissage, sync backend, puis IndexedDB si le volume ou les besoins de query le justifient.</p>
 <p><strong>Lot 2</strong> : ✅ clôturé officiellement (RFC 0007 + RFC 0010).</p>
@@ -210,6 +210,14 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <ul>
 <li>✅ <strong>Carnet de bord HTML autonome</strong> : <code>docs/index.html</code> généré par <code>make docs</code> (script <code>frontend/scripts/build-docs-index.ts</code>). Section État courant + RFC + Journal + Brief, navigation par ancres, mode sombre, mode print.</li>
 <li>✅ <strong>Discipline <code>CLAUDE.md</code></strong> : <code>make docs</code> est obligatoire après toute modif markdown sous <code>docs/</code> ou de <code>BRIEF.md</code>, dans le même commit.</li>
+</ul>
+<h3>Outillage développeur — bootstrap mise (session 5)</h3>
+<p>Cf. <a href="#journal-2026-05-30-mise-bootstrap-dev"><code>docs/journal/2026-05-30-mise-bootstrap-dev.md</code></a>.</p>
+<ul>
+<li>✅ <strong><code>mise.toml</code> racine</strong> : versions pinées Node 24.15.0, Go 1.26.2, golangci-lint 2.9.0.</li>
+<li>✅ <strong>Tâche <code>mise run setup</code></strong> : <code>make install</code> + installation Chromium Playwright (<code>npx playwright install chromium</code>).</li>
+<li>✅ <strong>Tâches mise miroir</strong> vers le Makefile : <code>dev</code>, <code>test</code>, <code>test-e2e</code>, <code>lint</code>, <code>typecheck</code>, <code>build</code>, <code>docs</code>, <code>build-data</code>.</li>
+<li>✅ <strong>README mis à jour</strong> : quick start en quatre commandes (<code>mise trust</code>, <code>mise install</code>, <code>mise run setup</code>, <code>make dev</code>), puis renvoi au Makefile pour toutes les commandes projet.</li>
 </ul>
 <h3>Correctif Canvas (session du jour, suite d&#39;un retour d&#39;usage)</h3>
 <p>Cf. <a href="#journal-2026-05-28-fix-canvas-feedback"><code>docs/journal/2026-05-28-fix-canvas-feedback.md</code></a>.</p>
@@ -271,10 +279,11 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li><code>make test-e2e</code> : <strong>28/28 tests E2E verts</strong> (Chromium, ~4,9 s).</li>
 <li><code>make lint</code> : ESLint + Prettier propres, golangci-lint 0 issue.</li>
 <li><code>make typecheck</code> : <code>tsc --noEmit</code> propre.</li>
-<li><code>make docs</code> : <code>docs/index.html</code> à jour (10 RFC + 14 entrées de journal).</li>
+<li><code>make docs</code> : <code>docs/index.html</code> à jour (10 RFC + 15 entrées de journal).</li>
 </ul>
 <h2>Dernières décisions importantes</h2>
 <ul>
+<li>2026-05-30 (s5) : <strong>mise = bootstrap toolchain, Makefile = orchestration</strong>. <code>mise.toml</code> pinne Node/Go/golangci-lint et expose des alias, mais les commandes de build/test restent centralisées dans le Makefile.</li>
 <li>2026-05-30 (s4) : <strong>déviation à RFC 0007 sur la persistance du Lot 3</strong> : localStorage au lieu d&#39;IndexedDB pour le sprint 1. Justifié par parité avec RFC 0010, volume petit, migration future possible via le port <code>ProgressRepository</code>. Décision tracée dans le journal, pas de nouvelle RFC pour cette première itération.</li>
 <li>2026-05-30 (s4) : <strong>SM-2 = unité de progression au caractère, pas au mot</strong>. Les mots ne sont pas tracés en propre dans le Lot 1-2 ; les ajouter à la file SRS demanderait une UX dédiée (tracé séquentiel des constituants) qui sortirait du périmètre.</li>
 <li>2026-05-30 (s4) : <strong>convention SM-2 : update ease avant compute interval</strong> (vs l&#39;inverse présent dans certaines références). Effet : intervalles très légèrement plus grands ; négligeable mono-utilisateur.</li>
@@ -1455,6 +1464,32 @@ clearAll(): Promise&lt;void&gt;;
 
 <section id="journal">
 <h2>Journal de bord</h2>
+<details id="journal-2026-05-30-mise-bootstrap-dev">
+  <summary>2026-05-30 (5) — Bootstrap développeur avec mise</summary>
+  <div class="content"><h1>2026-05-30 (5) — Bootstrap développeur avec mise</h1>
+<h2>Objectif de la session</h2>
+<p>Faciliter l&#39;arrivée d&#39;un autre développeur sur le projet : installer la toolchain système et les dépendances applicatives avec une commande reproductible, sans remplacer le Makefile existant.</p>
+<h2>Ce qui a été fait</h2>
+<ul>
+<li>Ajout de <a href="../../mise.toml"><code>../../mise.toml</code></a> à la racine.</li>
+<li>Versions pinées : Node 24.15.0, Go 1.26.2, golangci-lint 2.9.0.</li>
+<li>Tâche <code>mise run setup</code> : lance <code>make install</code>, puis installe Chromium pour Playwright via <code>npx playwright install chromium</code>.</li>
+<li>Tâches miroir vers le Makefile : <code>install</code>, <code>dev</code>, <code>dev-front</code>, <code>dev-back</code>, <code>test</code>, <code>test-e2e</code>, <code>lint</code>, <code>typecheck</code>, <code>build</code>, <code>docs</code>, <code>build-data</code>.</li>
+<li>Mise à jour du README avec un quick start court : <code>mise trust</code>, <code>mise install</code>, <code>mise run setup</code>, <code>make dev</code>.</li>
+<li>Ajout d&#39;une section &quot;Commandes projet&quot; qui renvoie au Makefile (<code>make help</code>) au lieu de dupliquer la liste des commandes.</li>
+<li>Correction du statut README qui indiquait encore le Lot 0.</li>
+</ul>
+<h2>Décisions prises</h2>
+<ul>
+<li><strong><code>mise</code> ne remplace pas <code>make</code></strong> : le Makefile reste la source d&#39;orchestration du projet. <code>mise</code> gère les versions d&#39;outils et expose des alias ergonomiques.</li>
+<li><strong>Playwright Chromium est installé par <code>mise run setup</code></strong>, pas par <code>make install</code>, pour éviter de rendre la cible Make historique plus lourde par surprise.</li>
+</ul>
+<h2>Reste à faire</h2>
+<ul>
+<li>Si de nouveaux outils système deviennent nécessaires (ex. goose CLI, sqlite CLI, outil PWA), les ajouter dans <code>mise.toml</code> au moment où une cible du projet les utilise réellement.</li>
+</ul>
+</div>
+</details>
 <details id="journal-2026-05-30-lot3-sprint1">
   <summary>2026-05-30 (4) — Lot 3 sprint 1 : SM-2 + ProgressRepository localStorage + bouton Réviser</summary>
   <div class="content"><h1>2026-05-30 (4) — Lot 3 sprint 1 : SM-2 + ProgressRepository localStorage + bouton Réviser</h1>
@@ -2890,7 +2925,7 @@ clearAll(): Promise&lt;void&gt;;
 </section>
 
 <footer>
-<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-05-30 16:38 par <code>make docs</code>.</p>
+<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-05-30 16:39 par <code>make docs</code>.</p>
 </footer>
 </div>
 

@@ -2,7 +2,7 @@
 
 > **Fichier toujours à jour.** À mettre à jour à la fin de chaque session de travail. Répond à la question : "où en est le projet, là, maintenant ?"
 
-**Dernière mise à jour** : 2026-05-30 (session 4)
+**Dernière mise à jour** : 2026-05-30 (session 5)
 
 ## Lot en cours
 
@@ -38,6 +38,15 @@ Cf. [`docs/journal/2026-05-28-carnet-html.md`](../journal/2026-05-28-carnet-html
 
 - ✅ **Carnet de bord HTML autonome** : `docs/index.html` généré par `make docs` (script `frontend/scripts/build-docs-index.ts`). Section État courant + RFC + Journal + Brief, navigation par ancres, mode sombre, mode print.
 - ✅ **Discipline `CLAUDE.md`** : `make docs` est obligatoire après toute modif markdown sous `docs/` ou de `BRIEF.md`, dans le même commit.
+
+### Outillage développeur — bootstrap mise (session 5)
+
+Cf. [`docs/journal/2026-05-30-mise-bootstrap-dev.md`](../journal/2026-05-30-mise-bootstrap-dev.md).
+
+- ✅ **`mise.toml` racine** : versions pinées Node 24.15.0, Go 1.26.2, golangci-lint 2.9.0.
+- ✅ **Tâche `mise run setup`** : `make install` + installation Chromium Playwright (`npx playwright install chromium`).
+- ✅ **Tâches mise miroir** vers le Makefile : `dev`, `test`, `test-e2e`, `lint`, `typecheck`, `build`, `docs`, `build-data`.
+- ✅ **README mis à jour** : quick start en quatre commandes (`mise trust`, `mise install`, `mise run setup`, `make dev`), puis renvoi au Makefile pour toutes les commandes projet.
 
 ### Correctif Canvas (session du jour, suite d'un retour d'usage)
 
@@ -105,10 +114,11 @@ Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lo
 - `make test-e2e` : **28/28 tests E2E verts** (Chromium, ~4,9 s).
 - `make lint` : ESLint + Prettier propres, golangci-lint 0 issue.
 - `make typecheck` : `tsc --noEmit` propre.
-- `make docs` : `docs/index.html` à jour (10 RFC + 14 entrées de journal).
+- `make docs` : `docs/index.html` à jour (10 RFC + 15 entrées de journal).
 
 ## Dernières décisions importantes
 
+- 2026-05-30 (s5) : **mise = bootstrap toolchain, Makefile = orchestration**. `mise.toml` pinne Node/Go/golangci-lint et expose des alias, mais les commandes de build/test restent centralisées dans le Makefile.
 - 2026-05-30 (s4) : **déviation à RFC 0007 sur la persistance du Lot 3** : localStorage au lieu d'IndexedDB pour le sprint 1. Justifié par parité avec RFC 0010, volume petit, migration future possible via le port `ProgressRepository`. Décision tracée dans le journal, pas de nouvelle RFC pour cette première itération.
 - 2026-05-30 (s4) : **SM-2 = unité de progression au caractère, pas au mot**. Les mots ne sont pas tracés en propre dans le Lot 1-2 ; les ajouter à la file SRS demanderait une UX dédiée (tracé séquentiel des constituants) qui sortirait du périmètre.
 - 2026-05-30 (s4) : **convention SM-2 : update ease avant compute interval** (vs l'inverse présent dans certaines références). Effet : intervalles très légèrement plus grands ; négligeable mono-utilisateur.

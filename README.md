@@ -20,10 +20,31 @@ Application web personnelle d'apprentissage des sinogrammes (caractères chinois
 | Côté     | Technologies                                                                          |
 |----------|---------------------------------------------------------------------------------------|
 | Frontend | Vite, React 18, TypeScript strict, Tailwind, Zod, i18next, Vitest, Hanzi Writer       |
-| Backend  | Go 1.22+, chi, SQLite (`modernc.org/sqlite`), goose, testify                          |
+| Backend  | Go 1.26.2, chi, SQLite (`modernc.org/sqlite`), goose, testify                         |
 | Données  | JSON Schema partagé (`shared/schema/`), tracés [Make Me a Hanzi](https://github.com/skishore/makemeahanzi), définitions CC-CEDICT |
 
 Architecture **hexagonale** des deux côtés. Toute dépendance externe est isolée derrière un port.
+
+## Quick start
+
+Le chemin recommandé passe par [`mise`](https://mise.jdx.dev/), qui installe les versions d'outils déclarées dans [`mise.toml`](mise.toml) : Node, Go et golangci-lint.
+
+Prérequis hors projet : `mise` et `make`.
+
+```sh
+mise trust
+mise install
+mise run setup
+make dev
+```
+
+`mise run setup` lance `make install` puis installe le navigateur Chromium utilisé par Playwright.
+
+Sans mise, il faut installer manuellement Node 24.15.0, Go 1.26.2 et golangci-lint 2.9.0, puis lancer `make install`.
+
+## Commandes projet
+
+Toutes les commandes liées au projet sont centralisées dans le [`Makefile`](Makefile). Lancer `make help` depuis la racine pour voir les cibles disponibles.
 
 ## Documentation
 
@@ -34,7 +55,7 @@ Architecture **hexagonale** des deux côtés. Toute dépendance externe est isol
 
 ## Statut
 
-Projet en phase de démarrage (Lot 0 — fondations). Pas encore de code applicatif. Voir `CURRENT_STATE.md` pour le détail.
+Lot 3 en cours : le tracé, le glossaire et la première boucle de révision locale sont en place. Voir `CURRENT_STATE.md` pour le détail.
 
 ## Licence
 
