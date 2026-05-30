@@ -1,0 +1,62 @@
+# Toolchain projet. Installer mise, puis lancer :
+#   mise trust
+#   mise run setup
+
+[tools]
+node = "24.15.0"
+go = "1.26.2"
+golangci-lint = "2.9.0"
+
+[tasks.setup]
+description = "Installe les dependances npm/go et le navigateur Playwright Chromium"
+run = [
+  "make install",
+  "cd frontend && npx playwright install chromium",
+]
+
+[tasks.install]
+description = "Installe les dependances front et back"
+run = "make install"
+
+[tasks.dev]
+description = "Lance Vite et le serveur Go"
+run = "make dev"
+interactive = true
+
+[tasks.dev-front]
+description = "Lance uniquement le frontend Vite"
+run = "make dev-front"
+interactive = true
+
+[tasks.dev-back]
+description = "Lance uniquement le backend Go"
+run = "make dev-back"
+interactive = true
+
+[tasks.test]
+description = "Execute les tests unitaires front + back"
+run = "make test"
+
+[tasks.test-e2e]
+description = "Execute les tests E2E Playwright"
+run = "make test-e2e"
+
+[tasks.lint]
+description = "Execute les linters front + back"
+run = "make lint"
+
+[tasks.typecheck]
+description = "Execute le typecheck TypeScript strict"
+run = "make typecheck"
+
+[tasks.build]
+description = "Compile le frontend et le backend"
+run = "make build"
+
+[tasks.docs]
+description = "Regenere docs/index.html"
+run = "make docs"
+
+[tasks.build-data]
+description = "Regenere les donnees HSK vendorees vers le bundle frontend"
+run = "make build-data"
