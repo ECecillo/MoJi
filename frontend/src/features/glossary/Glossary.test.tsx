@@ -72,4 +72,57 @@ describe('Glossary', () => {
     const firstArg = onShowDetailSpy.mock.calls[0]![0] as string;
     expect(firstArg).toMatch(/^(char|word)_/);
   });
+
+  it('filtre par nombre de traits via le panneau de filtres', async () => {
+    const user = userEvent.setup();
+    render(<Glossary onSelect={onSelect} onShowDetail={onShowDetail} />);
+
+    // Attente du chargement
+    expect(await screen.findByText(/Caractères/i)).toBeInTheDocument();
+
+    // Le panneau de filtres est replié par défaut
+    await user.click(screen.getByTestId('filter-toggle'));
+
+    // Restreindre à 1 trait : seul "一" / "丨" type devraient survivre
+    const minInput = screen.getByTestId('filter-stroke-min');
+    const maxInput = screen.getByTestId('filter-stroke-max');
+    await user.type(minInput, '1');
+    await user.type(maxInput, '1');
+
+    // 一 (1 trait) reste visible, 你 (7 traits) doit disparaître
+    expect(screen.getByText('一')).toBeInTheDocument();
+    expect(screen.queryByText('你')).not.toBeInTheDocument();
+  });
+
+  it('le bouton de réinitialisation efface les filtres', async () => {
+    const user = userEvent.setup();
+    render(<Glossary onSelect={onSelect} onShowDetail={onShowDetail} />);
+
+    expect(await screen.findByText(/Caractères/i)).toBeInTheDocument();
+    await user.click(screen.getByTestId('filter-toggle'));
+
+    await user.type(screen.getByTestId('filter-stroke-min'), '1');
+    await user.type(screen.getByTestId('filter-stroke-max'), '1');
+    expect(screen.queryByText('你')).not.toBeInTheDocument();
+
+    await user.click(screen.getByTestId('filter-reset'));
+    expect(screen.getByText('你')).toBeInTheDocument();
+  });
+
+  it('cache les filtres caractère-only quand on bascule sur Mots', async () => {
+    const user = userEvent.setup();
+    render(<Glossary onSelect={onSelect} onShowDetail={onShowDetail} />);
+
+    expect(await screen.findByText(/Caractères/i)).toBeInTheDocument();
+    await user.click(screen.getByTestId('filter-toggle'));
+
+    // Sur l'onglet Caractères, les inputs stroke + freq existent
+    expect(screen.getByTestId('filter-stroke-min')).toBeInTheDocument();
+    expect(screen.getByTestId('filter-frequency-min')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Mots \(\d+\)/ }));
+
+    expect(screen.queryByTestId('filter-stroke-min')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('filter-frequency-min')).not.toBeInTheDocument();
+  });
 });
