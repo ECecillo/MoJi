@@ -46,12 +46,24 @@ Cf. [`docs/journal/2026-05-28-fix-canvas-feedback.md`](../journal/2026-05-28-fix
 - ✅ **Distinction visuelle** : trait validé en transparent fin (laisse le trait propre Hanzi Writer dominer), trait refusé en gris épais dashed.
 - ✅ Couverture : 6 tests nouveaux dont l'**assertion critique** que `mount` n'est pas rappelé sur toggle outline (la régression aurait été détectée immédiatement).
 
+### Tests E2E Playwright (session du jour)
+
+Cf. [RFC 0009](../rfc/0009-tests-e2e.md) et [`docs/journal/2026-05-28-playwright-e2e.md`](../journal/2026-05-28-playwright-e2e.md).
+
+- ✅ Playwright installé, config Chromium seul, `webServer` qui démarre Vite automatiquement.
+- ✅ 5 fichiers de scénarios (10 tests) : smoke, glossaire, navigation, langue, canvas. `make test-e2e` séparée de `make test`.
+- ✅ **Bug race condition StrictMode corrigé** : la 1ʳᵉ `renderer.mount()` qui résolvait après son cleanup pouvait clobber le `_quiz` de la 2ᵉ. Symptôme : `validateStroke` levait au premier trait. Détecté par Playwright, invisible aux tests unitaires.
+- ✅ `setPointerCapture/releasePointerCapture` wrappés en try/catch (résilience aux events synthétiques + edge cases prod).
+- ✅ Signal `data-renderer-mounted` sur la couche d'input pour gate les tests.
+- ✅ Discipline ajoutée à CLAUDE.md : `make test-e2e` recommandé avant push après changement de UI/flow.
+
 ## Vérifications croisées
 
 - `make test` : **92 tests front passent**, 2 paquets back passent avec `-race`.
+- `make test-e2e` : **10/10 tests E2E verts** (Chromium, ~10s).
 - `make lint` : ESLint + Prettier propres, golangci-lint 0 issue.
 - `make typecheck` : `tsc --noEmit` propre.
-- `make docs` : `docs/index.html` à jour (8 RFC + 9 entrées de journal).
+- `make docs` : `docs/index.html` à jour (9 RFC + 10 entrées de journal).
 
 ## Dernières décisions importantes
 
@@ -60,6 +72,8 @@ Cf. [`docs/journal/2026-05-28-fix-canvas-feedback.md`](../journal/2026-05-28-fix
 - 2026-05-28 : `docs/index.html` est régénéré dans le **même commit** que les markdown modifiés (pas dans un commit séparé).
 - 2026-05-28 : **mount Hanzi Writer strictement lié à `[hanzi, renderer]`** ; toute autre dépendance qui s'ajouterait passe désormais par des effets de visibilité dédiés (gating via `mountVersion`).
 - 2026-05-28 : **trait user validé estompé** (opacity 0.3, fin) pour laisser dominer le trait propre Hanzi Writer ; trait refusé bien visible (dashed gris épais).
+- 2026-05-28 : **Playwright comme framework E2E** ([RFC 0009](../rfc/0009-tests-e2e.md)), Chromium seul, `frontend/e2e/`, cible `make test-e2e` séparée. MCP Playwright à installer côté machine utilisateur (instructions dans la RFC et le journal).
+- 2026-05-28 : **`.then()` du mount async ne doit jamais appeler `renderer.unmount()` dans la branche cancelled** — le cleanup du useEffect s'en charge, et l'instance renderer est partagée entre les mounts StrictMode.
 
 ## Bloquants connus
 

@@ -167,15 +167,15 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <body>
 <nav class="topnav"><div class="wrap">
   <a href="#etat">État courant</a>
-  <a href="#rfc">RFC (8)</a>
-  <a href="#journal">Journal (9)</a>
+  <a href="#rfc">RFC (9)</a>
+  <a href="#journal">Journal (10)</a>
   <a href="#brief">Brief</a>
 </div></nav>
 
 <div class="wrap">
 <header class="hero">
   <h1>Sinogrammes — Carnet de bord</h1>
-  <p class="meta">Index généré le 2026-05-28 20:03. 8 RFC · 9 entrées de journal.</p>
+  <p class="meta">Index généré le 2026-05-28 20:47. 9 RFC · 10 entrées de journal.</p>
   <p class="hint">Toutes les sections sont collapsables. Cliquez sur une ligne ou un lien interne pour ouvrir et défiler.</p>
 </header>
 
@@ -218,12 +218,23 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li>✅ <strong>Distinction visuelle</strong> : trait validé en transparent fin (laisse le trait propre Hanzi Writer dominer), trait refusé en gris épais dashed.</li>
 <li>✅ Couverture : 6 tests nouveaux dont l&#39;<strong>assertion critique</strong> que <code>mount</code> n&#39;est pas rappelé sur toggle outline (la régression aurait été détectée immédiatement).</li>
 </ul>
+<h3>Tests E2E Playwright (session du jour)</h3>
+<p>Cf. <a href="#rfc-0009">RFC 0009</a> et <a href="#journal-2026-05-28-playwright-e2e"><code>docs/journal/2026-05-28-playwright-e2e.md</code></a>.</p>
+<ul>
+<li>✅ Playwright installé, config Chromium seul, <code>webServer</code> qui démarre Vite automatiquement.</li>
+<li>✅ 5 fichiers de scénarios (10 tests) : smoke, glossaire, navigation, langue, canvas. <code>make test-e2e</code> séparée de <code>make test</code>.</li>
+<li>✅ <strong>Bug race condition StrictMode corrigé</strong> : la 1ʳᵉ <code>renderer.mount()</code> qui résolvait après son cleanup pouvait clobber le <code>_quiz</code> de la 2ᵉ. Symptôme : <code>validateStroke</code> levait au premier trait. Détecté par Playwright, invisible aux tests unitaires.</li>
+<li>✅ <code>setPointerCapture/releasePointerCapture</code> wrappés en try/catch (résilience aux events synthétiques + edge cases prod).</li>
+<li>✅ Signal <code>data-renderer-mounted</code> sur la couche d&#39;input pour gate les tests.</li>
+<li>✅ Discipline ajoutée à CLAUDE.md : <code>make test-e2e</code> recommandé avant push après changement de UI/flow.</li>
+</ul>
 <h2>Vérifications croisées</h2>
 <ul>
 <li><code>make test</code> : <strong>92 tests front passent</strong>, 2 paquets back passent avec <code>-race</code>.</li>
+<li><code>make test-e2e</code> : <strong>10/10 tests E2E verts</strong> (Chromium, ~10s).</li>
 <li><code>make lint</code> : ESLint + Prettier propres, golangci-lint 0 issue.</li>
 <li><code>make typecheck</code> : <code>tsc --noEmit</code> propre.</li>
-<li><code>make docs</code> : <code>docs/index.html</code> à jour (8 RFC + 9 entrées de journal).</li>
+<li><code>make docs</code> : <code>docs/index.html</code> à jour (9 RFC + 10 entrées de journal).</li>
 </ul>
 <h2>Dernières décisions importantes</h2>
 <ul>
@@ -232,6 +243,8 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li>2026-05-28 : <code>docs/index.html</code> est régénéré dans le <strong>même commit</strong> que les markdown modifiés (pas dans un commit séparé).</li>
 <li>2026-05-28 : <strong>mount Hanzi Writer strictement lié à <code>[hanzi, renderer]</code></strong> ; toute autre dépendance qui s&#39;ajouterait passe désormais par des effets de visibilité dédiés (gating via <code>mountVersion</code>).</li>
 <li>2026-05-28 : <strong>trait user validé estompé</strong> (opacity 0.3, fin) pour laisser dominer le trait propre Hanzi Writer ; trait refusé bien visible (dashed gris épais).</li>
+<li>2026-05-28 : <strong>Playwright comme framework E2E</strong> (<a href="#rfc-0009">RFC 0009</a>), Chromium seul, <code>frontend/e2e/</code>, cible <code>make test-e2e</code> séparée. MCP Playwright à installer côté machine utilisateur (instructions dans la RFC et le journal).</li>
+<li>2026-05-28 : <strong><code>.then()</code> du mount async ne doit jamais appeler <code>renderer.unmount()</code> dans la branche cancelled</strong> — le cleanup du useEffect s&#39;en charge, et l&#39;instance renderer est partagée entre les mounts StrictMode.</li>
 </ul>
 <h2>Bloquants connus</h2>
 <p>Aucun.</p>
@@ -305,6 +318,12 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
   <td><a href="#rfc-0008">Sourcing des données HSK 3.0 niveau 1</a></td>
   <td><span class="status status-Accepté">Accepté</span></td>
   <td>2026-05-24</td>
+</tr>
+<tr>
+  <td><a href="#rfc-0009">0009</a></td>
+  <td><a href="#rfc-0009">Stratégie de tests end-to-end</a></td>
+  <td><span class="status status-Accepté">Accepté</span></td>
+  <td>2026-05-28</td>
 </tr></tbody>
 </table>
 <details id="rfc-0001">
@@ -1210,10 +1229,175 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </ul>
 </div>
 </details>
+<details id="rfc-0009">
+  <summary>RFC 0009 — Stratégie de tests end-to-end<span class="meta">2026-05-28 · <span class="status status-Accepté">Accepté</span></span></summary>
+  <div class="content"><h1>RFC 0009 — Stratégie de tests end-to-end</h1>
+<ul>
+<li><strong>Statut</strong> : Accepté</li>
+<li><strong>Date</strong> : 2026-05-28</li>
+<li><strong>Auteur(s)</strong> : Enzo</li>
+<li><strong>Lié à</strong> : RFC 0001 (vision), RFC 0002 (stack), RFC 0006 (offline-first)</li>
+</ul>
+<h2>Contexte</h2>
+<p>Les tests unitaires Vitest couvrent bien la logique pure (domaine, helpers, validateurs Zod) et les composants isolés via Testing Library. Mais plusieurs bugs récents — disparition du trait au démarrage du suivant, recherche glossaire diacritique-sensible — ont été détectés <strong>manuellement à l&#39;usage</strong> sur la Boox, après commit. Le projet manque d&#39;un filet de sécurité au niveau du <strong>comportement bout-en-bout</strong> : &quot;quand l&#39;utilisateur fait X, le navigateur affiche Y&quot;.</p>
+<p>L&#39;ajout d&#39;une couche E2E vise à :</p>
+<ul>
+<li>Détecter en amont les régressions de flux utilisateur (navigation, recherche, tracé).</li>
+<li>Documenter par l&#39;exemple les parcours utilisateur attendus.</li>
+<li>Permettre à l&#39;agent IA de <strong>piloter un vrai navigateur</strong> via MCP pour vérifier ses propres modifications, sans qu&#39;on aille systématiquement sur la Boox.</li>
+</ul>
+<h2>Décision</h2>
+<h3>Framework</h3>
+<p><strong>Playwright</strong> (<code>@playwright/test</code>), choisi pour :</p>
+<ul>
+<li>API moderne, support natif de Pointer Events (indispensable pour tester le canvas).</li>
+<li>Auto-wait robuste, sélecteurs accessibilité (<code>getByRole</code>, <code>getByTestId</code>).</li>
+<li>WebServer intégré (lance Vite automatiquement avant les tests).</li>
+<li>Excellent rapport HTML + traces interactives pour le debug.</li>
+<li><strong>Existence d&#39;un MCP officiel <code>@playwright/mcp</code></strong> qui permet à l&#39;agent IA de piloter un navigateur Playwright en live.</li>
+</ul>
+<h3>Périmètre du runner</h3>
+<ul>
+<li><strong>Chromium seul</strong> au démarrage. Cohérent avec la cible Boox Air 5c (Chromium 111). Pas de WebKit ni Firefox tant que la PWA ne vise pas explicitement ces moteurs.</li>
+<li>Tests headless en local, possible passage en mode <code>headed</code> via <code>npm run test:e2e:headed</code> pour debug.</li>
+<li>Pas d&#39;intégration CI tant que CI n&#39;existe pas (cf. brief section 12 — Docker/CI hors scope du MVP).</li>
+</ul>
+<h3>Localisation</h3>
+<ul>
+<li><code>frontend/e2e/</code> pour les fichiers <code>*.spec.ts</code>.</li>
+<li><code>frontend/playwright.config.ts</code> à la racine du frontend.</li>
+<li>Tests E2E <strong>séparés des tests Vitest</strong> : extensions distinctes (<code>.spec.ts</code> pour E2E, <code>.test.ts</code> ou <code>.test.tsx</code> pour Vitest), répertoires distincts.</li>
+</ul>
+<h3>Intégration Makefile</h3>
+<ul>
+<li><strong>Nouvelle cible <code>make test-e2e</code></strong> séparée de <code>make test</code>. Justification : les E2E prennent ~20-30s minimum (lancement de Chromium + Vite). Les inclure dans <code>make test</code> ralentirait le cycle de dev rapide. À lancer manuellement avant un push ou un commit important.</li>
+<li><code>make test</code> reste dédié aux unitaires (Vitest + <code>go test</code>).</li>
+<li>Discipline dans <code>CLAUDE.md</code> : <code>make test-e2e</code> recommandé avant tout commit qui touche <code>features/</code>, <code>adapters/</code>, ou les flux utilisateur.</li>
+</ul>
+<h3>Scénarios initiaux</h3>
+<ol>
+<li><strong>Smoke</strong> : l&#39;app charge, le glossaire est visible, locale FR par défaut.</li>
+<li><strong>Glossaire</strong> : recherche par pinyin ASCII trouve un caractère diacritique, recherche sans résultat affiche le message vide, bascule onglet caractères ↔ mots.</li>
+<li><strong>Navigation</strong> : glossaire → bouton &quot;Tracer&quot; → vue practice → bouton retour → retour glossaire.</li>
+<li><strong>Langue</strong> : toggle FR → EN met à jour les labels visibles.</li>
+<li><strong>Canvas tracé</strong> : un pointer event séquence (down → move → up) déclenche un verdict affiché et incrémente le compteur correspondant.</li>
+</ol>
+<p>Le scénario 5 n&#39;asserte <strong>pas</strong> &quot;accepté&quot; vs &quot;refusé&quot; (dépend de la géométrie réelle évaluée par Hanzi Writer, fragile sans coordonnées exactes). Il valide uniquement que la chaîne <code>pointer → validateStroke → setVerdict → DOM</code> fonctionne de bout en bout.</p>
+<h3>MCP Playwright</h3>
+<p>Le serveur MCP <code>@playwright/mcp</code> permet à l&#39;agent IA Claude Code de piloter un navigateur Playwright sans passer par les tests E2E figés. Utile en cours de session pour :</p>
+<ul>
+<li>Reproduire visuellement un bug rapporté.</li>
+<li>Vérifier qu&#39;une modification d&#39;UI rend bien à l&#39;écran.</li>
+<li>Itérer sur des choix de design sans rebuild complet.</li>
+</ul>
+<p><strong>Configuration</strong> : ajouter dans <code>~/.claude/settings.json</code> (ou équivalent selon ton harnais) :</p>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;playwright&quot;: {
+      &quot;command&quot;: &quot;npx&quot;,
+      &quot;args&quot;: [&quot;@playwright/mcp@latest&quot;]
+    }
+  }
+}
+</code></pre>
+<p>Le MCP n&#39;est <strong>pas</strong> une dépendance du repo : c&#39;est un outil de la machine de l&#39;utilisateur. Il complète les tests E2E mais ne les remplace pas — les tests E2E sont la source de vérité, le MCP est un outil de debug interactif.</p>
+<h2>Conséquences</h2>
+<ul>
+<li><strong>Cycle de feedback plus long</strong> mais plus robuste : avant un push, on lance <code>make test-e2e</code> pour valider les flux principaux.</li>
+<li><strong>Surface à maintenir augmente</strong> : les tests E2E sont plus fragiles que les unitaires (changements de DOM = casse). On garde l&#39;ensemble petit (5 scénarios au départ).</li>
+<li><strong>Dépendance binaire ajoutée</strong> : ~150 MB pour Chromium Playwright, installé hors du repo (cache global <code>~/Library/Caches/ms-playwright/</code> sur macOS).</li>
+<li><strong>Pas de bonne couverture sans CI</strong> : tant que CI n&#39;existe pas, les E2E sont à la discrétion du développeur. À automatiser quand on introduira Docker/CI.</li>
+</ul>
+<h2>Alternatives considérées</h2>
+<ul>
+<li><strong>Cypress</strong> : refusé. API moins moderne, support Pointer Events historiquement limité, écosystème plus lourd.</li>
+<li><strong>WebdriverIO + Selenium</strong> : refusé. Surdimensionné, lent, mauvaise DX face à Playwright.</li>
+<li><strong>Tests E2E avec Vitest + jsdom</strong> : refusé. Jsdom ne simule pas un vrai navigateur (pas de layout, pas de vrai Pointer Event, pas de focus management). Les tests Vitest restent unitaires.</li>
+<li><strong>Ne rien ajouter</strong> (&quot;on continue à tester à la main sur la Boox&quot;) : refusé. Les bugs récents ont montré le coût du test manuel + délai entre commit et détection.</li>
+<li><strong>Couvrir tous les flux dès le départ</strong> : refusé. 5 scénarios = bon démarrage, on ajoute au fil des features sans gros lot dédié.</li>
+</ul>
+</div>
+</details>
 </section>
 
 <section id="journal">
 <h2>Journal de bord</h2>
+<details id="journal-2026-05-28-playwright-e2e">
+  <summary>2026-05-28 — Tests E2E Playwright + correction race condition StrictMode</summary>
+  <div class="content"><h1>2026-05-28 — Tests E2E Playwright + correction race condition StrictMode</h1>
+<h2>Objectif de la session</h2>
+<p>Ajouter un framework de tests E2E (Playwright) pour sécuriser les flux utilisateur et permettre à l&#39;agent IA de piloter un vrai navigateur via MCP. La RFC 0009 fige les choix structurants ; cette session pose l&#39;outillage, les premiers scénarios, et corrige au passage un bug latent découvert grâce à E2E.</p>
+<h2>Ce qui a été fait</h2>
+<h3>Tooling Playwright</h3>
+<ul>
+<li><code>@playwright/test</code> installé en devDependency, navigateur Chromium téléchargé (~150 MB, cache global <code>~/Library/Caches/ms-playwright/</code>).</li>
+<li><code>frontend/playwright.config.ts</code> : Chromium seul, <code>webServer</code> qui lance Vite automatiquement (ré-utilise un dev server existant en local), traces et screenshots on-failure, reporter HTML.</li>
+<li>Scripts npm <code>test:e2e</code>, <code>test:e2e:headed</code>, <code>test:e2e:ui</code>.</li>
+<li>Cible <code>make test-e2e</code> séparée de <code>make test</code> (cycle dev rapide préservé).</li>
+<li><code>.gitignore</code> met de côté <code>test-results/</code>, <code>playwright-report/</code>, <code>blob-report/</code>.</li>
+<li><code>.prettierignore</code> et override ESLint pour <code>e2e/**</code>.</li>
+</ul>
+<h3>Scénarios E2E (5 fichiers, 10 tests)</h3>
+<ul>
+<li><code>smoke.spec.ts</code> (2 tests) : chargement de l&#39;app, glossaire visible, locale FR par défaut, ≥100 caractères listés.</li>
+<li><code>glossary.spec.ts</code> (3 tests) : recherche pinyin ASCII trouve les diacritiques, message vide pour <code>xyz123</code>, bascule onglets caractères ↔ mots.</li>
+<li><code>navigation.spec.ts</code> (1 test) : glossary → Tracer → practice → bouton retour → glossary.</li>
+<li><code>language.spec.ts</code> (2 tests) : toggle FR/EN, placeholder change, double toggle revient.</li>
+<li><code>canvas.spec.ts</code> (2 tests) : un trait Pointer Events fait apparaître un verdict, une polyline du trait reste dans le SVG.</li>
+</ul>
+<h3>Bug latent corrigé — race condition StrictMode dans Canvas</h3>
+<p>Les tests E2E ont révélé un bug invisible côté unit : sous React StrictMode (dev), la première <code>renderer.mount()</code> peut résoudre <strong>après</strong> son cleanup. Son <code>.then()</code> voit alors <code>cancelled=true</code> et appelle <code>renderer.unmount()</code> — mais l&#39;instance de renderer est <strong>partagée</strong> avec la 2ᵉ <code>mount()</code> déjà en cours, donc l&#39;unmount tardif clobber le <code>_quiz</code> du 2ᵉ writer fraîchement créé. Symptôme : <code>data-renderer-mounted=&quot;true&quot;</code> est affiché mais <code>renderer.validateStroke()</code> lève <code>HanziWriterRendererError: quiz n&#39;est pas prêt</code> au premier trait.</p>
+<p>Le bug existait depuis le Lot 1 mais ne se manifestait pas en usage normal car les humains ne tracent pas dans la première 10aine de ms après l&#39;arrivée sur la vue practice. Les tests E2E, eux, dispatchent immédiatement après le signal de mount.</p>
+<p>Correctif : retirer <code>renderer.unmount()</code> de la branche <code>cancelled</code> du <code>.then()</code>. Le cleanup du useEffect (<code>return () =&gt; { renderer.unmount() }</code>) s&#39;occupe déjà du démontage réel. Commentaire explicite dans le code pour ne pas régresser.</p>
+<h3>Diagnostic et instrumentation temporaires</h3>
+<p>Pour identifier le bug, j&#39;ai dû :</p>
+<ul>
+<li>Capturer la console du navigateur dans le test (<code>page.on(&#39;console&#39;)</code> + <code>page.on(&#39;pageerror&#39;)</code>).</li>
+<li>Ajouter brièvement des <code>console.log</code> dans <code>Canvas.startStroke</code> et <code>Canvas.finishStroke</code> (retirés après diagnostic).</li>
+<li>Wrapper <code>event.currentTarget.setPointerCapture()</code> et <code>releasePointerCapture()</code> en try/catch — l&#39;API peut lever sur des PointerEvent synthétiques (test) ; conservé car résilience utile en production aussi.</li>
+<li>Ajouter un signal <code>data-renderer-mounted</code> sur la couche d&#39;input pour gate les tests E2E pendant le mount async de Hanzi Writer.</li>
+</ul>
+<h3>Découvertes Playwright</h3>
+<ul>
+<li><code>page.mouse.*</code> passe par CDP <code>Input.dispatchMouseEvent</code> qui <strong>n&#39;émet pas de PointerEvent</strong>, seulement des mouse events. Pour tester nos handlers <code>onPointerDown/Move/Up</code>, on dispatch nous-mêmes les PointerEvent via <code>locator.evaluate((el, ...) =&gt; el.dispatchEvent(new PointerEvent(...)))</code>.</li>
+<li>Le <code>&lt;svg&gt;</code> du trait user est <code>aria-hidden=&quot;true&quot;</code> (décoratif). Playwright considère ses enfants comme &quot;hidden&quot; pour <code>toBeVisible</code>. Utiliser <code>toBeAttached</code> à la place quand on vérifie la présence d&#39;un élément aria-hidden.</li>
+</ul>
+<h2>Décisions prises</h2>
+<ul>
+<li><a href="#rfc-0009">RFC 0009 — Stratégie de tests end-to-end</a> actée.</li>
+<li><code>make test-e2e</code> reste <strong>séparée</strong> de <code>make test</code> ; recommandé avant push mais pas obligatoire pour chaque commit (les unitaires couvrent l&#39;essentiel rapidement).</li>
+<li>Le scénario canvas ne teste <strong>pas</strong> si le verdict est accepté ou refusé (dépend de la géométrie réelle évaluée par Hanzi Writer, fragile). Il vérifie uniquement la chaîne <code>pointer → validateStroke → verdict → DOM</code>.</li>
+<li>MCP Playwright à installer côté machine utilisateur — pas une dépendance du repo (cf. RFC 0009 + instructions ci-dessous).</li>
+</ul>
+<h2>Vérifications</h2>
+<ul>
+<li><code>make test</code> : 92 tests front, backend <code>-race</code> vert.</li>
+<li><code>make test-e2e</code> : <strong>10/10 tests E2E verts</strong> (Chromium, ~10s d&#39;exécution).</li>
+<li><code>make lint</code> : ESLint + Prettier propres, golangci-lint 0 issue.</li>
+<li><code>make typecheck</code> : <code>tsc --noEmit</code> propre.</li>
+<li><code>make docs</code> : 9 RFC + 10 entrées de journal.</li>
+</ul>
+<h2>Installation du MCP Playwright (à faire côté machine utilisateur)</h2>
+<p>Le serveur MCP <code>@playwright/mcp</code> permet à Claude Code de piloter un navigateur Playwright en interactif (utile pour reproduire des bugs, valider une UI sans rebuild). Il n&#39;est <strong>pas</strong> une dépendance du repo.</p>
+<p>Ajouter dans <code>~/.claude/settings.json</code> (ou équivalent selon la config locale) :</p>
+<pre><code class="language-json">{
+  &quot;mcpServers&quot;: {
+    &quot;playwright&quot;: {
+      &quot;command&quot;: &quot;npx&quot;,
+      &quot;args&quot;: [&quot;@playwright/mcp@latest&quot;]
+    }
+  }
+}
+</code></pre>
+<p>Redémarrer Claude Code. Les outils <code>mcp__playwright__*</code> devraient apparaître dans la liste.</p>
+<h2>Reste à faire / prochaines étapes</h2>
+<ul>
+<li><strong>Reprendre étape 4 du Lot 2</strong> : fiches détaillées des caractères / mots dans le glossaire (modale, page dédiée ou panneau latéral — à arbitrer).</li>
+<li>À chaque feature majeure : ajouter un scénario E2E correspondant pour figer le flux utilisateur.</li>
+<li>Considérer un test E2E qui vérifie le <strong>bug original</strong> (premier trait disparait après un toggle outline) — maintenant qu&#39;on a le fix, on a tout pour le verrouiller.</li>
+</ul>
+</div>
+</details>
 <details id="journal-2026-05-28-lot2-glossaire-recherche">
   <summary>2026-05-28 — Lot 2 (1/n) : glossaire HSK 1 avec recherche et navigation</summary>
   <div class="content"><h1>2026-05-28 — Lot 2 (1/n) : glossaire HSK 1 avec recherche et navigation</h1>
@@ -2206,7 +2390,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </section>
 
 <footer>
-<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-05-28 20:03 par <code>make docs</code>.</p>
+<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-05-28 20:47 par <code>make docs</code>.</p>
 </footer>
 </div>
 

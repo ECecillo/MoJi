@@ -34,6 +34,7 @@ Contenu type :
 
 ## Index (par date décroissante)
 
+- [2026-05-28 — Tests E2E Playwright + correction race condition StrictMode](2026-05-28-playwright-e2e.md)
 - [2026-05-28 — Correctifs Canvas : mount stable et feedback de verdict](2026-05-28-fix-canvas-feedback.md)
 - [2026-05-28 — Carnet de bord HTML autonome (outillage doc)](2026-05-28-carnet-html.md)
 - [2026-05-28 — Lot 2 (1/n) : glossaire HSK 1 avec recherche et navigation](2026-05-28-lot2-glossaire-recherche.md)
