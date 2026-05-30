@@ -50,4 +50,11 @@ export interface CharacterRenderer {
 
   /** Cache le caractère complet. */
   hideCharacter(): void;
+
+  /**
+   * Enregistre un callback qui sera appelé quand l'utilisateur a complété
+   * tous les traits du caractère courant. Retourne une fonction d'unregister.
+   * Le callback peut être enregistré avant ou après `mount`.
+   */
+  setOnComplete(callback: () => void): () => void;
 }

@@ -62,8 +62,16 @@ export class HanziWriterRenderer implements CharacterRenderer {
   private writer: HanziWriterWithQuiz | null = null;
   private container: HTMLElement | null = null;
   private lastValidation: StrokeValidationResult | null = null;
+  private completeCallbacks = new Set<() => void>();
 
   constructor(private readonly options: HanziWriterRendererOptions = {}) {}
+
+  setOnComplete(callback: () => void): () => void {
+    this.completeCallbacks.add(callback);
+    return () => {
+      this.completeCallbacks.delete(callback);
+    };
+  }
 
   async mount(container: HTMLElement, hanzi: string): Promise<void> {
     this.unmount();
@@ -192,6 +200,15 @@ export class HanziWriterRenderer implements CharacterRenderer {
           accepted: false,
           reason: stroke.isBackwards ? 'wrong_direction' : 'wrong_stroke',
         };
+      },
+      onComplete: () => {
+        for (const callback of this.completeCallbacks) {
+          try {
+            callback();
+          } catch (error) {
+            console.error('onComplete callback error:', error);
+          }
+        }
       },
     };
   }

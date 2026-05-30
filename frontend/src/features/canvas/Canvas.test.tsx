@@ -22,6 +22,18 @@ class FakeRenderer implements CharacterRenderer {
   hideOutline = vi.fn();
   showCharacter = vi.fn();
   hideCharacter = vi.fn();
+
+  completeCallbacks = new Set<() => void>();
+  setOnComplete = vi.fn((callback: () => void) => {
+    this.completeCallbacks.add(callback);
+    return () => {
+      this.completeCallbacks.delete(callback);
+    };
+  });
+  /** Helper de test pour simuler une complétion côté Hanzi Writer. */
+  fireComplete = () => {
+    for (const cb of this.completeCallbacks) cb();
+  };
 }
 
 function inputLayer() {
@@ -510,6 +522,118 @@ describe('Canvas', () => {
 
       expect(screen.getByTestId('undo-last')).not.toBeDisabled();
       expect(screen.getByTestId('reset-all')).not.toBeDisabled();
+    });
+  });
+
+  describe('onCharacterCompleted', () => {
+    it('émet avec refusals=0 quand la session est terminée sans refus', async () => {
+      const renderer = new FakeRenderer();
+      const onComplete = vi.fn();
+      render(<Canvas hanzi="你" renderer={renderer} onCharacterCompleted={onComplete} />);
+
+      await waitFor(() => expect(renderer.setOnComplete).toHaveBeenCalled());
+
+      // Simuler la fin du quiz côté Hanzi Writer
+      renderer.fireComplete();
+
+      expect(onComplete).toHaveBeenCalledWith({ refusals: 0, completed: true });
+    });
+
+    it('compte les refus authentiques mais ignore repeated_stroke', async () => {
+      const renderer = new FakeRenderer();
+      const onComplete = vi.fn();
+      render(<Canvas hanzi="你" renderer={renderer} onCharacterCompleted={onComplete} />);
+      await waitFor(() => expect(renderer.setOnComplete).toHaveBeenCalled());
+      const layer = inputLayer();
+
+      // Trait 1 : accepté (mock par défaut)
+      renderer.validateStroke.mockReturnValueOnce({ expectedStrokeIndex: 0, accepted: true });
+      dispatchPointer(layer, 'pointerdown', { pointerId: 1, clientX: 50, clientY: 50 });
+      dispatchPointer(layer, 'pointerup', { pointerId: 1, clientX: 100, clientY: 100 });
+
+      // Trait 2 : refusé authentique (loin du premier)
+      renderer.validateStroke.mockReturnValueOnce({
+        expectedStrokeIndex: 1,
+        accepted: false,
+        reason: 'wrong_stroke',
+      });
+      dispatchPointer(layer, 'pointerdown', { pointerId: 2, clientX: 250, clientY: 250 });
+      dispatchPointer(layer, 'pointerup', { pointerId: 2, clientX: 300, clientY: 280 });
+
+      // Trait 3 : refusé MAIS détecté comme repeat (matche trait 1)
+      renderer.validateStroke.mockReturnValueOnce({
+        expectedStrokeIndex: 1,
+        accepted: false,
+        reason: 'wrong_stroke',
+      });
+      dispatchPointer(layer, 'pointerdown', { pointerId: 3, clientX: 52, clientY: 48 });
+      dispatchPointer(layer, 'pointerup', { pointerId: 3, clientX: 101, clientY: 99 });
+
+      renderer.fireComplete();
+
+      expect(onComplete).toHaveBeenCalledWith({ refusals: 1, completed: true });
+    });
+
+    it('reset au changement de hanzi remet refusals à 0', async () => {
+      const renderer = new FakeRenderer();
+      const onComplete = vi.fn();
+      const { rerender } = render(
+        <Canvas hanzi="你" renderer={renderer} onCharacterCompleted={onComplete} />,
+      );
+      // Premier mount terminé
+      await waitFor(() => expect(renderer.setOnComplete).toHaveBeenCalledTimes(1));
+      const layer = inputLayer();
+
+      // Un refus sur 你
+      renderer.validateStroke.mockReturnValueOnce({
+        expectedStrokeIndex: 0,
+        accepted: false,
+        reason: 'wrong_stroke',
+      });
+      dispatchPointer(layer, 'pointerdown', { pointerId: 1, clientX: 5, clientY: 5 });
+      dispatchPointer(layer, 'pointerup', { pointerId: 1, clientX: 15, clientY: 15 });
+
+      // Changement de hanzi : refusals doit repartir à zéro
+      rerender(<Canvas hanzi="好" renderer={renderer} onCharacterCompleted={onComplete} />);
+      // Attendre que le nouveau mount enregistre son onComplete
+      await waitFor(() => expect(renderer.setOnComplete).toHaveBeenCalledTimes(2));
+      renderer.fireComplete();
+
+      expect(onComplete).toHaveBeenCalledWith({ refusals: 0, completed: true });
+    });
+
+    it("n'émet qu'une seule fois par session même si setOnComplete tire plusieurs fois", async () => {
+      const renderer = new FakeRenderer();
+      const onComplete = vi.fn();
+      render(<Canvas hanzi="你" renderer={renderer} onCharacterCompleted={onComplete} />);
+
+      await waitFor(() => expect(renderer.setOnComplete).toHaveBeenCalled());
+
+      renderer.fireComplete();
+      renderer.fireComplete();
+      renderer.fireComplete();
+
+      expect(onComplete).toHaveBeenCalledTimes(1);
+    });
+
+    it("Tout effacer permet d'émettre à nouveau", async () => {
+      const renderer = new FakeRenderer();
+      const onComplete = vi.fn();
+      render(<Canvas hanzi="你" renderer={renderer} onCharacterCompleted={onComplete} />);
+      const layer = inputLayer();
+
+      await waitFor(() => expect(renderer.setOnComplete).toHaveBeenCalled());
+
+      // Faire au moins un trait pour activer le bouton Tout effacer
+      dispatchPointer(layer, 'pointerdown', { pointerId: 1, clientX: 10, clientY: 10 });
+      dispatchPointer(layer, 'pointerup', { pointerId: 1, clientX: 20, clientY: 20 });
+
+      renderer.fireComplete();
+      expect(onComplete).toHaveBeenCalledTimes(1);
+
+      fireEvent.click(screen.getByTestId('reset-all'));
+      renderer.fireComplete();
+      expect(onComplete).toHaveBeenCalledTimes(2);
     });
   });
 

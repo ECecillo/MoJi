@@ -19,6 +19,13 @@ export interface CapturedStrokeAttempt extends StrokeAttempt {
   pointerType: string;
 }
 
+export interface CharacterCompletionData {
+  /** Nombre de traits authentiquement refusés (hors repeated_stroke). */
+  refusals: number;
+  /** Le caractère a-t-il été terminé (tous les traits validés) ? */
+  completed: true;
+}
+
 export interface CanvasProps {
   hanzi: string;
   renderer: CharacterRenderer;
@@ -28,6 +35,9 @@ export interface CanvasProps {
   showCharacter?: boolean;
   className?: string;
   onStrokeValidated?: (result: StrokeValidationResult, attempt: CapturedStrokeAttempt) => void;
+  /** Émis quand tous les traits du caractère ont été validés (Hanzi Writer
+   *  signale onComplete via le port `setOnComplete`). */
+  onCharacterCompleted?: (data: CharacterCompletionData) => void;
 }
 
 type CapturedPoint = {
@@ -53,6 +63,7 @@ export function Canvas({
   showCharacter = false,
   className = '',
   onStrokeValidated,
+  onCharacterCompleted,
 }: CanvasProps) {
   const { t } = useTranslation();
   const rendererLayerRef = useRef<HTMLDivElement | null>(null);
@@ -63,6 +74,12 @@ export function Canvas({
     ReadonlyArray<{ points: ReadonlyArray<CapturedPoint>; accepted: boolean }>
   >([]);
   const [verdict, setVerdict] = useState<StrokeValidationResult | null>(null);
+  // Compteur de refus authentiques (hors repeated_stroke) pour la session
+  // courante (= depuis le mount, jusqu'à completion ou changement de hanzi).
+  // Ref vs state : on lit la dernière valeur dans le callback onComplete
+  // sans recréer le callback à chaque incrément.
+  const refusalCountRef = useRef(0);
+  const completionFiredRef = useRef(false);
   // Increment after Hanzi Writer is mounted to gate the visibility effects.
   // Keeps mount strictly tied to [hanzi, renderer] so toggling outline/character
   // doesn't tear down and recreate the writer (and lose its quiz progress).
@@ -95,7 +112,26 @@ export function Canvas({
     setCompletedStrokes([]);
     setCurrentPoints([]);
     setVerdict(null);
+    refusalCountRef.current = 0;
+    completionFiredRef.current = false;
   }, [hanzi]);
+
+  // Enregistrer le callback de completion au renderer. Émet vers le parent
+  // avec le compteur de refus accumulé. Garde-fou completionFiredRef : Hanzi
+  // Writer peut potentiellement appeler onComplete plusieurs fois si le quiz
+  // est redémarré ; on n'émet qu'une fois par session.
+  useEffect(() => {
+    if (mountVersion === 0) return;
+    const unregister = renderer.setOnComplete(() => {
+      if (completionFiredRef.current) return;
+      completionFiredRef.current = true;
+      onCharacterCompleted?.({
+        refusals: refusalCountRef.current,
+        completed: true,
+      });
+    });
+    return unregister;
+  }, [renderer, mountVersion, onCharacterCompleted]);
 
   // Sync outline visibility after mount completes and on subsequent toggles.
   useEffect(() => {
@@ -175,6 +211,14 @@ export function Canvas({
       ? { ...rawResult, reason: 'repeated_stroke' }
       : rawResult;
 
+    // Comptabiliser un refus authentique pour le score SM-2 :
+    // - un trait accepté : pas de refus
+    // - un trait refusé pour cause de répétition : non plus (UX-friendly)
+    // - un vrai refus (wrong_stroke/wrong_direction/...) : +1
+    if (!result.accepted && !isRepeat) {
+      refusalCountRef.current += 1;
+    }
+
     if (!isRepeat) {
       setCompletedStrokes((strokes) => [
         ...strokes,
@@ -211,6 +255,8 @@ export function Canvas({
     setCurrentPoints([]);
     setVerdict(null);
     activeStrokeRef.current = null;
+    refusalCountRef.current = 0;
+    completionFiredRef.current = false;
   };
 
   const cancelStroke = (event: ReactPointerEvent<HTMLDivElement>) => {

@@ -9,6 +9,11 @@
     "fr": "French",
     "en": "English"
   },
+  "review": {
+    "button_zero": "Review (0)",
+    "button_one": "Review ({{count}})",
+    "button_other": "Review ({{count}})"
+  },
   "glossary": {
     "title": "HSK 1 Glossary",
     "search_placeholder": "Search (hanzi, pinyin, meaning)...",
