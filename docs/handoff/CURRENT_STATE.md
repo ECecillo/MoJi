@@ -2,7 +2,7 @@
 
 > **Fichier toujours à jour.** À mettre à jour à la fin de chaque session de travail. Répond à la question : "où en est le projet, là, maintenant ?"
 
-**Dernière mise à jour** : 2026-05-30
+**Dernière mise à jour** : 2026-05-30 (session 2)
 
 ## Lot en cours
 
@@ -65,16 +65,28 @@ Cf. [`docs/journal/2026-05-30-fiches-detaillees-glossaire.md`](../journal/2026-0
 - ✅ `e2e/strict-mode-regression.spec.ts` (2 scénarios) : toggle outline 3× puis tracé d'un trait (assert verdict visible + aucun `pageerror`/`console.error` lié à Hanzi Writer) ; stress test 10 toggles consécutifs.
 - ✅ Fiche `entry-detail.spec.ts` (3 scénarios) : navigation glossary → detail → practice → ← → detail → ← → glossary, cross-ref caractère → mot lié, cross-ref mot → caractère constitutif.
 
+### Canvas — détection trait répété + Annuler / Tout effacer (session du jour)
+
+Cf. [`docs/journal/2026-05-30-canvas-undo-reset-repeat-detection.md`](../journal/2026-05-30-canvas-undo-reset-repeat-detection.md).
+
+- ✅ **Détection géométrique du trait répété** dans `Canvas` : helper `lib/strokeSimilarity.ts` (comparaison des endpoints, tolérance 15 % de la taille du canvas). Si un trait refusé matche un trait précédemment validé, on requalifie le verdict en `repeated_stroke` et on ne pollue pas le SVG.
+- ✅ **Boutons `Annuler` et `Tout effacer`** sous le compteur. Désactivés quand il n'y a rien à défaire. `Tout effacer` appelle `renderer.reset()` ; `Annuler` ne touche qu'à l'affichage (état quiz Hanzi Writer inchangé).
+- ✅ Port `CharacterRenderer` étendu avec `reason: 'repeated_stroke'` (valeur synthétisée par l'UI, jamais produite par l'adapter).
+- ✅ Couverture : 9 tests sur le helper, 7 tests sur Canvas, 3 scénarios E2E (`e2e/canvas-controls.spec.ts`).
+
 ## Vérifications croisées
 
-- `make test` : **101 tests front passent**, 2 paquets back passent avec `-race`.
-- `make test-e2e` : **15/15 tests E2E verts** (Chromium, ~4,4 s).
+- `make test` : **116 tests front passent**, 2 paquets back passent avec `-race`.
+- `make test-e2e` : **18/18 tests E2E verts** (Chromium, ~3,6 s).
 - `make lint` : ESLint + Prettier propres, golangci-lint 0 issue.
 - `make typecheck` : `tsc --noEmit` propre.
-- `make docs` : `docs/index.html` à jour (9 RFC + 11 entrées de journal).
+- `make docs` : `docs/index.html` à jour (9 RFC + 12 entrées de journal).
 
 ## Dernières décisions importantes
 
+- 2026-05-30 (s2) : **détection trait répété côté UI**, pas côté port. `Canvas` synthétise un `reason: 'repeated_stroke'` quand un trait refusé matche géométriquement un trait accepté. L'adapter Hanzi Writer reste agnostique.
+- 2026-05-30 (s2) : **Annuler n'efface que l'affichage**, pas l'état du quiz Hanzi Writer. Pour défaire l'avancement quiz, il faut Tout effacer.
+- 2026-05-30 (s2) : **trait inversé ≠ trait répété**. La comparaison des endpoints est ordonnée (début↔début, fin↔fin), donc tracer en sens inverse reste signalé `wrong_direction` par Hanzi Writer.
 - 2026-05-30 : **fiche détaillée = vue dédiée plein écran** (pas modale ni panneau latéral). Cohérent avec le pattern existant glossary ↔ practice, zéro transparence pour l'e-ink, zéro animation latérale.
 - 2026-05-30 : **deux boutons séparés "Détails" + "Tracer"** sur chaque carte du glossaire — plus explicite que clic-carte avec un seul bouton ; cibles stylet plus larges et sans ambiguïté.
 - 2026-05-30 : **back-stack à 3 niveaux** (glossary → detail → practice). Le retour depuis practice ramène à la fiche si on est passé par elle, sinon directement au glossaire.
