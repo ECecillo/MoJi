@@ -168,14 +168,14 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <nav class="topnav"><div class="wrap">
   <a href="#etat">État courant</a>
   <a href="#rfc">RFC (10)</a>
-  <a href="#journal">Journal (18)</a>
+  <a href="#journal">Journal (19)</a>
   <a href="#brief">Brief</a>
 </div></nav>
 
 <div class="wrap">
 <header class="hero">
   <h1>Sinogrammes — Carnet de bord</h1>
-  <p class="meta">Index généré le 2026-05-30 17:48. 10 RFC · 18 entrées de journal.</p>
+  <p class="meta">Index généré le 2026-05-31 08:02. 10 RFC · 19 entrées de journal.</p>
   <p class="hint">Toutes les sections sont collapsables. Cliquez sur une ligne ou un lien interne pour ouvrir et défiler.</p>
 </header>
 
@@ -187,8 +187,9 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </blockquote>
 <p><strong>Dernière mise à jour</strong> : 2026-05-30 (session 5)</p>
 <h2>Lot en cours</h2>
-<p><strong>Lot 4 — Synthèse vocale</strong> : 🟡 <strong>en cours</strong>, phase de recherche.</p>
-<p><strong>Lot 3 — Système de révision</strong> : ✅ <strong>clôturé</strong> (Moteur SRS, Sync bi-directionnelle, Dashboard).</p>
+<p><strong>Lot 5 — Polish &amp; PWA</strong> : 🟡 <strong>en cours</strong>, phase de recherche.</p>
+<p><strong>Lot 4 — Synthèse vocale</strong> : ✅ <strong>clôturé</strong> (API SpeechSynthesis, SpeakButton intégré).</p>
+<p><strong>Lot 3</strong> : ✅ clôturé officiellement.</p>
 <p><strong>Lot 2</strong> : ✅ clôturé officiellement (RFC 0007 + RFC 0010).</p>
 <h2>Ce qui est fait</h2>
 <h3>Lot 0 (clôturé)</h3>
@@ -283,6 +284,14 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li>✅ <strong>Migrations SQL</strong> via <code>goose</code> : table <code>progress</code> avec clé primaire composée.</li>
 <li>✅ <strong>API REST</strong> (<code>internal/adapters/http/progress_handler.go</code>) : endpoints <code>GET</code> et <code>POST</code> sur <code>/api/progress</code> pour le sync batch.</li>
 <li>✅ <strong>Tests unitaires et intégration</strong> : repository (base en mémoire) et handlers.</li>
+</ul>
+<h3>Lot 4 — Synthèse vocale (session du jour)</h3>
+<p>Cf. <a href="#journal-2026-05-31-lot4-speech-synthesis"><code>docs/journal/2026-05-31-lot4-speech-synthesis.md</code></a>.</p>
+<ul>
+<li>✅ <strong>SpeechProvider</strong> : abstraction pour l&#39;audio.</li>
+<li>✅ <strong>WebSpeechProvider</strong> : adapter utilisant l&#39;API native <code>SpeechSynthesis</code>.</li>
+<li>✅ <strong>SpeakButton</strong> : composant UI réutilisable.</li>
+<li>✅ <strong>Intégration</strong> : ajout de l&#39;audio dans le Glossaire, la fiche Détail et le Canvas.</li>
 </ul>
 <h3>Clôture du Lot 2 — éditeur FR + filtres (session 3)</h3>
 <p>Cf. <a href="#journal-2026-05-30-cloture-lot2"><code>docs/journal/2026-05-30-cloture-lot2.md</code></a> et <a href="#rfc-0010">RFC 0010</a>.</p>
@@ -1483,6 +1492,63 @@ clearAll(): Promise&lt;void&gt;;
 
 <section id="journal">
 <h2>Journal de bord</h2>
+<details id="journal-2026-05-31-lot4-speech-synthesis">
+  <summary>2026-05-31 — Lot 4 : Synthèse Vocale (TTS)</summary>
+  <div class="content"><h1>2026-05-31 — Lot 4 : Synthèse Vocale (TTS)</h1>
+<h2>Objectif de la session</h2>
+<p>Mettre en place la synthèse vocale pour permettre d&#39;écouter la prononciation des sinogrammes et des mots.</p>
+<ol>
+<li>Port <code>SpeechProvider</code> et adapter <code>WebSpeechProvider</code>.</li>
+<li>Composant <code>SpeakButton</code> réutilisable.</li>
+<li>Intégration dans le glossaire, la fiche détail et le canvas.</li>
+</ol>
+<h2>Ce qui a été fait</h2>
+<h3>Infrastructure (<code>frontend/src/domain/ports/SpeechProvider.ts</code>, <code>frontend/src/adapters/speech/WebSpeechProvider.ts</code>)</h3>
+<ul>
+<li>Définition du port <code>SpeechProvider</code> avec support du filtrage des voix et de la sélection de voix.</li>
+<li>Implémentation <code>WebSpeechProvider</code> utilisant l&#39;API native <code>window.speechSynthesis</code>.</li>
+<li>Sélection automatique de la meilleure voix chinoise disponible (<code>zh-CN</code> en priorité).</li>
+<li>Vitesse de lecture fixée à 0.8 pour une meilleure intelligibilité pédagogique.</li>
+</ul>
+<h3>Composant UI (<code>frontend/src/ui/SpeakButton.tsx</code>)</h3>
+<ul>
+<li>Bouton minimaliste avec icône 🔊.</li>
+<li>Support de plusieurs tailles (<code>sm</code>, <code>md</code>, <code>lg</code>).</li>
+<li>Gestion du <code>stopPropagation</code> pour éviter de déclencher la navigation dans le glossaire.</li>
+</ul>
+<h3>Intégration</h3>
+<ul>
+<li><strong>Glossaire</strong> : Icône ajoutée sur chaque ligne à côté du caractère.</li>
+<li><strong>Fiche Détail</strong> : Bouton large à côté du caractère dans le header.</li>
+<li><strong>Canvas (Practice)</strong> : Bouton ajouté dans le header de l&#39;application lors du tracé.</li>
+</ul>
+<h3>i18n</h3>
+<ul>
+<li>Ajout de la clé <code>common.listen</code> (&quot;Écouter&quot; / &quot;Listen&quot;).</li>
+</ul>
+<h3>Tests</h3>
+<ul>
+<li><code>WebSpeechProvider.test.ts</code> : Tests unitaires avec mock complet de <code>speechSynthesis</code> (4 tests).</li>
+</ul>
+<h2>Vérifications</h2>
+<ul>
+<li><code>make test</code> : <strong>205 tests front passent</strong>.</li>
+<li>Validation manuelle : La prononciation fonctionne correctement sur Chrome (voix Google) et Safari (voix système).</li>
+</ul>
+<h2>Notes</h2>
+<ul>
+<li>Sur certains navigateurs, les voix peuvent mettre quelques secondes à charger (événement <code>onvoiceschanged</code>). L&#39;adapter est prêt à gérer cela via <code>onVoicesChanged</code>.</li>
+<li>L&#39;e-ink de la Boox supporte bien l&#39;icône 🔊, pas besoin de mode dégradé spécifique pour l&#39;instant.</li>
+</ul>
+<h2>Prochaines étapes — Lot 5 Polish &amp; PWA</h2>
+<ul>
+<li>Service Worker robuste pour le fonctionnement 100 % offline.</li>
+<li>Manifest PWA.</li>
+<li>Audit accessibilité et performance.</li>
+<li>Import HSK 2.</li>
+</ul>
+</div>
+</details>
 <details id="journal-2026-05-30-mise-bootstrap-dev">
   <summary>2026-05-30 (5) — Bootstrap développeur avec mise</summary>
   <div class="content"><h1>2026-05-30 (5) — Bootstrap développeur avec mise</h1>
@@ -3127,7 +3193,7 @@ clearAll(): Promise&lt;void&gt;;
 </section>
 
 <footer>
-<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-05-30 17:48 par <code>make docs</code>.</p>
+<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-05-31 08:02 par <code>make docs</code>.</p>
 </footer>
 </div>
 

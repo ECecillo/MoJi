@@ -6,9 +6,11 @@
 
 ## Lot en cours
 
-**Lot 4 — Synthèse vocale** : 🟡 **en cours**, phase de recherche.
+**Lot 5 — Polish & PWA** : 🟡 **en cours**, phase de recherche.
 
-**Lot 3 — Système de révision** : ✅ **clôturé** (Moteur SRS, Sync bi-directionnelle, Dashboard).
+**Lot 4 — Synthèse vocale** : ✅ **clôturé** (API SpeechSynthesis, SpeakButton intégré).
+
+**Lot 3** : ✅ clôturé officiellement.
 
 **Lot 2** : ✅ clôturé officiellement (RFC 0007 + RFC 0010).
 
@@ -120,6 +122,15 @@ Cf. [`docs/journal/2026-05-30-lot3-backend.md`](../journal/2026-05-30-lot3-backe
 - ✅ **Migrations SQL** via `goose` : table `progress` avec clé primaire composée.
 - ✅ **API REST** (`internal/adapters/http/progress_handler.go`) : endpoints `GET` et `POST` sur `/api/progress` pour le sync batch.
 - ✅ **Tests unitaires et intégration** : repository (base en mémoire) et handlers.
+
+### Lot 4 — Synthèse vocale (session du jour)
+
+Cf. [`docs/journal/2026-05-31-lot4-speech-synthesis.md`](../journal/2026-05-31-lot4-speech-synthesis.md).
+
+- ✅ **SpeechProvider** : abstraction pour l'audio.
+- ✅ **WebSpeechProvider** : adapter utilisant l'API native `SpeechSynthesis`.
+- ✅ **SpeakButton** : composant UI réutilisable.
+- ✅ **Intégration** : ajout de l'audio dans le Glossaire, la fiche Détail et le Canvas.
 
 ### Clôture du Lot 2 — éditeur FR + filtres (session 3)
 
