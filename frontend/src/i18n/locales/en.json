@@ -14,6 +14,13 @@
     "button_one": "Review ({{count}})",
     "button_other": "Review ({{count}})"
   },
+  "dashboard": {
+    "title": "Dashboard",
+    "recent_activity": "Recent activity",
+    "no_activity": "No activity yet.",
+    "success_rate": "successes",
+    "last_seen_on": "Seen on"
+  },
   "glossary": {
     "title": "HSK 1 Glossary",
     "search_placeholder": "Search (hanzi, pinyin, meaning)...",
@@ -29,6 +36,11 @@
       "no_tags": "No tags in the data yet.",
       "stroke_count": "Stroke count",
       "frequency": "Frequency rank",
+      "learning_status": "Learning status",
+      "status_new": "New",
+      "status_learning": "Learning",
+      "status_due": "Due",
+      "status_mastered": "Mastered",
       "min": "min",
       "max": "max"
     },
@@ -36,6 +48,12 @@
       "back": "Glossary",
       "practice": "Practice",
       "facts": "Facts",
+      "progress": "Progress",
+      "attempts": "Attempts",
+      "successes": "Successes",
+      "last_seen": "Last seen",
+      "next_review": "Next review",
+      "learning_status": "Status",
       "hsk": "HSK level",
       "stroke_count": "Stroke count",
       "radicals": "Radicals",

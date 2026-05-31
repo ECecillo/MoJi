@@ -4,6 +4,7 @@ import { type SupportedLanguage } from './i18n';
 import { Canvas } from './features/canvas/Canvas';
 import { Glossary } from './features/glossary/Glossary';
 import { EntryDetail } from './features/glossary/EntryDetail';
+import { Dashboard } from './features/progress/Dashboard';
 import { HanziWriterRenderer } from './adapters/renderer/HanziWriterRenderer';
 import { BundledDataSource } from './adapters/data/BundledDataSource';
 import hsk1Data from './data/hsk1.generated.json';
@@ -12,7 +13,7 @@ import { useProgress } from './features/progress/useProgress';
 import type { Character, Word } from './domain/schema/types';
 import type { GridType } from './ui/CharacterGrid';
 
-type View = 'glossary' | 'detail' | 'practice';
+type View = 'glossary' | 'detail' | 'practice' | 'dashboard';
 
 export function App() {
   const { t, i18n } = useTranslation();
@@ -80,6 +81,10 @@ export function App() {
     }
   };
 
+  const handleShowDashboard = () => {
+    setView('dashboard');
+  };
+
   const handleReview = () => {
     const next = pickNextDue(entries, today);
     if (!next) return;
@@ -114,15 +119,25 @@ export function App() {
         </div>
         <div className="flex items-center gap-2">
           {view === 'glossary' && (
-            <button
-              type="button"
-              onClick={handleReview}
-              disabled={dueCount === 0}
-              className="border border-ink px-3 py-1 text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-ink hover:text-paper"
-              data-testid="review-button"
-            >
-              {t('review.button', { count: dueCount })}
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={handleShowDashboard}
+                className="border border-ink px-3 py-1 text-xs font-medium hover:bg-ink hover:text-paper"
+                data-testid="dashboard-button"
+              >
+                📊
+              </button>
+              <button
+                type="button"
+                onClick={handleReview}
+                disabled={dueCount === 0}
+                className="border border-ink px-3 py-1 text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed hover:bg-ink hover:text-paper"
+                data-testid="review-button"
+              >
+                {t('review.button', { count: dueCount })}
+              </button>
+            </>
           )}
           <button
             type="button"
@@ -138,6 +153,13 @@ export function App() {
       <div className="flex-1 w-full overflow-hidden flex flex-col">
         {view === 'glossary' ? (
           <Glossary onSelect={handleSelect} onShowDetail={handleShowDetail} />
+        ) : view === 'dashboard' ? (
+          <Dashboard
+            characters={characters}
+            words={words}
+            onBack={handleBackToGlossary}
+            onSelect={handleSelect}
+          />
         ) : view === 'detail' && detailEntryId !== null ? (
           <EntryDetail
             entryId={detailEntryId}

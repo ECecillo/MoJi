@@ -5,6 +5,8 @@ import hsk1Data from '../../data/hsk1.generated.json';
 import { pinyinToString } from '../../lib/pinyin';
 import { mergeTranslations } from '../../lib/translations';
 import { useTranslationOverrides } from './useTranslationOverrides';
+import { useProgress } from '../progress/useProgress';
+import { getLearningStatus } from '../../lib/glossaryFilters';
 import type { Character, Translations, Word } from '../../domain/schema/types';
 import type { EntryId, OverrideMap } from '../../domain/ports/TranslationOverrideRepository';
 
@@ -21,11 +23,12 @@ export function EntryDetail({ entryId, onBack, onPractice, onShowDetail }: Entry
   const { t, i18n } = useTranslation();
   const [characters, setCharacters] = useState<Character[]>([]);
   const [words, setWords] = useState<Word[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingData, setLoadingData] = useState(true);
 
   const dataSource = useMemo(() => new BundledDataSource(hsk1Data), []);
   const currentLang = i18n.resolvedLanguage || 'fr';
   const { overrides, setOverride } = useTranslationOverrides();
+  const { entries: progressEntries, loading: loadingProgress } = useProgress();
 
   useEffect(() => {
     let cancelled = false;
@@ -38,7 +41,7 @@ export function EntryDetail({ entryId, onBack, onPractice, onShowDetail }: Entry
       } catch (error) {
         console.error('Failed to load detail data:', error);
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) setLoadingData(false);
       }
     }
     void loadData();
@@ -59,7 +62,12 @@ export function EntryDetail({ entryId, onBack, onPractice, onShowDetail }: Entry
     return null;
   }, [entryId, characters, words]);
 
-  if (loading) {
+  const progress = useMemo(
+    () => progressEntries.find((e) => e.ref.id === entryId),
+    [progressEntries, entryId],
+  );
+
+  if (loadingData || loadingProgress) {
     return <div className="p-8 text-center animate-pulse text-ink-muted">...</div>;
   }
 
@@ -115,34 +123,62 @@ export function EntryDetail({ entryId, onBack, onPractice, onShowDetail }: Entry
         </span>
       </header>
 
-      <section className="flex flex-col gap-2">
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-muted">
-          {t('glossary.detail.facts')}
-        </h3>
-        <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
-          <dt className="text-ink-muted">{t('glossary.detail.hsk')}</dt>
-          <dd className="text-ink">{entry.data.hsk_level}</dd>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <section className="flex flex-col gap-2">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-muted">
+            {t('glossary.detail.facts')}
+          </h3>
+          <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
+            <dt className="text-ink-muted">{t('glossary.detail.hsk')}</dt>
+            <dd className="text-ink">{entry.data.hsk_level}</dd>
 
-          {entry.kind === 'character' && (
-            <>
-              <dt className="text-ink-muted">{t('glossary.detail.stroke_count')}</dt>
-              <dd className="text-ink">{entry.data.stroke_count}</dd>
+            {entry.kind === 'character' && (
+              <>
+                <dt className="text-ink-muted">{t('glossary.detail.stroke_count')}</dt>
+                <dd className="text-ink">{entry.data.stroke_count}</dd>
 
-              <dt className="text-ink-muted">{t('glossary.detail.radicals')}</dt>
-              <dd className="font-hanzi text-ink">
-                {entry.data.radicals.length > 0 ? entry.data.radicals.join(' ') : '—'}
+                <dt className="text-ink-muted">{t('glossary.detail.radicals')}</dt>
+                <dd className="font-hanzi text-ink">
+                  {entry.data.radicals.length > 0 ? entry.data.radicals.join(' ') : '—'}
+                </dd>
+
+                {entry.data.frequency_rank !== undefined && (
+                  <>
+                    <dt className="text-ink-muted">{t('glossary.detail.frequency')}</dt>
+                    <dd className="text-ink">#{entry.data.frequency_rank}</dd>
+                  </>
+                )}
+              </>
+            )}
+          </dl>
+        </section>
+
+        {progress && (
+          <section className="flex flex-col gap-2" data-testid="detail-progress">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-muted">
+              {t('glossary.detail.progress')}
+            </h3>
+            <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
+              <dt className="text-ink-muted">{t('glossary.detail.learning_status')}</dt>
+              <dd className="font-medium text-ink">
+                {t(`glossary.filters.status_${getLearningStatus(entry.data, progress, new Date())}`)}
               </dd>
 
-              {entry.data.frequency_rank !== undefined && (
-                <>
-                  <dt className="text-ink-muted">{t('glossary.detail.frequency')}</dt>
-                  <dd className="text-ink">#{entry.data.frequency_rank}</dd>
-                </>
-              )}
-            </>
-          )}
-        </dl>
-      </section>
+              <dt className="text-ink-muted">{t('glossary.detail.attempts')}</dt>
+              <dd className="text-ink">{progress.stats.attempts}</dd>
+
+              <dt className="text-ink-muted">{t('glossary.detail.successes')}</dt>
+              <dd className="text-ink">{progress.stats.successes}</dd>
+
+              <dt className="text-ink-muted">{t('glossary.detail.last_seen')}</dt>
+              <dd className="text-ink">{progress.stats.last_seen}</dd>
+
+              <dt className="text-ink-muted">{t('glossary.detail.next_review')}</dt>
+              <dd className="text-ink">{progress.srs_state.due}</dd>
+            </dl>
+          </section>
+        )}
+      </div>
 
       <section className="flex flex-col gap-3">
         <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-muted">

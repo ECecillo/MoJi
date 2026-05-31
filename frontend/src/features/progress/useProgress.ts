@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { LocalStorageProgressRepository } from '../../adapters/storage/LocalStorageProgressRepository';
+import { RestSyncClient } from '../../adapters/api/RestSyncClient';
 import { applyReview } from '../../lib/srs/sm2';
 import type { ReviewSessionResult } from '../../lib/srs/quality';
 import { qualityFromSession } from '../../lib/srs/quality';
@@ -8,33 +9,65 @@ import type {
   ProgressRepository,
   ProgressTargetRef,
 } from '../../domain/ports/ProgressRepository';
+import type { SyncClient } from '../../domain/ports/SyncClient';
 
 /**
- * Hook React qui orchestre la lecture/écriture du `ProgressRepository` et
- * applique SM-2 sur les sessions terminées.
+ * Hook React qui orchestre la lecture/écriture du `ProgressRepository`,
+ * applique SM-2 sur les sessions terminées, et gère la synchronisation.
  *
  * - `entries` : liste réactive de toutes les entrées de progression.
- * - `recordSession(ref, session, today)` : applique SM-2, persiste, met à
- *   jour `entries`. Renvoie l'entrée mise à jour.
- *
- * Le repository peut être injecté pour les tests. Par défaut : localStorage.
+ * - `recordSession(ref, session, today)` : applique SM-2, persiste, push, met à
+ *   jour `entries`.
+ * - `sync()` : pull depuis le serveur et merge en local (last one wins).
  */
-export function useProgress(repository?: ProgressRepository): {
+export function useProgress(
+  repository?: ProgressRepository,
+  syncClient?: SyncClient,
+): {
   entries: ProgressEntry[];
   recordSession: (
     ref: ProgressTargetRef,
     session: ReviewSessionResult,
     today?: Date,
   ) => Promise<ProgressEntry>;
+  sync: () => Promise<void>;
   loading: boolean;
+  syncing: boolean;
 } {
   const repo = useMemo<ProgressRepository>(
     () => repository ?? new LocalStorageProgressRepository(),
     [repository],
   );
 
+  const client = useMemo<SyncClient>(() => syncClient ?? new RestSyncClient(), [syncClient]);
+
   const [entries, setEntries] = useState<ProgressEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+
+  const sync = useCallback(async () => {
+    setSyncing(true);
+    try {
+      // Stratégie Batch Upsert Simple :
+      // 1. Pull du serveur
+      const remote = await client.pull();
+
+      if (remote.length > 0) {
+        // 2. Upsert dans le repo local
+        await repo.upsertBatch(remote);
+      }
+
+      // 3. Push de l'état local complet (merge client-side pour cette version)
+      const local = await repo.list();
+      await client.push(local);
+
+      setEntries(local);
+    } catch (err: unknown) {
+      console.error('Sync failed:', err);
+    } finally {
+      setSyncing(false);
+    }
+  }, [repo, client]);
 
   useEffect(() => {
     let cancelled = false;
@@ -48,12 +81,16 @@ export function useProgress(repository?: ProgressRepository): {
         console.error('Failed to load progress:', err);
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          // Auto-sync au chargement initial
+          void sync();
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, [repo]);
+  }, [repo, sync]);
 
   const recordSession = useCallback(
     async (
@@ -83,10 +120,14 @@ export function useProgress(repository?: ProgressRepository): {
       await repo.upsert(updated);
       const next = await repo.list();
       setEntries(next);
+
+      // Déclencher sync en background après une session
+      void sync();
+
       return updated;
     },
-    [repo],
+    [repo, sync],
   );
 
-  return { entries, recordSession, loading };
+  return { entries, recordSession, sync, loading, syncing };
 }

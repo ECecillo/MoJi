@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
   activeFilterCount,
+  getLearningStatus,
   isFilterActive,
   matchesFilters,
   uniqueTagsOf,
   type GlossaryFilters,
 } from './glossaryFilters';
 import type { Character, Word } from '../domain/schema/types';
+import type { ProgressEntry } from '../domain/ports/ProgressRepository';
 
 function makeChar(partial: Partial<Character> = {}): Character {
   return {
@@ -39,6 +41,42 @@ function makeWord(partial: Partial<Word> = {}): Word {
     ...partial,
   };
 }
+
+describe('getLearningStatus', () => {
+  const today = new Date('2026-05-30');
+  const item = makeChar({ id: 'char_1' });
+
+  it('retourne "new" si aucune progression', () => {
+    expect(getLearningStatus(item, undefined, today)).toBe('new');
+  });
+
+  it('retourne "due" si l\'item est dû', () => {
+    const progress: ProgressEntry = {
+      ref: { type: 'character', id: 'char_1' as any },
+      srs_state: { due: '2026-05-30', interval_days: 1, ease: 2.5 },
+      stats: { attempts: 1, successes: 1, last_seen: '2026-05-29' },
+    };
+    expect(getLearningStatus(item, progress, today)).toBe('due');
+  });
+
+  it('retourne "mastered" si l\'intervalle >= 30', () => {
+    const progress: ProgressEntry = {
+      ref: { type: 'character', id: 'char_1' as any },
+      srs_state: { due: '2026-06-30', interval_days: 30, ease: 2.5 },
+      stats: { attempts: 10, successes: 10, last_seen: '2026-05-30' },
+    };
+    expect(getLearningStatus(item, progress, today)).toBe('mastered');
+  });
+
+  it('retourne "learning" sinon', () => {
+    const progress: ProgressEntry = {
+      ref: { type: 'character', id: 'char_1' as any },
+      srs_state: { due: '2026-06-05', interval_days: 5, ease: 2.5 },
+      stats: { attempts: 2, successes: 2, last_seen: '2026-05-30' },
+    };
+    expect(getLearningStatus(item, progress, today)).toBe('learning');
+  });
+});
 
 describe('matchesFilters', () => {
   it("accepte un item quand aucun filtre n'est défini", () => {
@@ -101,6 +139,24 @@ describe('matchesFilters', () => {
     expect(matchesFilters(c, filters)).toBe(true);
 
     expect(matchesFilters(makeChar({ stroke_count: 100 }), filters)).toBe(false);
+  });
+
+  it("filtre par statut d'apprentissage", () => {
+    const item = makeChar({ id: 'char_1' as any });
+    const today = new Date('2026-05-30');
+
+    // Cas "new"
+    expect(matchesFilters(item, { status: new Set(['new']) }, undefined, today)).toBe(true);
+    expect(matchesFilters(item, { status: new Set(['learning']) }, undefined, today)).toBe(false);
+
+    // Cas "due"
+    const progress: ProgressEntry = {
+      ref: { type: 'character', id: 'char_1' as any },
+      srs_state: { due: '2026-05-30', interval_days: 1, ease: 2.5 },
+      stats: { attempts: 1, successes: 1, last_seen: '2026-05-29' },
+    };
+    expect(matchesFilters(item, { status: new Set(['due']) }, progress, today)).toBe(true);
+    expect(matchesFilters(item, { status: new Set(['new']) }, progress, today)).toBe(false);
   });
 });
 

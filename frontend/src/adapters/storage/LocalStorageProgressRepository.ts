@@ -39,12 +39,18 @@ export class LocalStorageProgressRepository implements ProgressRepository {
   }
 
   async upsert(entry: ProgressEntry): Promise<void> {
+    await this.upsertBatch([entry]);
+  }
+
+  async upsertBatch(batch: ProgressEntry[]): Promise<void> {
     const entries = this.readEntries();
-    const idx = entries.findIndex((e) => sameRef(e.ref, entry.ref));
-    if (idx >= 0) {
-      entries[idx] = entry;
-    } else {
-      entries.push(entry);
+    for (const entry of batch) {
+      const idx = entries.findIndex((e) => sameRef(e.ref, entry.ref));
+      if (idx >= 0) {
+        entries[idx] = entry;
+      } else {
+        entries.push(entry);
+      }
     }
     this.writeEntries(entries);
   }

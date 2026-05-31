@@ -5,14 +5,18 @@ import hsk1Data from '../../data/hsk1.generated.json';
 import { pinyinToAscii, pinyinToString } from '../../lib/pinyin';
 import { mergeTranslations } from '../../lib/translations';
 import { useTranslationOverrides } from './useTranslationOverrides';
+import { useProgress } from '../progress/useProgress';
 import {
   activeFilterCount,
   matchesFilters,
   uniqueTagsOf,
+  getLearningStatus,
   type GlossaryFilters,
+  type LearningStatus,
 } from '../../lib/glossaryFilters';
 import type { Character, Word } from '../../domain/schema/types';
 import type { EntryId } from '../../domain/ports/TranslationOverrideRepository';
+import type { ProgressEntry } from '../../domain/ports/ProgressRepository';
 
 type EntryType = 'character' | 'word';
 
@@ -27,10 +31,11 @@ export function Glossary({ onSelect, onShowDetail }: GlossaryProps) {
   const [search, setSearch] = useState('');
   const [characters, setCharacters] = useState<Character[]>([]);
   const [words, setWords] = useState<Word[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingData, setLoadingData] = useState(true);
 
   const dataSource = useMemo(() => new BundledDataSource(hsk1Data), []);
   const { overrides } = useTranslationOverrides();
+  const { entries: progressEntries, loading: loadingProgress } = useProgress();
 
   const [filters, setFilters] = useState<GlossaryFilters>({});
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -44,7 +49,7 @@ export function Glossary({ onSelect, onShowDetail }: GlossaryProps) {
       } catch (error) {
         console.error('Failed to load glossary data:', error);
       } finally {
-        setLoading(false);
+        setLoadingData(false);
       }
     }
     void loadData();
@@ -55,29 +60,37 @@ export function Glossary({ onSelect, onShowDetail }: GlossaryProps) {
   const allItems = type === 'character' ? characters : words;
   const availableTags = useMemo(() => uniqueTagsOf(allItems), [allItems]);
 
+  const progressByRef = useMemo(() => {
+    const map = new Map<string, ProgressEntry>();
+    for (const entry of progressEntries) {
+      map.set(entry.ref.id, entry);
+    }
+    return map;
+  }, [progressEntries]);
+
   const filteredItems = useMemo(() => {
     const query = search.toLowerCase().trim();
+    const today = new Date();
 
     return allItems.filter((item) => {
-      if (!matchesFilters(item, filters)) return false;
+      const progress = progressByRef.get(item.id);
+      if (!matchesFilters(item, filters, progress, today)) return false;
       if (!query) return true;
 
       const hanziMatch = item.hanzi.includes(query);
-      // Recherche pinyin insensible aux diacritiques : tape "ni" et "nǐ" matche.
       const pinyinAscii = pinyinToAscii(item.pinyin).toLowerCase();
       const pinyinWithTones = pinyinToString(item.pinyin).toLowerCase();
       const pinyinMatch = pinyinAscii.includes(query) || pinyinWithTones.includes(query);
 
-      // Recherche sur les traductions mergées (bundle + surcharges utilisateur).
       const merged = mergeTranslations(item.translations, overrides[item.id as EntryId]);
       const allTranslations = Object.values(merged).flat();
       const meaningMatch = allTranslations.some((t) => t.toLowerCase().includes(query));
 
       return hanziMatch || pinyinMatch || meaningMatch;
     });
-  }, [allItems, search, filters, overrides]);
+  }, [allItems, search, filters, overrides, progressByRef]);
 
-  if (loading) {
+  if (loadingData || loadingProgress) {
     return <div className="p-8 text-center animate-pulse text-ink-muted">...</div>;
   }
 
@@ -133,13 +146,19 @@ export function Glossary({ onSelect, onShowDetail }: GlossaryProps) {
             {filteredItems.map((item) => {
               const merged = mergeTranslations(item.translations, overrides[item.id as EntryId]);
               const meaning = (merged[currentLang] || merged['en'] || []).join(', ');
+              const progress = progressByRef.get(item.id);
+              const status = getLearningStatus(item, progress, new Date());
+
               return (
                 <div
                   key={item.id}
                   className="flex items-center justify-between border border-ink bg-paper p-3"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl font-hanzi text-ink">{item.hanzi}</span>
+                    <div className="relative">
+                      <span className="text-2xl font-hanzi text-ink">{item.hanzi}</span>
+                      <StatusDot status={status} />
+                    </div>
                     <div className="flex flex-col">
                       <span className="text-xs font-medium text-ink-muted">
                         {pinyinToString(item.pinyin)}
@@ -172,6 +191,23 @@ export function Glossary({ onSelect, onShowDetail }: GlossaryProps) {
   );
 }
 
+function StatusDot({ status }: { status: LearningStatus }) {
+  if (status === 'new') return null;
+
+  const colors = {
+    learning: 'bg-blue-500', // En cours
+    due: 'bg-orange-500', // À réviser
+    mastered: 'bg-green-500', // Maîtrisé
+  };
+
+  return (
+    <div
+      className={`absolute -right-1 -top-1 h-2 w-2 rounded-full border border-paper ${colors[status]}`}
+      title={status}
+    />
+  );
+}
+
 interface FilterPanelProps {
   type: EntryType;
   availableTags: string[];
@@ -200,6 +236,13 @@ function FilterPanel({
     setFilters({ ...filters, tags: set });
   };
 
+  const toggleStatus = (status: LearningStatus) => {
+    const set = new Set(filters.status ?? []);
+    if (set.has(status)) set.delete(status);
+    else set.add(status);
+    setFilters({ ...filters, status: set });
+  };
+
   const updateStrokeRange = (key: 'min' | 'max', raw: string) => {
     const parsed = raw === '' ? null : Number.parseInt(raw, 10);
     const value = parsed === null || Number.isNaN(parsed) ? null : parsed;
@@ -213,6 +256,8 @@ function FilterPanel({
   };
 
   const reset = () => setFilters({});
+
+  const statuses: LearningStatus[] = ['new', 'learning', 'due', 'mastered'];
 
   return (
     <div className="flex flex-col gap-2" data-testid="filter-panel">
@@ -248,6 +293,30 @@ function FilterPanel({
           className="flex flex-col gap-3 border border-ink p-3 text-sm"
           data-testid="filter-body"
         >
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-medium uppercase tracking-wider text-ink-muted">
+              {t('glossary.filters.learning_status')}
+            </span>
+            <div className="flex flex-wrap gap-1">
+              {statuses.map((s) => {
+                const selected = filters.status?.has(s) ?? false;
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => toggleStatus(s)}
+                    className={`border border-ink px-2 py-1 text-xs ${
+                      selected ? 'bg-ink text-paper' : ''
+                    }`}
+                    data-testid={`status-${s}`}
+                  >
+                    {t(`glossary.filters.status_${s}`)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {availableTags.length > 0 ? (
             <div className="flex flex-col gap-1">
               <span className="text-xs font-medium uppercase tracking-wider text-ink-muted">

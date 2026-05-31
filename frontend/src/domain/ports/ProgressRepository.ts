@@ -34,5 +34,6 @@ export interface ProgressRepository {
   list(): Promise<ProgressEntry[]>;
   get(ref: ProgressTargetRef): Promise<ProgressEntry | null>;
   upsert(entry: ProgressEntry): Promise<void>;
+  upsertBatch(entries: ProgressEntry[]): Promise<void>;
   remove(ref: ProgressTargetRef): Promise<void>;
 }

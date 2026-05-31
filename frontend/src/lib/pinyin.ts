@@ -56,3 +56,15 @@ function syllableToString({ syllable, tone }: PinyinSyllable): string {
 
   return syllable.replace(targetVowel, marks[targetVowel]![tone]!);
 }
+
+/**
+ * Supprime les accents d'une chaîne pinyin pour faciliter la recherche.
+ * Exemple : 'nǐ hǎo' -> 'ni hao'
+ */
+export function stripAccents(text: string): string {
+  return text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/v/g, 'u') // Souvent utilisé pour ü
+    .toLowerCase();
+}

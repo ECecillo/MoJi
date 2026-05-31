@@ -14,6 +14,13 @@
     "button_one": "Réviser ({{count}})",
     "button_other": "Réviser ({{count}})"
   },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "recent_activity": "Activité récente",
+    "no_activity": "Aucune activité pour le moment.",
+    "success_rate": "succès",
+    "last_seen_on": "Vu le"
+  },
   "glossary": {
     "title": "Glossaire HSK 1",
     "search_placeholder": "Chercher (hanzi, pinyin, sens)...",
@@ -29,6 +36,11 @@
       "no_tags": "Aucun tag dans les données pour l'instant.",
       "stroke_count": "Nombre de traits",
       "frequency": "Rang de fréquence",
+      "learning_status": "Statut d'apprentissage",
+      "status_new": "Nouveau",
+      "status_learning": "En cours",
+      "status_due": "À réviser",
+      "status_mastered": "Maîtrisé",
       "min": "min",
       "max": "max"
     },
@@ -36,6 +48,12 @@
       "back": "Glossaire",
       "practice": "Tracer",
       "facts": "Informations",
+      "progress": "Progression",
+      "attempts": "Tentatives",
+      "successes": "Succès",
+      "last_seen": "Dernier passage",
+      "next_review": "Prochaine révision",
+      "learning_status": "Statut",
       "hsk": "Niveau HSK",
       "stroke_count": "Nombre de traits",
       "radicals": "Radicaux",

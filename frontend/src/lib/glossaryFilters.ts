@@ -1,25 +1,35 @@
 import type { Character, Word } from '../domain/schema/types';
+import type { ProgressEntry } from '../domain/ports/ProgressRepository';
+import { isDue } from './srs/dueQueue';
+
+/**
+ * Statuts d'apprentissage possibles pour un item du glossaire.
+ *
+ * - `new` : jamais vu (pas d'entrée dans ProgressRepository).
+ * - `learning` : déjà vu mais pas encore maîtrisé ni dû aujourd'hui.
+ * - `due` : à réviser aujourd'hui ou en retard.
+ * - `mastered` : maîtrisé (intervalle ≥ 30 jours).
+ */
+export type LearningStatus = 'new' | 'learning' | 'due' | 'mastered';
 
 /**
  * Filtres appliqués au glossaire. Tous les champs sont optionnels — un
  * filtre absent signifie "ne pas appliquer cet axe".
  *
  * - `tags` : un item passe si au moins UN de ses tags figure dans le set.
- *   Si le set est vide ou indéfini, le filtre est inactif.
  * - `strokeCount` / `frequencyRank` : intervalle inclusif [min, max].
- *   Si une borne est null/undefined, elle est ignorée.
- *
- * Les filtres `strokeCount` et `frequencyRank` n'ont de sens que pour les
- * caractères. Côté mots, ils sont ignorés silencieusement.
+ * - `status` : un item passe si son statut actuel est dans le set.
  */
 export interface GlossaryFilters {
   tags?: ReadonlySet<string>;
   strokeCount?: { min?: number | null; max?: number | null };
   frequencyRank?: { min?: number | null; max?: number | null };
+  status?: ReadonlySet<LearningStatus>;
 }
 
 export function isFilterActive(filters: GlossaryFilters): boolean {
   if (filters.tags && filters.tags.size > 0) return true;
+  if (filters.status && filters.status.size > 0) return true;
   if (filters.strokeCount && (isSet(filters.strokeCount.min) || isSet(filters.strokeCount.max))) {
     return true;
   }
@@ -35,6 +45,7 @@ export function isFilterActive(filters: GlossaryFilters): boolean {
 export function activeFilterCount(filters: GlossaryFilters): number {
   let count = 0;
   if (filters.tags && filters.tags.size > 0) count++;
+  if (filters.status && filters.status.size > 0) count++;
   if (filters.strokeCount && (isSet(filters.strokeCount.min) || isSet(filters.strokeCount.max))) {
     count++;
   }
@@ -47,13 +58,33 @@ export function activeFilterCount(filters: GlossaryFilters): number {
   return count;
 }
 
-export function matchesFilters(item: Character | Word, filters: GlossaryFilters): boolean {
+export function getLearningStatus(
+  _item: Character | Word,
+  progress: ProgressEntry | undefined,
+  today: Date,
+): LearningStatus {
+  if (!progress) return 'new';
+  if (isDue(progress, today)) return 'due';
+  if (progress.srs_state.interval_days >= 30) return 'mastered';
+  return 'learning';
+}
+
+export function matchesFilters(
+  item: Character | Word,
+  filters: GlossaryFilters,
+  progress?: ProgressEntry,
+  today?: Date,
+): boolean {
   if (!matchesTags(item, filters.tags)) return false;
+
+  if (filters.status && filters.status.size > 0 && today) {
+    const status = getLearningStatus(item, progress, today);
+    if (!filters.status.has(status)) return false;
+  }
+
   if ('stroke_count' in item) {
     if (!matchesRange(item.stroke_count, filters.strokeCount)) return false;
     if (filters.frequencyRank) {
-      // Si on demande une plage de fréquence et que l'item n'a pas de
-      // frequency_rank, on l'exclut (sinon on laisse passer des "trous").
       if (item.frequency_rank === undefined) return false;
       if (!matchesRange(item.frequency_rank, filters.frequencyRank)) return false;
     }
