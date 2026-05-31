@@ -9,6 +9,7 @@ import { useProgress } from '../progress/useProgress';
 import { getLearningStatus } from '../../lib/glossaryFilters';
 import type { Character, Translations, Word } from '../../domain/schema/types';
 import type { EntryId, OverrideMap } from '../../domain/ports/TranslationOverrideRepository';
+import { SpeakButton } from '../../ui/SpeakButton';
 
 interface EntryDetailProps {
   entryId: string;
@@ -115,9 +116,12 @@ export function EntryDetail({ entryId, onBack, onPractice, onShowDetail }: Entry
       </div>
 
       <header className="flex flex-col items-center gap-1 border-b border-ink pb-4">
-        <span className="text-6xl font-hanzi text-ink" data-testid="detail-hanzi">
-          {hanzi}
-        </span>
+        <div className="flex items-center gap-4">
+          <span className="text-6xl font-hanzi text-ink" data-testid="detail-hanzi">
+            {hanzi}
+          </span>
+          <SpeakButton text={hanzi} size="lg" />
+        </div>
         <span className="text-lg text-ink" data-testid="detail-pinyin">
           {pinyinToString(pinyin)}
         </span>
@@ -161,7 +165,9 @@ export function EntryDetail({ entryId, onBack, onPractice, onShowDetail }: Entry
             <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
               <dt className="text-ink-muted">{t('glossary.detail.learning_status')}</dt>
               <dd className="font-medium text-ink">
-                {t(`glossary.filters.status_${getLearningStatus(entry.data, progress, new Date())}`)}
+                {t(
+                  `glossary.filters.status_${getLearningStatus(entry.data, progress, new Date())}`,
+                )}
               </dd>
 
               <dt className="text-ink-muted">{t('glossary.detail.attempts')}</dt>

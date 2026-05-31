@@ -9,6 +9,9 @@
     "fr": "Français",
     "en": "Anglais"
   },
+  "common": {
+    "listen": "Écouter"
+  },
   "review": {
     "button_zero": "Réviser (0)",
     "button_one": "Réviser ({{count}})",

@@ -6,6 +6,7 @@ import { pinyinToAscii, pinyinToString } from '../../lib/pinyin';
 import { mergeTranslations } from '../../lib/translations';
 import { useTranslationOverrides } from './useTranslationOverrides';
 import { useProgress } from '../progress/useProgress';
+import { SpeakButton } from '../../ui/SpeakButton';
 import {
   activeFilterCount,
   matchesFilters,
@@ -159,6 +160,7 @@ export function Glossary({ onSelect, onShowDetail }: GlossaryProps) {
                       <span className="text-2xl font-hanzi text-ink">{item.hanzi}</span>
                       <StatusDot status={status} />
                     </div>
+                    <SpeakButton text={item.hanzi} size="sm" />
                     <div className="flex flex-col">
                       <span className="text-xs font-medium text-ink-muted">
                         {pinyinToString(item.pinyin)}

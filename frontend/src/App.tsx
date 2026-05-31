@@ -5,6 +5,7 @@ import { Canvas } from './features/canvas/Canvas';
 import { Glossary } from './features/glossary/Glossary';
 import { EntryDetail } from './features/glossary/EntryDetail';
 import { Dashboard } from './features/progress/Dashboard';
+import { SpeakButton } from './ui/SpeakButton';
 import { HanziWriterRenderer } from './adapters/renderer/HanziWriterRenderer';
 import { BundledDataSource } from './adapters/data/BundledDataSource';
 import hsk1Data from './data/hsk1.generated.json';
@@ -108,12 +109,15 @@ export function App() {
       <header className="flex w-full justify-between items-center px-2 shrink-0">
         <div className="flex items-center gap-2">
           {view === 'practice' && (
-            <button
-              onClick={handleBackFromPractice}
-              className="mr-2 border border-ink px-2 py-1 text-xs font-bold"
-            >
-              ←
-            </button>
+            <>
+              <button
+                onClick={handleBackFromPractice}
+                className="mr-2 border border-ink px-2 py-1 text-xs font-bold"
+              >
+                ←
+              </button>
+              <SpeakButton text={selectedHanzi} size="sm" className="mr-2" />
+            </>
           )}
           <h1 className="text-xl font-semibold">{t('app.title')}</h1>
         </div>
