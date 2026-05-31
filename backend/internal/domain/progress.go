@@ -1,3 +1,6 @@
+// Package domain defines the core business types of the sinogrammes backend.
+// It contains no I/O and no dependency on adapters — only pure data structures
+// and rules. Cf. RFC 0003 (architecture hexagonale).
 package domain
 
 // ProgressTargetRef identifies the item being learned.

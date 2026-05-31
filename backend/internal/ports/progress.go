@@ -1,3 +1,6 @@
+// Package ports declares the abstract interfaces consumed by the domain.
+// Adapters (sqlite, http, ...) implement these interfaces. The domain
+// imports ports but never the concrete adapters. Cf. RFC 0003.
 package ports
 
 import (

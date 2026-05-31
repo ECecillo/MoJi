@@ -17,11 +17,11 @@ type mockProgressStore struct {
 	entries []domain.ProgressEntry
 }
 
-func (m *mockProgressStore) List(ctx context.Context) ([]domain.ProgressEntry, error) {
+func (m *mockProgressStore) List(_ context.Context) ([]domain.ProgressEntry, error) {
 	return m.entries, nil
 }
 
-func (m *mockProgressStore) Get(ctx context.Context, ref domain.ProgressTargetRef) (*domain.ProgressEntry, error) {
+func (m *mockProgressStore) Get(_ context.Context, ref domain.ProgressTargetRef) (*domain.ProgressEntry, error) {
 	for _, e := range m.entries {
 		if e.Ref == ref {
 			return &e, nil
@@ -30,7 +30,7 @@ func (m *mockProgressStore) Get(ctx context.Context, ref domain.ProgressTargetRe
 	return nil, nil
 }
 
-func (m *mockProgressStore) UpsertBatch(ctx context.Context, entries []domain.ProgressEntry) error {
+func (m *mockProgressStore) UpsertBatch(_ context.Context, entries []domain.ProgressEntry) error {
 	for _, newEntry := range entries {
 		found := false
 		for i, existing := range m.entries {
@@ -47,7 +47,7 @@ func (m *mockProgressStore) UpsertBatch(ctx context.Context, entries []domain.Pr
 	return nil
 }
 
-func (m *mockProgressStore) Delete(ctx context.Context, ref domain.ProgressTargetRef) error {
+func (m *mockProgressStore) Delete(_ context.Context, ref domain.ProgressTargetRef) error {
 	for i, e := range m.entries {
 		if e.Ref == ref {
 			m.entries = append(m.entries[:i], m.entries[i+1:]...)

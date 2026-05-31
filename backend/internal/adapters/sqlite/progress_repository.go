@@ -23,7 +23,7 @@ func (r *progressRepository) List(ctx context.Context) ([]domain.ProgressEntry, 
 	if err != nil {
 		return nil, fmt.Errorf("failed to list progress: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var entries []domain.ProgressEntry
 	for rows.Next() {
@@ -78,7 +78,8 @@ func (r *progressRepository) UpsertBatch(ctx context.Context, entries []domain.P
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	defer tx.Rollback()
+	// Best-effort rollback : no-op après un Commit réussi.
+	defer func() { _ = tx.Rollback() }()
 
 	query := `INSERT INTO progress (target_type, target_id, interval_days, ease, due, attempts, successes, last_seen)
 	          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -94,7 +95,7 @@ func (r *progressRepository) UpsertBatch(ctx context.Context, entries []domain.P
 	if err != nil {
 		return fmt.Errorf("failed to prepare upsert statement: %w", err)
 	}
-	defer stmt.Close()
+	defer func() { _ = stmt.Close() }()
 
 	for _, e := range entries {
 		_, err := stmt.ExecContext(ctx,

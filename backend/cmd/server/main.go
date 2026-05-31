@@ -34,7 +34,11 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	defer db.Close()
+	defer func() {
+		if cerr := db.Close(); cerr != nil {
+			log.Printf("close db: %v", cerr)
+		}
+	}()
 
 	progressStore := sqlite.NewProgressRepository(db)
 
