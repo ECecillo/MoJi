@@ -14,6 +14,7 @@ import (
 	"time"
 
 	httpapi "sinogrammes/backend/internal/adapters/http"
+	"sinogrammes/backend/internal/adapters/sqlite"
 	"sinogrammes/backend/internal/config"
 )
 
@@ -29,9 +30,17 @@ func run() error {
 		return err
 	}
 
+	db, err := sqlite.OpenDB(cfg.DBPath, cfg.MigrationsDir)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	progressStore := sqlite.NewProgressRepository(db)
+
 	srv := &http.Server{
 		Addr:              cfg.Addr(),
-		Handler:           httpapi.NewServer(),
+		Handler:           httpapi.NewServer(progressStore),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 

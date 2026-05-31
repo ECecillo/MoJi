@@ -10,15 +10,19 @@ import (
 // Config holds the runtime configuration of the server.
 // Values are read from environment variables with sensible defaults.
 type Config struct {
-	Host string
-	Port int
+	Host          string
+	Port          int
+	DBPath        string
+	MigrationsDir string
 }
 
 // Load reads configuration from the environment and returns a populated Config.
 // Returns an error if any value cannot be parsed.
 func Load() (Config, error) {
 	cfg := Config{
-		Host: getEnv("SINO_HOST", "127.0.0.1"),
+		Host:          getEnv("SINO_HOST", "127.0.0.1"),
+		DBPath:        getEnv("SINO_DB_PATH", "data/sinogrammes.db"),
+		MigrationsDir: getEnv("SINO_MIGRATIONS_DIR", "migrations"),
 	}
 
 	portStr := getEnv("SINO_PORT", "8787")
