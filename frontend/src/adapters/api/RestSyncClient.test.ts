@@ -48,7 +48,7 @@ describe('RestSyncClient', () => {
     });
   });
 
-  it('lève une erreur si la réponse n\'est pas ok', async () => {
+  it("lève une erreur si la réponse n'est pas ok", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: false,
       statusText: 'Internal Server Error',

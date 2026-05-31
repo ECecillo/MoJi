@@ -53,7 +53,7 @@ test.describe('Lot 3 — bouton Réviser et file de révision', () => {
     await expect(reviewBtn).toContainText('0');
   });
 
-  test('le compteur Réviser reflète le nombre d\'items dus', async ({ page }) => {
+  test("le compteur Réviser reflète le nombre d'items dus", async ({ page }) => {
     // 2 items dus dans le passé, 1 dans le futur
     const past = '2020-01-01';
     const future = '2099-12-31';
