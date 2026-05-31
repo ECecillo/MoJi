@@ -12,6 +12,11 @@
   "common": {
     "listen": "Listen"
   },
+  "speech": {
+    "voice_select": "Chinese voice",
+    "automatic": "Auto voice",
+    "no_voices": "No voice"
+  },
   "review": {
     "button_zero": "Review (0)",
     "button_one": "Review ({{count}})",

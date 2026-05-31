@@ -12,6 +12,11 @@
   "common": {
     "listen": "Écouter"
   },
+  "speech": {
+    "voice_select": "Voix chinoise",
+    "automatic": "Voix auto",
+    "no_voices": "Aucune voix"
+  },
   "review": {
     "button_zero": "Réviser (0)",
     "button_one": "Réviser ({{count}})",

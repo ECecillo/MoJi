@@ -1,6 +1,5 @@
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { WebSpeechProvider } from '../adapters/speech/WebSpeechProvider';
+import { useSpeechSettings } from '../features/speech/SpeechSettingsContext';
 
 interface SpeakButtonProps {
   text: string;
@@ -10,7 +9,7 @@ interface SpeakButtonProps {
 
 export function SpeakButton({ text, className = '', size = 'md' }: SpeakButtonProps) {
   const { t } = useTranslation();
-  const speechProvider = useMemo(() => new WebSpeechProvider(), []);
+  const { speak } = useSpeechSettings();
 
   const sizes = {
     sm: 'p-1 text-xs',
@@ -20,7 +19,7 @@ export function SpeakButton({ text, className = '', size = 'md' }: SpeakButtonPr
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    speechProvider.speak(text);
+    speak(text);
   };
 
   return (

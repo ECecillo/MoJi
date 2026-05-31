@@ -55,4 +55,21 @@ describe('WebSpeechProvider', () => {
     const utterance = vi.mocked(mockSynth.speak).mock.calls[0]![0];
     expect(utterance.voice.voiceURI).toBe('voice-hk');
   });
+
+  it('retombe sur une voix chinoise par défaut si la voix choisie disparaît', () => {
+    provider.setVoice('voice-missing');
+    provider.speak('test');
+
+    const utterance = vi.mocked(mockSynth.speak).mock.calls[0]![0];
+    expect(utterance.voice.voiceURI).toBe('voice-cn');
+  });
+
+  it('désactive la sélection explicite avec null', () => {
+    provider.setVoice('voice-hk');
+    provider.setVoice(null);
+    provider.speak('test');
+
+    const utterance = vi.mocked(mockSynth.speak).mock.calls[0]![0];
+    expect(utterance.voice.voiceURI).toBe('voice-cn');
+  });
 });

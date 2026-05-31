@@ -2,7 +2,7 @@
 
 > **Fichier toujours à jour.** À mettre à jour à la fin de chaque session de travail. Répond à la question : "où en est le projet, là, maintenant ?"
 
-**Dernière mise à jour** : 2026-05-30 (session 5)
+**Dernière mise à jour** : 2026-05-31 (réglage global de la voix)
 
 ## Lot en cours
 
@@ -132,6 +132,16 @@ Cf. [`docs/journal/2026-05-31-lot4-speech-synthesis.md`](../journal/2026-05-31-l
 - ✅ **SpeakButton** : composant UI réutilisable.
 - ✅ **Intégration** : ajout de l'audio dans le Glossaire, la fiche Détail et le Canvas.
 
+### Lot 5 / polish — réglage global de la voix (session du jour)
+
+Cf. [`docs/journal/2026-05-31-reglage-voix-global.md`](../journal/2026-05-31-reglage-voix-global.md).
+
+- ✅ **Contexte vocal global** (`src/features/speech/`) : `SpeechSettingsProvider` centralise le `SpeechProvider`, expose les voix disponibles et la voix sélectionnée.
+- ✅ **Sélecteur de voix chinois** dans l'en-tête : choix parmi les voix `zh-*` exposées par le navigateur, avec option automatique.
+- ✅ **Persistance locale** : URI de voix conservée sous `sinogrammes:speech:voice-uri`.
+- ✅ **SpeakButton globalisé** : les boutons d'écoute réutilisent tous le même réglage.
+- ✅ **Fallback robuste** : absence d'API Web Speech tolérée ; si une voix sauvegardée disparaît, retour automatique vers `zh-CN` puis `zh-*`.
+
 ### Clôture du Lot 2 — éditeur FR + filtres (session 3)
 
 Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lot2.md) et [RFC 0010](../rfc/0010-surcharges-traductions-locales.md).
@@ -143,14 +153,15 @@ Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lo
 
 ## Vérifications croisées
 
-- `make test` : **193 tests front passent**, 2 paquets back passent avec `-race`.
-- `make test-e2e` : **28/28 tests E2E verts** (Chromium, ~4,9 s).
-- `make lint` : ESLint + Prettier propres, golangci-lint 0 issue.
+- `env -u GOROOT make test` : **213 tests front passent**, 3 paquets back passent avec `-race`.
+- `env -u GOROOT make test-e2e` : **28/28 tests E2E verts** (Chromium, ~10,3 s).
+- `env -u GOROOT make lint` : ESLint + Prettier propres, golangci-lint 0 issue.
 - `make typecheck` : `tsc --noEmit` propre.
-- `make docs` : `docs/index.html` à jour (10 RFC + 15 entrées de journal).
+- `make docs` : `docs/index.html` à jour (10 RFC + 20 entrées de journal).
 
 ## Dernières décisions importantes
 
+- 2026-05-31 : **voix = préférence globale locale**. Le choix de voix est stocké dans `localStorage`, appliqué à tous les `SpeakButton`, et reste best-effort car la liste réelle dépend du navigateur/OS (notamment Boox/Android).
 - 2026-05-30 (s5) : **mise = bootstrap toolchain, Makefile = orchestration**. `mise.toml` pinne Node/Go/golangci-lint et expose des alias, mais les commandes de build/test restent centralisées dans le Makefile.
 - 2026-05-30 (s4) : **déviation à RFC 0007 sur la persistance du Lot 3** : localStorage au lieu d'IndexedDB pour le sprint 1. Justifié par parité avec RFC 0010, volume petit, migration future possible via le port `ProgressRepository`. Décision tracée dans le journal, pas de nouvelle RFC pour cette première itération.
 - 2026-05-30 (s4) : **SM-2 = unité de progression au caractère, pas au mot**. Les mots ne sont pas tracés en propre dans le Lot 1-2 ; les ajouter à la file SRS demanderait une UX dédiée (tracé séquentiel des constituants) qui sortirait du périmètre.

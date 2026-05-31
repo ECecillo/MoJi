@@ -34,6 +34,11 @@ Contenu type :
 
 ## Index (par date décroissante)
 
+- [2026-05-31 — Réglage global de la voix](2026-05-31-reglage-voix-global.md)
+- [2026-05-31 — Lot 4 : synthèse vocale](2026-05-31-lot4-speech-synthesis.md)
+- [2026-05-30 — Lot 3 sprint 3 : infrastructure backend](2026-05-30-lot3-backend.md)
+- [2026-05-30 — Lot 3 sprint 2 : UI enhancements & dashboard](2026-05-30-lot3-ui-enhancements.md)
+- [2026-05-30 — Lot 3 : sync frontend](2026-05-30-lot3-frontend-sync.md)
 - [2026-05-30 (5) — Bootstrap développeur avec mise](2026-05-30-mise-bootstrap-dev.md)
 - [2026-05-30 (4) — Lot 3 sprint 1 : SM-2 + ProgressRepository localStorage + bouton Réviser](2026-05-30-lot3-sprint1.md)
 - [2026-05-30 (3) — Clôture du Lot 2 : éditeur de traductions FR + filtres glossaire](2026-05-30-cloture-lot2.md)

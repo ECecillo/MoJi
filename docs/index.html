@@ -168,14 +168,14 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <nav class="topnav"><div class="wrap">
   <a href="#etat">État courant</a>
   <a href="#rfc">RFC (10)</a>
-  <a href="#journal">Journal (19)</a>
+  <a href="#journal">Journal (20)</a>
   <a href="#brief">Brief</a>
 </div></nav>
 
 <div class="wrap">
 <header class="hero">
   <h1>Sinogrammes — Carnet de bord</h1>
-  <p class="meta">Index généré le 2026-05-31 08:02. 10 RFC · 19 entrées de journal.</p>
+  <p class="meta">Index généré le 2026-05-31 08:20. 10 RFC · 20 entrées de journal.</p>
   <p class="hint">Toutes les sections sont collapsables. Cliquez sur une ligne ou un lien interne pour ouvrir et défiler.</p>
 </header>
 
@@ -185,7 +185,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <blockquote>
 <p><strong>Fichier toujours à jour.</strong> À mettre à jour à la fin de chaque session de travail. Répond à la question : &quot;où en est le projet, là, maintenant ?&quot;</p>
 </blockquote>
-<p><strong>Dernière mise à jour</strong> : 2026-05-30 (session 5)</p>
+<p><strong>Dernière mise à jour</strong> : 2026-05-31 (réglage global de la voix)</p>
 <h2>Lot en cours</h2>
 <p><strong>Lot 5 — Polish &amp; PWA</strong> : 🟡 <strong>en cours</strong>, phase de recherche.</p>
 <p><strong>Lot 4 — Synthèse vocale</strong> : ✅ <strong>clôturé</strong> (API SpeechSynthesis, SpeakButton intégré).</p>
@@ -293,6 +293,15 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li>✅ <strong>SpeakButton</strong> : composant UI réutilisable.</li>
 <li>✅ <strong>Intégration</strong> : ajout de l&#39;audio dans le Glossaire, la fiche Détail et le Canvas.</li>
 </ul>
+<h3>Lot 5 / polish — réglage global de la voix (session du jour)</h3>
+<p>Cf. <a href="#journal-2026-05-31-reglage-voix-global"><code>docs/journal/2026-05-31-reglage-voix-global.md</code></a>.</p>
+<ul>
+<li>✅ <strong>Contexte vocal global</strong> (<code>src/features/speech/</code>) : <code>SpeechSettingsProvider</code> centralise le <code>SpeechProvider</code>, expose les voix disponibles et la voix sélectionnée.</li>
+<li>✅ <strong>Sélecteur de voix chinois</strong> dans l&#39;en-tête : choix parmi les voix <code>zh-*</code> exposées par le navigateur, avec option automatique.</li>
+<li>✅ <strong>Persistance locale</strong> : URI de voix conservée sous <code>sinogrammes:speech:voice-uri</code>.</li>
+<li>✅ <strong>SpeakButton globalisé</strong> : les boutons d&#39;écoute réutilisent tous le même réglage.</li>
+<li>✅ <strong>Fallback robuste</strong> : absence d&#39;API Web Speech tolérée ; si une voix sauvegardée disparaît, retour automatique vers <code>zh-CN</code> puis <code>zh-*</code>.</li>
+</ul>
 <h3>Clôture du Lot 2 — éditeur FR + filtres (session 3)</h3>
 <p>Cf. <a href="#journal-2026-05-30-cloture-lot2"><code>docs/journal/2026-05-30-cloture-lot2.md</code></a> et <a href="#rfc-0010">RFC 0010</a>.</p>
 <ul>
@@ -303,14 +312,15 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </ul>
 <h2>Vérifications croisées</h2>
 <ul>
-<li><code>make test</code> : <strong>193 tests front passent</strong>, 2 paquets back passent avec <code>-race</code>.</li>
-<li><code>make test-e2e</code> : <strong>28/28 tests E2E verts</strong> (Chromium, ~4,9 s).</li>
-<li><code>make lint</code> : ESLint + Prettier propres, golangci-lint 0 issue.</li>
+<li><code>env -u GOROOT make test</code> : <strong>213 tests front passent</strong>, 3 paquets back passent avec <code>-race</code>.</li>
+<li><code>env -u GOROOT make test-e2e</code> : <strong>28/28 tests E2E verts</strong> (Chromium, ~10,3 s).</li>
+<li><code>env -u GOROOT make lint</code> : ESLint + Prettier propres, golangci-lint 0 issue.</li>
 <li><code>make typecheck</code> : <code>tsc --noEmit</code> propre.</li>
-<li><code>make docs</code> : <code>docs/index.html</code> à jour (10 RFC + 15 entrées de journal).</li>
+<li><code>make docs</code> : <code>docs/index.html</code> à jour (10 RFC + 20 entrées de journal).</li>
 </ul>
 <h2>Dernières décisions importantes</h2>
 <ul>
+<li>2026-05-31 : <strong>voix = préférence globale locale</strong>. Le choix de voix est stocké dans <code>localStorage</code>, appliqué à tous les <code>SpeakButton</code>, et reste best-effort car la liste réelle dépend du navigateur/OS (notamment Boox/Android).</li>
 <li>2026-05-30 (s5) : <strong>mise = bootstrap toolchain, Makefile = orchestration</strong>. <code>mise.toml</code> pinne Node/Go/golangci-lint et expose des alias, mais les commandes de build/test restent centralisées dans le Makefile.</li>
 <li>2026-05-30 (s4) : <strong>déviation à RFC 0007 sur la persistance du Lot 3</strong> : localStorage au lieu d&#39;IndexedDB pour le sprint 1. Justifié par parité avec RFC 0010, volume petit, migration future possible via le port <code>ProgressRepository</code>. Décision tracée dans le journal, pas de nouvelle RFC pour cette première itération.</li>
 <li>2026-05-30 (s4) : <strong>SM-2 = unité de progression au caractère, pas au mot</strong>. Les mots ne sont pas tracés en propre dans le Lot 1-2 ; les ajouter à la file SRS demanderait une UX dédiée (tracé séquentiel des constituants) qui sortirait du périmètre.</li>
@@ -1492,6 +1502,48 @@ clearAll(): Promise&lt;void&gt;;
 
 <section id="journal">
 <h2>Journal de bord</h2>
+<details id="journal-2026-05-31-reglage-voix-global">
+  <summary>2026-05-31 — Réglage global de la voix</summary>
+  <div class="content"><h1>2026-05-31 — Réglage global de la voix</h1>
+<h2>Objectif de la session</h2>
+<p>Permettre de choisir une voix de synthèse chinoise une seule fois et de réutiliser ce choix partout dans l&#39;application.</p>
+<h2>Ce qui a été fait</h2>
+<ul>
+<li>Ajout d&#39;un contexte vocal partagé dans <code>frontend/src/features/speech/</code> :<ul>
+<li><code>SpeechSettingsProvider</code> centralise le <code>SpeechProvider</code>.</li>
+<li><code>SpeechSettingsContext</code> expose <code>voices</code>, <code>selectedVoiceUri</code>, <code>setSelectedVoiceUri</code> et <code>speak</code>.</li>
+<li>La voix choisie est persistée dans <code>localStorage</code> sous <code>sinogrammes:speech:voice-uri</code>.</li>
+</ul>
+</li>
+<li>Ajout d&#39;un sélecteur compact <code>VoiceSelect</code> dans l&#39;en-tête de l&#39;application.</li>
+<li><code>SpeakButton</code> consomme désormais le contexte global au lieu de créer son propre <code>WebSpeechProvider</code>.</li>
+<li><code>WebSpeechProvider</code> est plus robuste :<ul>
+<li>absence de <code>speechSynthesis</code> tolérée ;</li>
+<li><code>setVoice(null)</code> réactive la sélection automatique ;</li>
+<li>si une voix persistée n&#39;existe plus, fallback vers <code>zh-CN</code>, puis vers une autre voix <code>zh-*</code>.</li>
+</ul>
+</li>
+<li>i18n FR/EN ajoutée pour le réglage de voix.</li>
+</ul>
+<h2>Tests</h2>
+<ul>
+<li>Tests unitaires ajoutés pour <code>SpeechSettingsProvider</code> et <code>VoiceSelect</code>.</li>
+<li>Tests <code>WebSpeechProvider</code> étendus pour la voix disparue et le retour à la sélection automatique.</li>
+<li>Test d&#39;intégration <code>App</code> ajouté : sélection d&#39;une voix globale puis lecture via un bouton <code>SpeakButton</code>.</li>
+<li>Vérifications projet : <code>env -u GOROOT make test</code>, <code>env -u GOROOT make lint</code>, <code>make typecheck</code>, <code>env -u GOROOT make test-e2e</code>, <code>make docs</code>.</li>
+</ul>
+<h2>Décisions prises</h2>
+<ul>
+<li>Le réglage est global à l&#39;application, pas local à chaque bouton d&#39;écoute.</li>
+<li>La persistance reste locale (<code>localStorage</code>) comme les autres préférences mono-utilisateur actuelles.</li>
+<li>Le sélecteur ne liste que les voix <code>zh-*</code>, conformément au périmètre HSK chinois.</li>
+</ul>
+<h2>Reste à faire / prochaines étapes</h2>
+<ul>
+<li>Vérifier sur la Boox Air 5c quelles voix chinoises Android/Chrome exposent réellement à l&#39;API <code>SpeechSynthesis</code>.</li>
+</ul>
+</div>
+</details>
 <details id="journal-2026-05-31-lot4-speech-synthesis">
   <summary>2026-05-31 — Lot 4 : Synthèse Vocale (TTS)</summary>
   <div class="content"><h1>2026-05-31 — Lot 4 : Synthèse Vocale (TTS)</h1>
@@ -3193,7 +3245,7 @@ clearAll(): Promise&lt;void&gt;;
 </section>
 
 <footer>
-<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-05-31 08:02 par <code>make docs</code>.</p>
+<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-05-31 08:20 par <code>make docs</code>.</p>
 </footer>
 </div>
 

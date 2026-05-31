@@ -14,8 +14,9 @@ export interface SpeechProvider {
 
   /**
    * Définit la voix à utiliser via son URI unique.
+   * `null` réactive la sélection automatique.
    */
-  setVoice(voiceUri: string): void;
+  setVoice(voiceUri: string | null): void;
 
   /**
    * S'abonne aux changements de disponibilité des voix (chargement asynchrone).
