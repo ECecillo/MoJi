@@ -6,7 +6,9 @@
 
 ## Lot en cours
 
-**Lot 3 — Système de révision** : 🟡 **en cours**, sprint 1 livré (SM-2 pur, `ProgressRepository` localStorage, hookup canvas, bouton Réviser). Reste : tableau de bord / statuts d'apprentissage, sync backend, puis IndexedDB si le volume ou les besoins de query le justifient.
+**Lot 4 — Synthèse vocale** : 🟡 **en cours**, phase de recherche.
+
+**Lot 3 — Système de révision** : ✅ **clôturé** (Moteur SRS, Sync bi-directionnelle, Dashboard).
 
 **Lot 2** : ✅ clôturé officiellement (RFC 0007 + RFC 0010).
 
@@ -98,6 +100,26 @@ Cf. [`docs/journal/2026-05-30-lot3-sprint1.md`](../journal/2026-05-30-lot3-sprin
 - ✅ **i18n** : section `review.button_*` avec pluralisation.
 - ✅ **E2E** (`e2e/srs-review.spec.ts`, 4 scénarios) : seed localStorage + assertions sur le compteur, l'ouverture du bon caractère, la persistance au reload.
 - ⚠ **Déviation explicite à RFC 0007** : localStorage au lieu d'IndexedDB pour le sprint 1. Justifications dans le journal (parité RFC 0010, volume petit, migration future via le port). Décision tracée sans nouvelle RFC.
+
+### Lot 3 sprint 2 — UI Enhancements & Dashboard (session du jour)
+
+Cf. [`docs/journal/2026-05-30-lot3-ui-enhancements.md`](../journal/2026-05-30-lot3-ui-enhancements.md).
+
+- ✅ **Filtres de statut** (`src/lib/glossaryFilters.ts`) : New, Learning, Due, Mastered.
+- ✅ **Badges glossaire** (`StatusDot`) : indicateur de couleur discret sur chaque carte.
+- ✅ **Stats détaillées** (`EntryDetail.tsx`) : section Progression avec tentatives, succès et dates.
+- ✅ **Dashboard** (`src/features/progress/Dashboard.tsx`) : vue globale, statistiques par statut, activité récente. Accessible via bouton 📊.
+- ✅ **i18n** complet FR/EN pour toutes les nouvelles fonctionnalités.
+
+### Lot 3 sprint 3 — Infrastructure Backend (session du jour)
+
+Cf. [`docs/journal/2026-05-30-lot3-backend.md`](../journal/2026-05-30-lot3-backend.md).
+
+- ✅ **Modèles Go** calqués sur le frontend (`internal/domain/progress.go`).
+- ✅ **SQLite sans cgo** (`internal/adapters/sqlite/`) : persistance robuste via `modernc.org/sqlite`.
+- ✅ **Migrations SQL** via `goose` : table `progress` avec clé primaire composée.
+- ✅ **API REST** (`internal/adapters/http/progress_handler.go`) : endpoints `GET` et `POST` sur `/api/progress` pour le sync batch.
+- ✅ **Tests unitaires et intégration** : repository (base en mémoire) et handlers.
 
 ### Clôture du Lot 2 — éditeur FR + filtres (session 3)
 

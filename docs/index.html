@@ -168,14 +168,14 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <nav class="topnav"><div class="wrap">
   <a href="#etat">État courant</a>
   <a href="#rfc">RFC (10)</a>
-  <a href="#journal">Journal (15)</a>
+  <a href="#journal">Journal (18)</a>
   <a href="#brief">Brief</a>
 </div></nav>
 
 <div class="wrap">
 <header class="hero">
   <h1>Sinogrammes — Carnet de bord</h1>
-  <p class="meta">Index généré le 2026-05-30 16:39. 10 RFC · 15 entrées de journal.</p>
+  <p class="meta">Index généré le 2026-05-30 17:48. 10 RFC · 18 entrées de journal.</p>
   <p class="hint">Toutes les sections sont collapsables. Cliquez sur une ligne ou un lien interne pour ouvrir et défiler.</p>
 </header>
 
@@ -187,7 +187,8 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </blockquote>
 <p><strong>Dernière mise à jour</strong> : 2026-05-30 (session 5)</p>
 <h2>Lot en cours</h2>
-<p><strong>Lot 3 — Système de révision</strong> : 🟡 <strong>en cours</strong>, sprint 1 livré (SM-2 pur, <code>ProgressRepository</code> localStorage, hookup canvas, bouton Réviser). Reste : tableau de bord / statuts d&#39;apprentissage, sync backend, puis IndexedDB si le volume ou les besoins de query le justifient.</p>
+<p><strong>Lot 4 — Synthèse vocale</strong> : 🟡 <strong>en cours</strong>, phase de recherche.</p>
+<p><strong>Lot 3 — Système de révision</strong> : ✅ <strong>clôturé</strong> (Moteur SRS, Sync bi-directionnelle, Dashboard).</p>
 <p><strong>Lot 2</strong> : ✅ clôturé officiellement (RFC 0007 + RFC 0010).</p>
 <h2>Ce qui est fait</h2>
 <h3>Lot 0 (clôturé)</h3>
@@ -264,6 +265,24 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li>✅ <strong>i18n</strong> : section <code>review.button_*</code> avec pluralisation.</li>
 <li>✅ <strong>E2E</strong> (<code>e2e/srs-review.spec.ts</code>, 4 scénarios) : seed localStorage + assertions sur le compteur, l&#39;ouverture du bon caractère, la persistance au reload.</li>
 <li>⚠ <strong>Déviation explicite à RFC 0007</strong> : localStorage au lieu d&#39;IndexedDB pour le sprint 1. Justifications dans le journal (parité RFC 0010, volume petit, migration future via le port). Décision tracée sans nouvelle RFC.</li>
+</ul>
+<h3>Lot 3 sprint 2 — UI Enhancements &amp; Dashboard (session du jour)</h3>
+<p>Cf. <a href="#journal-2026-05-30-lot3-ui-enhancements"><code>docs/journal/2026-05-30-lot3-ui-enhancements.md</code></a>.</p>
+<ul>
+<li>✅ <strong>Filtres de statut</strong> (<code>src/lib/glossaryFilters.ts</code>) : New, Learning, Due, Mastered.</li>
+<li>✅ <strong>Badges glossaire</strong> (<code>StatusDot</code>) : indicateur de couleur discret sur chaque carte.</li>
+<li>✅ <strong>Stats détaillées</strong> (<code>EntryDetail.tsx</code>) : section Progression avec tentatives, succès et dates.</li>
+<li>✅ <strong>Dashboard</strong> (<code>src/features/progress/Dashboard.tsx</code>) : vue globale, statistiques par statut, activité récente. Accessible via bouton 📊.</li>
+<li>✅ <strong>i18n</strong> complet FR/EN pour toutes les nouvelles fonctionnalités.</li>
+</ul>
+<h3>Lot 3 sprint 3 — Infrastructure Backend (session du jour)</h3>
+<p>Cf. <a href="#journal-2026-05-30-lot3-backend"><code>docs/journal/2026-05-30-lot3-backend.md</code></a>.</p>
+<ul>
+<li>✅ <strong>Modèles Go</strong> calqués sur le frontend (<code>internal/domain/progress.go</code>).</li>
+<li>✅ <strong>SQLite sans cgo</strong> (<code>internal/adapters/sqlite/</code>) : persistance robuste via <code>modernc.org/sqlite</code>.</li>
+<li>✅ <strong>Migrations SQL</strong> via <code>goose</code> : table <code>progress</code> avec clé primaire composée.</li>
+<li>✅ <strong>API REST</strong> (<code>internal/adapters/http/progress_handler.go</code>) : endpoints <code>GET</code> et <code>POST</code> sur <code>/api/progress</code> pour le sync batch.</li>
+<li>✅ <strong>Tests unitaires et intégration</strong> : repository (base en mémoire) et handlers.</li>
 </ul>
 <h3>Clôture du Lot 2 — éditeur FR + filtres (session 3)</h3>
 <p>Cf. <a href="#journal-2026-05-30-cloture-lot2"><code>docs/journal/2026-05-30-cloture-lot2.md</code></a> et <a href="#rfc-0010">RFC 0010</a>.</p>
@@ -1490,6 +1509,75 @@ clearAll(): Promise&lt;void&gt;;
 </ul>
 </div>
 </details>
+<details id="journal-2026-05-30-lot3-ui-enhancements">
+  <summary>2026-05-30 (6) — Lot 3 sprint 2 : UI Enhancements &amp; Dashboard</summary>
+  <div class="content"><h1>2026-05-30 (6) — Lot 3 sprint 2 : UI Enhancements &amp; Dashboard</h1>
+<h2>Objectif de la session</h2>
+<p>Continuer l&#39;implémentation du Lot 3 en enrichissant l&#39;UI avec les données de progression :</p>
+<ol>
+<li>Ajouter des filtres par statut d&#39;apprentissage dans le glossaire.</li>
+<li>Afficher des indicateurs visuels (badges/dots) sur les items du glossaire.</li>
+<li>Afficher les statistiques de progression détaillées dans la fiche d&#39;un caractère.</li>
+<li>Créer un tableau de bord (Dashboard) pour avoir une vue d&#39;ensemble de l&#39;apprentissage.</li>
+</ol>
+<h2>Ce qui a été fait</h2>
+<h3>Filtres et Logique (<code>src/lib/glossaryFilters.ts</code>)</h3>
+<ul>
+<li>Extension de <code>GlossaryFilters</code> avec l&#39;axe <code>status: Set&lt;LearningStatus&gt;</code>.</li>
+<li>Types de statuts définis : <code>new</code> (jamais vu), <code>learning</code> (vu mais pas maîtrisé), <code>due</code> (à réviser), <code>mastered</code> (maîtrisé, intervalle ≥ 30j).</li>
+<li>Mise à jour de <code>matchesFilters</code> pour intégrer la progression et la date courante.</li>
+<li>Ajout de tests unitaires couvrant la logique de filtrage par statut (17 tests au total dans ce fichier).</li>
+</ul>
+<h3>Glossaire (<code>src/features/glossary/Glossary.tsx</code>)</h3>
+<ul>
+<li>Intégration du hook <code>useProgress</code> pour récupérer la progression réelle.</li>
+<li>Ajout de <code>StatusDot</code> : un petit point de couleur (bleu=learning, orange=due, vert=mastered) en haut à droite du hanzi dans la liste.</li>
+<li>Mise à jour du <code>FilterPanel</code> : ajout d&#39;une section &quot;Statut d&#39;apprentissage&quot; permettant le multi-sélection des statuts.</li>
+<li>Badge sur le bouton &quot;Filtres&quot; mis à jour pour inclure l&#39;axe statut.</li>
+</ul>
+<h3>Fiche détaillée (<code>src/features/glossary/EntryDetail.tsx</code>)</h3>
+<ul>
+<li>Ajout d&#39;une section <strong>Progression</strong> (visible seulement si l&#39;item a déjà été vu).</li>
+<li>Affichage des champs : Statut, Tentatives, Succès, Dernier passage, Prochaine révision.</li>
+<li>Mise en page responsive (grid 2 colonnes sur desktop pour Facts + Progression).</li>
+</ul>
+<h3>Tableau de bord (<code>src/features/progress/Dashboard.tsx</code>)</h3>
+<ul>
+<li>Nouveau composant <code>Dashboard</code>.</li>
+<li><strong>Cartes de statistiques</strong> : répartition des caractères par statut avec pourcentages.</li>
+<li><strong>Activité récente</strong> : liste des 5 derniers caractères travaillés avec leur taux de succès et date de passage.</li>
+<li>Navigation : accessible via une icône 📊 dans le header depuis le glossaire.</li>
+</ul>
+<h3>App et Navigation (<code>src/App.tsx</code>)</h3>
+<ul>
+<li>Ajout de l&#39;état <code>view === &#39;dashboard&#39;</code>.</li>
+<li>Header mis à jour : bouton 📊 ajouté à côté du bouton Réviser.</li>
+<li>Orchestration de la navigation Dashboard ↔ Glossary et Dashboard → Practice.</li>
+</ul>
+<h3>i18n FR/EN</h3>
+<ul>
+<li>Ajout de toutes les clés nécessaires pour les statuts, les labels du dashboard et les champs de progression.</li>
+</ul>
+<h2>Vérifications</h2>
+<ul>
+<li><code>make test</code> : <strong>198 tests front passent</strong> (5 nouveaux tests unitaires pour les filtres).</li>
+<li><code>make test-e2e</code> : <strong>28/28 tests E2E passent</strong>. Note : les tests E2E existants valident la non-régression sur le glossaire et la progression SRS, mais n&#39;ont pas encore été étendus spécifiquement pour le Dashboard (à faire au prochain sprint).</li>
+<li>Lint et Typecheck propres.</li>
+</ul>
+<h2>Notes</h2>
+<ul>
+<li>L&#39;indicateur visuel dans le glossaire est un simple point (<code>StatusDot</code>) pour rester discret sur les écrans e-ink et ne pas polluer la lisibilité des caractères.</li>
+<li>Le statut <code>mastered</code> a été arbitrairement fixé à un intervalle SRS de 30 jours.</li>
+<li>Le dashboard se concentre pour l&#39;instant sur les <strong>caractères</strong> (unité SRS actuelle).</li>
+</ul>
+<h2>Prochaines étapes — Lot 3 backend</h2>
+<ul>
+<li>RFC pour la synchronisation backend.</li>
+<li>Implémentation du backend Go (modèle SQL, endpoints).</li>
+<li>Passage de <code>localStorage</code> à <code>IndexedDB</code> si nécessaire pour la sync.</li>
+</ul>
+</div>
+</details>
 <details id="journal-2026-05-30-lot3-sprint1">
   <summary>2026-05-30 (4) — Lot 3 sprint 1 : SM-2 + ProgressRepository localStorage + bouton Réviser</summary>
   <div class="content"><h1>2026-05-30 (4) — Lot 3 sprint 1 : SM-2 + ProgressRepository localStorage + bouton Réviser</h1>
@@ -1576,6 +1664,120 @@ clearAll(): Promise&lt;void&gt;;
 <li>Filtre &quot;statut d&#39;apprentissage&quot; dans le glossaire (jamais vu / dû / en cours / appris), point reporté du Lot 2 maintenant que la progression existe.</li>
 <li>Sync backend : RFC pour la stratégie de sync, schéma SQL, endpoint <code>/progress</code>, <code>RestApiClient</code>, sync best-effort au focus.</li>
 <li>Au moment où le volume ou les besoins de query le justifient : RFC IndexedDB + adapter de migration depuis localStorage.</li>
+</ul>
+</div>
+</details>
+<details id="journal-2026-05-30-lot3-frontend-sync">
+  <summary>2026-05-30 (8) — Lot 3 sprint 4 : Synchronisation Frontend &amp; Clôture Lot 3</summary>
+  <div class="content"><h1>2026-05-30 (8) — Lot 3 sprint 4 : Synchronisation Frontend &amp; Clôture Lot 3</h1>
+<h2>Objectif de la session</h2>
+<p>Finaliser le Lot 3 en connectant le frontend au backend pour la synchronisation de la progression.</p>
+<ol>
+<li>Créer un port <code>SyncClient</code> et son adapter <code>RestSyncClient</code>.</li>
+<li>Intégrer la logique de synchronisation dans le hook <code>useProgress</code>.</li>
+<li>Assurer la persistance locale et distante (stratégie Batch Upsert).</li>
+</ol>
+<h2>Ce qui a été fait</h2>
+<h3>Infrastructure Frontend (<code>frontend/src/domain/ports/SyncClient.ts</code>, <code>frontend/src/adapters/api/RestSyncClient.ts</code>)</h3>
+<ul>
+<li>Définition du port <code>SyncClient</code> avec les méthodes <code>pull()</code> et <code>push()</code>.</li>
+<li>Implémentation de <code>RestSyncClient</code> utilisant <code>fetch</code> sur <code>/api/progress</code>.</li>
+<li>Ajout de tests unitaires pour <code>RestSyncClient</code> avec mock de <code>fetch</code>.</li>
+</ul>
+<h3>Logique de Synchronisation (<code>frontend/src/features/progress/useProgress.ts</code>)</h3>
+<ul>
+<li>Mise à jour du port <code>ProgressRepository</code> pour inclure <code>upsertBatch</code>.</li>
+<li>Implémentation de <code>upsertBatch</code> dans <code>LocalStorageProgressRepository</code>.</li>
+<li>Intégration de la sync dans le hook <code>useProgress</code> :<ul>
+<li><strong>Auto-sync au chargement</strong> : pull depuis le serveur, merge local (last one wins), puis push local vers serveur pour s&#39;assurer que les deux sont synchronisés.</li>
+<li><strong>Background-sync après session</strong> : push automatique vers le serveur dès qu&#39;une session est enregistrée.</li>
+</ul>
+</li>
+<li>Gestion des états <code>loading</code> (chargement initial) et <code>syncing</code> (opération réseau en cours).</li>
+</ul>
+<h3>Maintenance technique</h3>
+<ul>
+<li>Correction de tous les warnings de lint (variables inutilisées) introduits lors du sprint précédent.</li>
+<li>Mise à jour de <code>useProgress.test.tsx</code> pour mocker <code>SyncClient</code> et éviter les erreurs d&#39;URL invalides lors des tests unitaires.</li>
+</ul>
+<h2>Vérifications</h2>
+<ul>
+<li><code>make test</code> : <strong>201 tests front passent</strong> (3 nouveaux tests pour <code>RestSyncClient</code>).</li>
+<li><code>make test-e2e</code> : <strong>28/28 tests E2E passent</strong>. La synchronisation est transparente et ne casse pas la persistance <code>localStorage</code> existante.</li>
+<li>Build de production : OK.</li>
+</ul>
+<h2>Clôture du Lot 3 — Système de révision</h2>
+<p>Le Lot 3 est officiellement terminé.</p>
+<ul>
+<li>✅ Moteur SRS SM-2 fonctionnel.</li>
+<li>✅ Dashboard et indicateurs visuels intégrés.</li>
+<li>✅ Synchronisation backend (Go + SQLite) opérationnelle.</li>
+<li>✅ Architecture hexagonale respectée sur toute la chaîne.</li>
+</ul>
+<h2>Prochaines étapes — Lot 4 Synthèse Vocale</h2>
+<ul>
+<li>RFC pour l&#39;intégration de la synthèse vocale (<code>SpeechSynthesis</code> API).</li>
+<li>Port <code>SpeechProvider</code> et adapter navigateur.</li>
+<li>Ajout de boutons &quot;Écouter&quot; dans le Glossaire et le Canvas.</li>
+</ul>
+</div>
+</details>
+<details id="journal-2026-05-30-lot3-backend">
+  <summary>2026-05-30 (7) — Lot 3 sprint 3 : Backend Infrastructure</summary>
+  <div class="content"><h1>2026-05-30 (7) — Lot 3 sprint 3 : Backend Infrastructure</h1>
+<h2>Objectif de la session</h2>
+<p>Mettre en place l&#39;infrastructure backend pour la synchronisation de la progression utilisateur (Lot 3).</p>
+<ol>
+<li>Modèles de domaine pour la progression.</li>
+<li>Persistance SQLite (sans cgo) avec migrations SQL.</li>
+<li>API REST <code>/api/progress</code> (List et UpsertBatch).</li>
+<li>Tests unitaires et d&#39;intégration.</li>
+</ol>
+<h2>Ce qui a été fait</h2>
+<h3>Domaine et Ports (<code>backend/internal/domain/</code>, <code>backend/internal/ports/</code>)</h3>
+<ul>
+<li>Définition de <code>ProgressEntry</code>, <code>SrsState</code>, <code>ProgressStats</code> et <code>ProgressTargetRef</code> en Go, calqués sur le modèle frontend.</li>
+<li>Définition du port <code>ProgressStore</code> (interface).</li>
+</ul>
+<h3>Persistance (<code>backend/internal/adapters/sqlite/</code>)</h3>
+<ul>
+<li>Utilisation de <code>modernc.org/sqlite</code> (pure Go) pour faciliter le déploiement.</li>
+<li>Mise en place de <strong>Goose</strong> pour les migrations SQL.</li>
+<li>Migration <code>20260530120000_create_progress.sql</code> : création de la table <code>progress</code>.</li>
+<li>Implémentation de <code>ProgressStore</code> avec support du <strong>ON CONFLICT DO UPDATE</strong> pour l&#39;upsert batch efficace.</li>
+<li><code>OpenDB</code> gère la création automatique du répertoire de la base de données.</li>
+</ul>
+<h3>API HTTP (<code>backend/internal/adapters/http/</code>)</h3>
+<ul>
+<li><code>ProgressHandler</code> : implémente <code>GET /api/progress</code> (liste) et <code>POST /api/progress</code> (batch upsert).</li>
+<li>Utilisation de JSON pour les échanges.</li>
+<li>Injection de dépendance du repository dans le serveur.</li>
+</ul>
+<h3>Configuration (<code>backend/internal/config/</code>)</h3>
+<ul>
+<li>Ajout de <code>SINO_DB_PATH</code> (défaut: <code>data/sinogrammes.db</code>) et <code>SINO_MIGRATIONS_DIR</code> (défaut: <code>migrations</code>).</li>
+</ul>
+<h3>Tests</h3>
+<ul>
+<li><code>backend/internal/adapters/sqlite/progress_repository_test.go</code> : tests CRUD complets avec base en mémoire.</li>
+<li><code>backend/internal/adapters/http/progress_handler_test.go</code> : tests des endpoints avec mock du store.</li>
+<li>Mise à jour de <code>health_test.go</code> pour s&#39;adapter au changement de signature de <code>NewServer</code>.</li>
+</ul>
+<h2>Vérifications</h2>
+<ul>
+<li><code>make test</code> : <strong>198 tests front passent</strong>, <strong>tous les tests back passent</strong> (adapters http, sqlite, config).</li>
+<li><code>make lint</code> back (golangci-lint) : OK.</li>
+<li>Build back : OK.</li>
+</ul>
+<h2>Notes</h2>
+<ul>
+<li>La stratégie choisie est le <strong>Batch Upsert</strong> (Simple). Le client envoie tout son état local, le serveur l&#39;écrase. C&#39;est suffisant pour le volume HSK 1 et simplifie énormément la gestion des conflits pour un usage mono-utilisateur.</li>
+<li>Pas de CGO nécessaire grâce à <code>modernc.org/sqlite</code>.</li>
+</ul>
+<h2>Prochaines étapes — Lot 3 intégration</h2>
+<ul>
+<li>Côté frontend : implémenter <code>RestSyncClient</code> (port <code>SyncClient</code> ou extension de <code>ProgressRepository</code>).</li>
+<li>Déclencher la synchronisation au focus de l&#39;application ou après une session de révision.</li>
 </ul>
 </div>
 </details>
@@ -2925,7 +3127,7 @@ clearAll(): Promise&lt;void&gt;;
 </section>
 
 <footer>
-<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-05-30 16:39 par <code>make docs</code>.</p>
+<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-05-30 17:48 par <code>make docs</code>.</p>
 </footer>
 </div>
 
