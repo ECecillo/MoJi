@@ -2,11 +2,11 @@
 
 > **Fichier toujours à jour.** À mettre à jour à la fin de chaque session de travail. Répond à la question : "où en est le projet, là, maintenant ?"
 
-**Dernière mise à jour** : 2026-05-31 (réglage global de la voix)
+**Dernière mise à jour** : 2026-06-01 (Lot 5 — socle PWA offline)
 
 ## Lot en cours
 
-**Lot 5 — Polish & PWA** : 🟡 **en cours**, phase de recherche.
+**Lot 5 — Polish & PWA** : 🟡 **en cours**, socle PWA offline livré.
 
 **Lot 4 — Synthèse vocale** : ✅ **clôturé** (API SpeechSynthesis, SpeakButton intégré).
 
@@ -142,6 +142,18 @@ Cf. [`docs/journal/2026-05-31-reglage-voix-global.md`](../journal/2026-05-31-reg
 - ✅ **SpeakButton globalisé** : les boutons d'écoute réutilisent tous le même réglage.
 - ✅ **Fallback robuste** : absence d'API Web Speech tolérée ; si une voix sauvegardée disparaît, retour automatique vers `zh-CN` puis `zh-*`.
 
+### Lot 5 — socle PWA offline (session du jour)
+
+Cf. [`docs/journal/2026-06-01-lot5-pwa-baseline.md`](../journal/2026-06-01-lot5-pwa-baseline.md).
+
+- ✅ **Manifest PWA** (`frontend/public/manifest.webmanifest`) : app standalone, langue FR, scope `/`, couleurs e-ink, icônes SVG `any` + `maskable`.
+- ✅ **Meta installabilité/mobile** dans `frontend/index.html` : `theme-color`, description, apple mobile web app, manifest, favicon.
+- ✅ **Service worker généré par Vite** : `dist/sw.js` est émis au build avec la liste des assets hashés.
+- ✅ **Stratégies offline** : cache-first pour assets, network-first pour `GET /api/`, fallback navigation vers `index.html`.
+- ✅ **Enregistrement production-only** : `registerServiceWorker()` ne s'active qu'en build production, sans perturber dev/test.
+- ✅ **Accessibilité e-ink baseline** : `prefers-reduced-motion` et `prefers-contrast: more` pris en compte dans `index.css`.
+- ✅ **Validation offline production** : `vite preview` + Chromium Playwright, activation SW puis reload offline OK (`offline-ok`).
+
 ### Clôture du Lot 2 — éditeur FR + filtres (session 3)
 
 Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lot2.md) et [RFC 0010](../rfc/0010-surcharges-traductions-locales.md).
@@ -153,14 +165,17 @@ Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lo
 
 ## Vérifications croisées
 
-- `env -u GOROOT make test` : **213 tests front passent**, 3 paquets back passent avec `-race`.
-- `env -u GOROOT make test-e2e` : **28/28 tests E2E verts** (Chromium, ~10,3 s).
+- `env -u GOROOT make test` : **217 tests front passent**, 3 paquets back passent avec `-race`.
+- `env -u GOROOT make test-e2e` : **28/28 tests E2E verts** (Chromium, ~10,5 s).
 - `env -u GOROOT make lint` : ESLint + Prettier propres, golangci-lint 0 issue.
 - `make typecheck` : `tsc --noEmit` propre.
-- `make docs` : `docs/index.html` à jour (10 RFC + 20 entrées de journal).
+- `env -u GOROOT make build` : bundle front + binaire back OK, `dist/sw.js` généré.
+- `make docs` : `docs/index.html` à jour (10 RFC + 21 entrées de journal).
 
 ## Dernières décisions importantes
 
+- 2026-06-01 : **PWA sans dépendance externe**. Le service worker est généré par un plugin Vite local, actif en production uniquement, avec cache-first assets et network-first API GET.
+- 2026-06-01 : **offline d'abord = shell + assets bundlés**. La résolution de conflits/sync backend offline reste hors du premier incrément Lot 5.
 - 2026-05-31 : **voix = préférence globale locale**. Le choix de voix est stocké dans `localStorage`, appliqué à tous les `SpeakButton`, et reste best-effort car la liste réelle dépend du navigateur/OS (notamment Boox/Android).
 - 2026-05-30 (s5) : **mise = bootstrap toolchain, Makefile = orchestration**. `mise.toml` pinne Node/Go/golangci-lint et expose des alias, mais les commandes de build/test restent centralisées dans le Makefile.
 - 2026-05-30 (s4) : **déviation à RFC 0007 sur la persistance du Lot 3** : localStorage au lieu d'IndexedDB pour le sprint 1. Justifié par parité avec RFC 0010, volume petit, migration future possible via le port `ProgressRepository`. Décision tracée dans le journal, pas de nouvelle RFC pour cette première itération.
@@ -187,6 +202,14 @@ Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lo
 ## Bloquants connus
 
 Aucun.
+
+## Prochaines étapes — Lot 5
+
+- **Audit installabilité réel** : tester l'installation sur Boox Air 5c et sur ordinateur.
+- **Audit Lighthouse production** : vérifier installabilité, offline, performance et accessibilité.
+- **Optimisation assets Hanzi Writer** : réduire le glob `hanzi-writer-data` pour ne plus embarquer ~9 600 modules si possible.
+- **Icônes PNG** : ajouter 192/512 si Chrome/Boox/Lighthouse ne considèrent pas les SVG suffisants.
+- **Offline API / sync** : préciser la stratégie pour les données de progression quand le backend est absent ou revient après offline.
 
 ## Prochaines étapes — Lot 3 sprints suivants
 

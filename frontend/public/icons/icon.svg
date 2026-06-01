@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Sinogrammes">
+  <rect width="512" height="512" rx="64" fill="#fff"/>
+  <rect x="48" y="48" width="416" height="416" rx="20" fill="none" stroke="#111" stroke-width="20"/>
+  <path d="M256 64v384M64 256h384M112 112l288 288M400 112 112 400" fill="none" stroke="#888" stroke-width="10" stroke-linecap="round"/>
+  <path d="M172 170c54 22 117 18 171-9M253 151c-7 75-23 135-64 202M177 285c65 4 117-1 166-17M329 209c-21 70-55 119-100 145" fill="none" stroke="#111" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

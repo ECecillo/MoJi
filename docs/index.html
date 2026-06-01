@@ -168,14 +168,14 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <nav class="topnav"><div class="wrap">
   <a href="#etat">État courant</a>
   <a href="#rfc">RFC (10)</a>
-  <a href="#journal">Journal (20)</a>
+  <a href="#journal">Journal (21)</a>
   <a href="#brief">Brief</a>
 </div></nav>
 
 <div class="wrap">
 <header class="hero">
   <h1>Sinogrammes — Carnet de bord</h1>
-  <p class="meta">Index généré le 2026-05-31 08:20. 10 RFC · 20 entrées de journal.</p>
+  <p class="meta">Index généré le 2026-06-01 06:42. 10 RFC · 21 entrées de journal.</p>
   <p class="hint">Toutes les sections sont collapsables. Cliquez sur une ligne ou un lien interne pour ouvrir et défiler.</p>
 </header>
 
@@ -185,9 +185,9 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <blockquote>
 <p><strong>Fichier toujours à jour.</strong> À mettre à jour à la fin de chaque session de travail. Répond à la question : &quot;où en est le projet, là, maintenant ?&quot;</p>
 </blockquote>
-<p><strong>Dernière mise à jour</strong> : 2026-05-31 (réglage global de la voix)</p>
+<p><strong>Dernière mise à jour</strong> : 2026-06-01 (Lot 5 — socle PWA offline)</p>
 <h2>Lot en cours</h2>
-<p><strong>Lot 5 — Polish &amp; PWA</strong> : 🟡 <strong>en cours</strong>, phase de recherche.</p>
+<p><strong>Lot 5 — Polish &amp; PWA</strong> : 🟡 <strong>en cours</strong>, socle PWA offline livré.</p>
 <p><strong>Lot 4 — Synthèse vocale</strong> : ✅ <strong>clôturé</strong> (API SpeechSynthesis, SpeakButton intégré).</p>
 <p><strong>Lot 3</strong> : ✅ clôturé officiellement.</p>
 <p><strong>Lot 2</strong> : ✅ clôturé officiellement (RFC 0007 + RFC 0010).</p>
@@ -302,6 +302,17 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li>✅ <strong>SpeakButton globalisé</strong> : les boutons d&#39;écoute réutilisent tous le même réglage.</li>
 <li>✅ <strong>Fallback robuste</strong> : absence d&#39;API Web Speech tolérée ; si une voix sauvegardée disparaît, retour automatique vers <code>zh-CN</code> puis <code>zh-*</code>.</li>
 </ul>
+<h3>Lot 5 — socle PWA offline (session du jour)</h3>
+<p>Cf. <a href="#journal-2026-06-01-lot5-pwa-baseline"><code>docs/journal/2026-06-01-lot5-pwa-baseline.md</code></a>.</p>
+<ul>
+<li>✅ <strong>Manifest PWA</strong> (<code>frontend/public/manifest.webmanifest</code>) : app standalone, langue FR, scope <code>/</code>, couleurs e-ink, icônes SVG <code>any</code> + <code>maskable</code>.</li>
+<li>✅ <strong>Meta installabilité/mobile</strong> dans <code>frontend/index.html</code> : <code>theme-color</code>, description, apple mobile web app, manifest, favicon.</li>
+<li>✅ <strong>Service worker généré par Vite</strong> : <code>dist/sw.js</code> est émis au build avec la liste des assets hashés.</li>
+<li>✅ <strong>Stratégies offline</strong> : cache-first pour assets, network-first pour <code>GET /api/</code>, fallback navigation vers <code>index.html</code>.</li>
+<li>✅ <strong>Enregistrement production-only</strong> : <code>registerServiceWorker()</code> ne s&#39;active qu&#39;en build production, sans perturber dev/test.</li>
+<li>✅ <strong>Accessibilité e-ink baseline</strong> : <code>prefers-reduced-motion</code> et <code>prefers-contrast: more</code> pris en compte dans <code>index.css</code>.</li>
+<li>✅ <strong>Validation offline production</strong> : <code>vite preview</code> + Chromium Playwright, activation SW puis reload offline OK (<code>offline-ok</code>).</li>
+</ul>
 <h3>Clôture du Lot 2 — éditeur FR + filtres (session 3)</h3>
 <p>Cf. <a href="#journal-2026-05-30-cloture-lot2"><code>docs/journal/2026-05-30-cloture-lot2.md</code></a> et <a href="#rfc-0010">RFC 0010</a>.</p>
 <ul>
@@ -312,14 +323,17 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </ul>
 <h2>Vérifications croisées</h2>
 <ul>
-<li><code>env -u GOROOT make test</code> : <strong>213 tests front passent</strong>, 3 paquets back passent avec <code>-race</code>.</li>
-<li><code>env -u GOROOT make test-e2e</code> : <strong>28/28 tests E2E verts</strong> (Chromium, ~10,3 s).</li>
+<li><code>env -u GOROOT make test</code> : <strong>217 tests front passent</strong>, 3 paquets back passent avec <code>-race</code>.</li>
+<li><code>env -u GOROOT make test-e2e</code> : <strong>28/28 tests E2E verts</strong> (Chromium, ~10,5 s).</li>
 <li><code>env -u GOROOT make lint</code> : ESLint + Prettier propres, golangci-lint 0 issue.</li>
 <li><code>make typecheck</code> : <code>tsc --noEmit</code> propre.</li>
-<li><code>make docs</code> : <code>docs/index.html</code> à jour (10 RFC + 20 entrées de journal).</li>
+<li><code>env -u GOROOT make build</code> : bundle front + binaire back OK, <code>dist/sw.js</code> généré.</li>
+<li><code>make docs</code> : <code>docs/index.html</code> à jour (10 RFC + 21 entrées de journal).</li>
 </ul>
 <h2>Dernières décisions importantes</h2>
 <ul>
+<li>2026-06-01 : <strong>PWA sans dépendance externe</strong>. Le service worker est généré par un plugin Vite local, actif en production uniquement, avec cache-first assets et network-first API GET.</li>
+<li>2026-06-01 : <strong>offline d&#39;abord = shell + assets bundlés</strong>. La résolution de conflits/sync backend offline reste hors du premier incrément Lot 5.</li>
 <li>2026-05-31 : <strong>voix = préférence globale locale</strong>. Le choix de voix est stocké dans <code>localStorage</code>, appliqué à tous les <code>SpeakButton</code>, et reste best-effort car la liste réelle dépend du navigateur/OS (notamment Boox/Android).</li>
 <li>2026-05-30 (s5) : <strong>mise = bootstrap toolchain, Makefile = orchestration</strong>. <code>mise.toml</code> pinne Node/Go/golangci-lint et expose des alias, mais les commandes de build/test restent centralisées dans le Makefile.</li>
 <li>2026-05-30 (s4) : <strong>déviation à RFC 0007 sur la persistance du Lot 3</strong> : localStorage au lieu d&#39;IndexedDB pour le sprint 1. Justifié par parité avec RFC 0010, volume petit, migration future possible via le port <code>ProgressRepository</code>. Décision tracée dans le journal, pas de nouvelle RFC pour cette première itération.</li>
@@ -345,6 +359,14 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </ul>
 <h2>Bloquants connus</h2>
 <p>Aucun.</p>
+<h2>Prochaines étapes — Lot 5</h2>
+<ul>
+<li><strong>Audit installabilité réel</strong> : tester l&#39;installation sur Boox Air 5c et sur ordinateur.</li>
+<li><strong>Audit Lighthouse production</strong> : vérifier installabilité, offline, performance et accessibilité.</li>
+<li><strong>Optimisation assets Hanzi Writer</strong> : réduire le glob <code>hanzi-writer-data</code> pour ne plus embarquer ~9 600 modules si possible.</li>
+<li><strong>Icônes PNG</strong> : ajouter 192/512 si Chrome/Boox/Lighthouse ne considèrent pas les SVG suffisants.</li>
+<li><strong>Offline API / sync</strong> : préciser la stratégie pour les données de progression quand le backend est absent ou revient après offline.</li>
+</ul>
 <h2>Prochaines étapes — Lot 3 sprints suivants</h2>
 <p>Sprint 1 livré (session 4). Reste :</p>
 <ul>
@@ -1502,6 +1524,72 @@ clearAll(): Promise&lt;void&gt;;
 
 <section id="journal">
 <h2>Journal de bord</h2>
+<details id="journal-2026-06-01-lot5-pwa-baseline">
+  <summary>2026-06-01 — Lot 5 : socle PWA offline</summary>
+  <div class="content"><h1>2026-06-01 — Lot 5 : socle PWA offline</h1>
+<h2>Objectif de la session</h2>
+<p>Démarrer le Lot 5 avec un socle PWA installable et un premier mode offline fiable pour le shell applicatif.</p>
+<h2>Ce qui a été fait</h2>
+<ul>
+<li>Ajout du manifest PWA (<code>frontend/public/manifest.webmanifest</code>) :<ul>
+<li>nom, description, langue, <code>start_url</code>, <code>scope</code>, <code>display: standalone</code>, couleurs ;</li>
+<li>icônes SVG sobres adaptées e-ink (<code>icon.svg</code>, <code>icon-maskable.svg</code>).</li>
+</ul>
+</li>
+<li>Ajout des meta PWA/mobile dans <code>frontend/index.html</code> :<ul>
+<li><code>theme-color</code>, description, app name, apple mobile web app, manifest, favicon SVG.</li>
+</ul>
+</li>
+<li>Ajout d&#39;un service worker généré au build par un plugin Vite local :<ul>
+<li>précache de <code>/</code>, <code>/index.html</code>, manifest, icônes et assets hashés du bundle ;</li>
+<li>stratégie cache-first pour les assets ;</li>
+<li>stratégie network-first pour les requêtes <code>GET /api/</code> ;</li>
+<li>fallback navigation vers <code>index.html</code> hors ligne ;</li>
+<li>purge automatique des anciens caches applicatifs.</li>
+</ul>
+</li>
+<li>Ajout de <code>registerServiceWorker()</code> côté front :<ul>
+<li>enregistrement uniquement en build production (<code>import.meta.env.PROD</code>) ;</li>
+<li>pas d&#39;effet en dev/test ;</li>
+<li>erreurs d&#39;enregistrement loggées sans bloquer l&#39;app.</li>
+</ul>
+</li>
+<li>Ajout de garde-fous CSS :<ul>
+<li>respect de <code>prefers-reduced-motion</code> ;</li>
+<li>focus et bordures renforcés sous <code>prefers-contrast: more</code>.</li>
+</ul>
+</li>
+</ul>
+<h2>Tests</h2>
+<ul>
+<li><code>src/pwa/registerServiceWorker.test.ts</code> : 4 tests unitaires (désactivation, API absente, enregistrement, erreur).</li>
+<li><code>env -u GOROOT make test</code> : 217 tests front passent, tests back <code>-race</code> passent.</li>
+<li><code>env -u GOROOT make lint</code> : ESLint + Prettier + golangci-lint propres.</li>
+<li><code>make typecheck</code> : TypeScript strict propre.</li>
+<li><code>env -u GOROOT make build</code> : build front + back OK, <code>dist/sw.js</code> généré.</li>
+<li><code>env -u GOROOT make test-e2e</code> : 28/28 tests E2E passent.</li>
+<li>Vérification production manuelle automatisée : <code>vite preview</code> + Chromium Playwright, activation du service worker, reload offline, titre <code>Sinogrammes</code> visible (<code>offline-ok</code>).</li>
+</ul>
+<h2>Découvertes / surprises</h2>
+<ul>
+<li>Le build actuel transforme ~9 600 modules et produit un <code>sw.js</code> d&#39;environ 260 KB, car le glob Hanzi Writer embarque tous les JSON <code>hanzi-writer-data</code>. C&#39;est acceptable pour ce premier socle offline, mais ce sera un axe clair d&#39;optimisation du Lot 5.</li>
+<li>Le build signale toujours un gros chunk principal (~1,5 MB minifié). Même conclusion : pas bloquant pour le socle PWA, mais à traiter dans la phase performance.</li>
+</ul>
+<h2>Décisions prises</h2>
+<ul>
+<li>Pas de dépendance PWA externe pour l&#39;instant : le service worker est généré par un petit plugin Vite local afin de maîtriser précisément la stratégie offline.</li>
+<li>Le service worker n&#39;est actif qu&#39;en production, pour éviter les effets de cache pendant le développement et les tests E2E existants.</li>
+<li>Le premier offline vise le shell applicatif et les assets de données déjà bundlés. La sync backend offline/conflict resolution reste hors de ce premier incrément.</li>
+</ul>
+<h2>Reste à faire / prochaines étapes</h2>
+<ul>
+<li>Optimiser le chargement Hanzi Writer pour ne plus embarquer l&#39;intégralité de <code>hanzi-writer-data</code>.</li>
+<li>Ajouter des icônes PNG 192/512 si l&#39;audit d&#39;installabilité Boox/Chrome les exige.</li>
+<li>Lancer un audit Lighthouse sur build de production.</li>
+<li>Tester l&#39;installation réelle sur Boox Air 5c et ordinateur.</li>
+</ul>
+</div>
+</details>
 <details id="journal-2026-05-31-reglage-voix-global">
   <summary>2026-05-31 — Réglage global de la voix</summary>
   <div class="content"><h1>2026-05-31 — Réglage global de la voix</h1>
@@ -3245,7 +3333,7 @@ clearAll(): Promise&lt;void&gt;;
 </section>
 
 <footer>
-<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-05-31 08:20 par <code>make docs</code>.</p>
+<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-06-01 06:42 par <code>make docs</code>.</p>
 </footer>
 </div>
 

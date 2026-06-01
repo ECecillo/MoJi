@@ -34,6 +34,7 @@ Contenu type :
 
 ## Index (par date décroissante)
 
+- [2026-06-01 — Lot 5 : socle PWA offline](2026-06-01-lot5-pwa-baseline.md)
 - [2026-05-31 — Réglage global de la voix](2026-05-31-reglage-voix-global.md)
 - [2026-05-31 — Lot 4 : synthèse vocale](2026-05-31-lot4-speech-synthesis.md)
 - [2026-05-30 — Lot 3 sprint 3 : infrastructure backend](2026-05-30-lot3-backend.md)
