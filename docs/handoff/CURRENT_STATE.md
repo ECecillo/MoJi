@@ -2,11 +2,13 @@
 
 > **Fichier toujours à jour.** À mettre à jour à la fin de chaque session de travail. Répond à la question : "où en est le projet, là, maintenant ?"
 
-**Dernière mise à jour** : 2026-06-13 (Lot 5 — import HSK 2)
+**Dernière mise à jour** : 2026-06-13 (Lot 5 clôturé — MVP complet)
 
-## Lot en cours
+## Statut global
 
-**Lot 5 — Polish & PWA** : 🟡 **en cours** — PWA/offline/Lighthouse/icônes + import HSK 2 + audit a11y clavier livrés. **Seul reste : test d'installation réel sur Boox (matériel).**
+🎉 **MVP complet : Lots 0 → 5 tous clôturés.** L'app est installable et utilisable sur Boox Air 5c et ordinateur, fonctionne hors-ligne, synchronise la progression entre appareils, et couvre HSK 3.0 niveaux 1–2. La suite est du post-MVP (cf. RFC 0007 « Ce qui suit »).
+
+**Lot 5 — Polish & PWA** : ✅ **clôturé, critère de sortie atteint** — installable + 100 % offline + Lighthouse 97/100/100. Validé en réel sur Boox le 2026-06-13 (installation, tracé HSK 1/2, hors-ligne, sync multi-appareils via `make serve` sur le LAN).
 
 **Lot 4 — Synthèse vocale** : ✅ **clôturé** (API SpeechSynthesis, SpeakButton intégré).
 
@@ -266,16 +268,30 @@ Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lo
 
 Aucun.
 
-## Prochaines étapes — Lot 5
+## Lot 5 — clôturé
 
-- ✅ ~~**Optimisation assets Hanzi Writer**~~ : fait (2026-06-13). Sous-ensemble généré, glob supprimé, précache SW ~260 KB → 2,3 KB.
-- ✅ ~~**Code-splitting du chunk principal**~~ : fait (2026-06-13). Données en chunk paresseux, chunk principal 573 KB → 348 KB. Le reste est du vendor incompressible (React/i18n/zod) ; lazy-load des vues = gain marginal, non prioritaire.
-- ✅ ~~**Audit Lighthouse production**~~ : fait (2026-06-13). Perf 97 / A11y 100 / Best-practices 100.
-- ✅ ~~**Icônes PNG**~~ : fait (2026-06-13). 192/512 normal + maskable, manifest + SW à jour.
-- ✅ ~~**Offline API / sync**~~ : traité avec le Lot 3 (RFC 0011) — sync best-effort silencieuse, déclencheurs focus/online, merge par champ.
-- ✅ ~~**Import HSK 2**~~ : fait (2026-06-13, RFC 0012). 598 caractères / 1256 mots, fichiers par niveau + merge, filtre niveau au glossaire. HSK 3+ = ajout trivial d'un niveau.
-- ✅ ~~**Audit accessibilité (navigation clavier)**~~ : fait (2026-06-13). Tous les contrôles sont des `<button>`/champs natifs focusables ; indicateur de focus clavier **global** ajouté (`:focus-visible` noir e-ink dans `index.css`) ; `focus:outline-none` nu retiré des 6 champs (focus redevenu visible). reduced-motion/contrast déjà OK (Lighthouse a11y 100).
-- **Audit installabilité réel** : tester l'installation sur Boox Air 5c et sur ordinateur (nécessite le matériel). Inclut désormais un test de **sync réelle Boox ↔ ordinateur** sur le LAN via `make serve`.
+Tous les items livrés et validés (2026-06-13) :
+
+- ✅ Optimisation assets Hanzi Writer (sous-ensemble généré, précache SW ~260 KB → 2,3 KB).
+- ✅ Code-splitting (données en chunks paresseux par niveau, chunk principal ~350 KB).
+- ✅ Audit Lighthouse production : Perf 97 / A11y 100 / Best-practices 100.
+- ✅ Icônes PNG 192/512 (normal + maskable), manifest + SW à jour.
+- ✅ Offline API / sync (Lot 3, RFC 0011).
+- ✅ Import HSK 2 (RFC 0012) : 598 caractères / 1256 mots, fichiers par niveau + merge, filtre niveau.
+- ✅ Audit accessibilité (reduced-motion, contrast, navigation clavier — `:focus-visible` global).
+- ✅ **Test d'installation + sync réel sur Boox Air 5c** : OK (installation PWA, tracé HSK 1/2, hors-ligne, sync multi-appareils sur le LAN via `make serve`).
+
+## Post-MVP (cf. RFC 0007 « Ce qui suit »)
+
+Le MVP est complet ; pistes ultérieures, non engagées :
+
+- **Données servies par le backend (Option A)** : bascule du bundle front vers une API de référence.
+- **Export / import Anki**.
+- **Statistiques avancées** (heatmap, courbes de rétention).
+- **HSK 3, 4, …** : ajout trivial d'un niveau dans le pipeline (`LEVELS` + un import au merge, cf. RFC 0012).
+- **Docker / CI / déploiement formalisé**.
+- **IndexedDB** (si volume/query le justifient ; RFC à écrire) ; **sync concurrente avancée** (horodatage/CRDT) si besoin multi-appareils concurrent réel.
+- Détails mineurs : avertissement Vite « chunk > 500 KB » sur les données de tracé (intentionnel, chunks paresseux) ; focus clavier déplacé au changement de vue (amélioration a11y facultative).
 
 ## Lot 3 — clôturé
 

@@ -168,14 +168,14 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <nav class="topnav"><div class="wrap">
   <a href="#etat">État courant</a>
   <a href="#rfc">RFC (12)</a>
-  <a href="#journal">Journal (27)</a>
+  <a href="#journal">Journal (28)</a>
   <a href="#brief">Brief</a>
 </div></nav>
 
 <div class="wrap">
 <header class="hero">
   <h1>Sinogrammes — Carnet de bord</h1>
-  <p class="meta">Index généré le 2026-06-13 14:44. 12 RFC · 27 entrées de journal.</p>
+  <p class="meta">Index généré le 2026-06-13 15:06. 12 RFC · 28 entrées de journal.</p>
   <p class="hint">Toutes les sections sont collapsables. Cliquez sur une ligne ou un lien interne pour ouvrir et défiler.</p>
 </header>
 
@@ -185,9 +185,10 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <blockquote>
 <p><strong>Fichier toujours à jour.</strong> À mettre à jour à la fin de chaque session de travail. Répond à la question : &quot;où en est le projet, là, maintenant ?&quot;</p>
 </blockquote>
-<p><strong>Dernière mise à jour</strong> : 2026-06-13 (Lot 5 — import HSK 2)</p>
-<h2>Lot en cours</h2>
-<p><strong>Lot 5 — Polish &amp; PWA</strong> : 🟡 <strong>en cours</strong> — PWA/offline/Lighthouse/icônes + import HSK 2 + audit a11y clavier livrés. <strong>Seul reste : test d&#39;installation réel sur Boox (matériel).</strong></p>
+<p><strong>Dernière mise à jour</strong> : 2026-06-13 (Lot 5 clôturé — MVP complet)</p>
+<h2>Statut global</h2>
+<p>🎉 <strong>MVP complet : Lots 0 → 5 tous clôturés.</strong> L&#39;app est installable et utilisable sur Boox Air 5c et ordinateur, fonctionne hors-ligne, synchronise la progression entre appareils, et couvre HSK 3.0 niveaux 1–2. La suite est du post-MVP (cf. RFC 0007 « Ce qui suit »).</p>
+<p><strong>Lot 5 — Polish &amp; PWA</strong> : ✅ <strong>clôturé, critère de sortie atteint</strong> — installable + 100 % offline + Lighthouse 97/100/100. Validé en réel sur Boox le 2026-06-13 (installation, tracé HSK 1/2, hors-ligne, sync multi-appareils via <code>make serve</code> sur le LAN).</p>
 <p><strong>Lot 4 — Synthèse vocale</strong> : ✅ <strong>clôturé</strong> (API SpeechSynthesis, SpeakButton intégré).</p>
 <p><strong>Lot 3 — Système de révision</strong> : ✅ <strong>clôturé, critère de sortie atteint</strong> — sync backend single-origin + merge par champ (RFC 0011, 2026-06-13).</p>
 <p><strong>Lot 2</strong> : ✅ clôturé officiellement (RFC 0007 + RFC 0010).</p>
@@ -418,16 +419,28 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </ul>
 <h2>Bloquants connus</h2>
 <p>Aucun.</p>
-<h2>Prochaines étapes — Lot 5</h2>
+<h2>Lot 5 — clôturé</h2>
+<p>Tous les items livrés et validés (2026-06-13) :</p>
 <ul>
-<li>✅ <del><strong>Optimisation assets Hanzi Writer</strong></del> : fait (2026-06-13). Sous-ensemble généré, glob supprimé, précache SW ~260 KB → 2,3 KB.</li>
-<li>✅ <del><strong>Code-splitting du chunk principal</strong></del> : fait (2026-06-13). Données en chunk paresseux, chunk principal 573 KB → 348 KB. Le reste est du vendor incompressible (React/i18n/zod) ; lazy-load des vues = gain marginal, non prioritaire.</li>
-<li>✅ <del><strong>Audit Lighthouse production</strong></del> : fait (2026-06-13). Perf 97 / A11y 100 / Best-practices 100.</li>
-<li>✅ <del><strong>Icônes PNG</strong></del> : fait (2026-06-13). 192/512 normal + maskable, manifest + SW à jour.</li>
-<li>✅ <del><strong>Offline API / sync</strong></del> : traité avec le Lot 3 (RFC 0011) — sync best-effort silencieuse, déclencheurs focus/online, merge par champ.</li>
-<li>✅ <del><strong>Import HSK 2</strong></del> : fait (2026-06-13, RFC 0012). 598 caractères / 1256 mots, fichiers par niveau + merge, filtre niveau au glossaire. HSK 3+ = ajout trivial d&#39;un niveau.</li>
-<li>✅ <del><strong>Audit accessibilité (navigation clavier)</strong></del> : fait (2026-06-13). Tous les contrôles sont des <code>&lt;button&gt;</code>/champs natifs focusables ; indicateur de focus clavier <strong>global</strong> ajouté (<code>:focus-visible</code> noir e-ink dans <code>index.css</code>) ; <code>focus:outline-none</code> nu retiré des 6 champs (focus redevenu visible). reduced-motion/contrast déjà OK (Lighthouse a11y 100).</li>
-<li><strong>Audit installabilité réel</strong> : tester l&#39;installation sur Boox Air 5c et sur ordinateur (nécessite le matériel). Inclut désormais un test de <strong>sync réelle Boox ↔ ordinateur</strong> sur le LAN via <code>make serve</code>.</li>
+<li>✅ Optimisation assets Hanzi Writer (sous-ensemble généré, précache SW ~260 KB → 2,3 KB).</li>
+<li>✅ Code-splitting (données en chunks paresseux par niveau, chunk principal ~350 KB).</li>
+<li>✅ Audit Lighthouse production : Perf 97 / A11y 100 / Best-practices 100.</li>
+<li>✅ Icônes PNG 192/512 (normal + maskable), manifest + SW à jour.</li>
+<li>✅ Offline API / sync (Lot 3, RFC 0011).</li>
+<li>✅ Import HSK 2 (RFC 0012) : 598 caractères / 1256 mots, fichiers par niveau + merge, filtre niveau.</li>
+<li>✅ Audit accessibilité (reduced-motion, contrast, navigation clavier — <code>:focus-visible</code> global).</li>
+<li>✅ <strong>Test d&#39;installation + sync réel sur Boox Air 5c</strong> : OK (installation PWA, tracé HSK 1/2, hors-ligne, sync multi-appareils sur le LAN via <code>make serve</code>).</li>
+</ul>
+<h2>Post-MVP (cf. RFC 0007 « Ce qui suit »)</h2>
+<p>Le MVP est complet ; pistes ultérieures, non engagées :</p>
+<ul>
+<li><strong>Données servies par le backend (Option A)</strong> : bascule du bundle front vers une API de référence.</li>
+<li><strong>Export / import Anki</strong>.</li>
+<li><strong>Statistiques avancées</strong> (heatmap, courbes de rétention).</li>
+<li><strong>HSK 3, 4, …</strong> : ajout trivial d&#39;un niveau dans le pipeline (<code>LEVELS</code> + un import au merge, cf. RFC 0012).</li>
+<li><strong>Docker / CI / déploiement formalisé</strong>.</li>
+<li><strong>IndexedDB</strong> (si volume/query le justifient ; RFC à écrire) ; <strong>sync concurrente avancée</strong> (horodatage/CRDT) si besoin multi-appareils concurrent réel.</li>
+<li>Détails mineurs : avertissement Vite « chunk &gt; 500 KB » sur les données de tracé (intentionnel, chunks paresseux) ; focus clavier déplacé au changement de vue (amélioration a11y facultative).</li>
 </ul>
 <h2>Lot 3 — clôturé</h2>
 <p>Sprint 1 (révision locale SRS), sprint 2 (UI/dashboard), sprint 3 (infra backend),
@@ -2189,6 +2202,33 @@ joignable par les deux appareils (<code>make serve</code>, <code>SINO_HOST=0.0.0
 <li>Si un besoin multi-appareils concurrent réel apparaît : envisager un horodatage ou un
 CRDT (sommation des compteurs) — sur-ingénierie pour l&#39;instant.</li>
 </ul>
+</div>
+</details>
+<details id="journal-2026-06-13-cloture-lot5-mvp">
+  <summary>2026-06-13 — Clôture du Lot 5 et du MVP</summary>
+  <div class="content"><h1>2026-06-13 — Clôture du Lot 5 et du MVP</h1>
+<h2>Objectif</h2>
+<p>Valider le dernier item du Lot 5 (test d&#39;installation + sync réels sur le matériel
+cible) et clôturer le Lot 5, donc le MVP (Lots 0 → 5).</p>
+<h2>Validation matérielle (Boox Air 5c)</h2>
+<p>Serveur lancé via <code>make serve</code> (binaire Go servant <code>dist/</code> + API sur
+<code>0.0.0.0:8787</code>, single-origin, cf. RFC 0011). Boox et ordinateur sur le même LAN,
+app ouverte depuis <code>http://&lt;ip-mac&gt;:8787</code>. Vérifié OK :</p>
+<ul>
+<li><strong>Installation PWA</strong> sur la Boox (icône, mode standalone).</li>
+<li><strong>Tracé au stylet</strong> d&#39;un caractère HSK 1 et d&#39;un caractère HSK 2 (filtre par niveau).</li>
+<li><strong>Hors-ligne</strong> : l&#39;app se relance et fonctionne sans réseau (service worker).</li>
+<li><strong>Sync multi-appareils</strong> : la progression faite sur un appareil se retrouve sur
+l&#39;autre après reprise d&#39;activité (merge par champ).</li>
+</ul>
+<h2>État</h2>
+<p>🎉 <strong>MVP complet — Lots 0 → 5 tous clôturés.</strong> Critère de sortie du Lot 5 (RFC 0007)
+atteint : installable sur Boox et ordinateur, 100 % offline, Lighthouse acceptable
+(97 / 100 / 100). Couverture HSK 3.0 niveaux 1–2.</p>
+<h2>Suite</h2>
+<p>Post-MVP uniquement (cf. RFC 0007 « Ce qui suit » et la section dédiée de
+<code>CURRENT_STATE.md</code>) : données servies par le backend, export Anki, stats avancées,
+HSK 3+, Docker/CI/déploiement, IndexedDB. Rien d&#39;engagé.</p>
 </div>
 </details>
 <details id="journal-2026-06-01-lot5-pwa-baseline">
@@ -4000,7 +4040,7 @@ CRDT (sommation des compteurs) — sur-ingénierie pour l&#39;instant.</li>
 </section>
 
 <footer>
-<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-06-13 14:44 par <code>make docs</code>.</p>
+<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-06-13 15:06 par <code>make docs</code>.</p>
 </footer>
 </div>
 
