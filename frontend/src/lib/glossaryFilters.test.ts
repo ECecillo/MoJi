@@ -107,6 +107,16 @@ describe('matchesFilters', () => {
     expect(matchesFilters(c, { frequencyRank: { min: 100 } })).toBe(false);
   });
 
+  it('filtre par niveau HSK : seul le niveau sélectionné matche', () => {
+    const c1 = makeChar({ hsk_level: 1 });
+    const c2 = makeChar({ hsk_level: 2 });
+    expect(matchesFilters(c1, { hskLevels: new Set([1]) })).toBe(true);
+    expect(matchesFilters(c2, { hskLevels: new Set([1]) })).toBe(false);
+    expect(matchesFilters(c2, { hskLevels: new Set([1, 2]) })).toBe(true);
+    // Set vide = filtre inactif
+    expect(matchesFilters(c2, { hskLevels: new Set() })).toBe(true);
+  });
+
   it('filtre par tags : au moins un tag sélectionné doit matcher', () => {
     const c = makeChar({ tags: ['numbers', 'time'] });
     expect(matchesFilters(c, { tags: new Set(['numbers']) })).toBe(true);

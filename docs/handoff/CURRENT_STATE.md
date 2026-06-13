@@ -2,11 +2,11 @@
 
 > **Fichier toujours à jour.** À mettre à jour à la fin de chaque session de travail. Répond à la question : "où en est le projet, là, maintenant ?"
 
-**Dernière mise à jour** : 2026-06-13 (Lot 3 — sync backend : critère de sortie atteint)
+**Dernière mise à jour** : 2026-06-13 (Lot 5 — import HSK 2)
 
 ## Lot en cours
 
-**Lot 5 — Polish & PWA** : 🟡 **en cours**, socle PWA offline livré.
+**Lot 5 — Polish & PWA** : 🟡 **en cours** — PWA/offline/Lighthouse/icônes + **import HSK 2** livrés. Reste : test d'installation réel sur Boox (matériel).
 
 **Lot 4 — Synthèse vocale** : ✅ **clôturé** (API SpeechSynthesis, SpeakButton intégré).
 
@@ -154,6 +154,17 @@ Cf. [`docs/journal/2026-06-01-lot5-pwa-baseline.md`](../journal/2026-06-01-lot5-
 - ✅ **Accessibilité e-ink baseline** : `prefers-reduced-motion` et `prefers-contrast: more` pris en compte dans `index.css`.
 - ✅ **Validation offline production** : `vite preview` + Chromium Playwright, activation SW puis reload offline OK (`offline-ok`).
 
+### Lot 5 — import HSK 2 (2026-06-13)
+
+Cf. [`docs/journal/2026-06-13-lot5-hsk2.md`](../journal/2026-06-13-lot5-hsk2.md) et [RFC 0012](../rfc/0012-extension-hsk2.md).
+
+- ✅ **Périmètre étendu à HSK 3.0 niveaux 1–2** : 598 caractères (300 + 298) et 1256 mots (506 + 750). `CLAUDE.md`/`AGENTS.md` à jour.
+- ✅ **Sourcing généralisé** (`vendor-sources.ts`, `LEVELS=[1,2]`) : `drkameleon-hsk30-l{1,2}.json` + `makemeahanzi-hsk{1,2}-meta.jsonl` (chars exclusifs par niveau). Couverture `hanzi-writer-data` vérifiée (0 manquant).
+- ✅ **Build par niveau** (`build-hsk1-data.ts`) : niveau = plus bas d'apparition, niveaux disjoints. Émet `hsk2.generated.json` + `hsk2-stroke-data.generated.json`. **Sorties HSK 1 byte-identiques**. Schéma inchangé (Zod acceptait déjà 1–9).
+- ✅ **Merge au chargement** : `bundledReferenceData` + loader de tracés fusionnent les niveaux ; chaque niveau reste un **chunk paresseux** séparé (shell inchangé ~350 KB).
+- ✅ **Filtre par niveau HSK** dans le glossaire (`GlossaryFilters.hskLevels` + FilterPanel + i18n).
+- ✅ **Tests** : `hsk2.generated.test` (compteurs, niveau, disjonction, intégrité inter-fichiers), `hsk2-stroke-data.test`, filtre niveau, e2e (compteur 598 + filtre HSK 2).
+
 ### Lot 3 — synchronisation backend, critère de sortie atteint (2026-06-13)
 
 Cf. [`docs/journal/2026-06-13-lot3-sync-backend.md`](../journal/2026-06-13-lot3-sync-backend.md) et [RFC 0011](../rfc/0011-sync-backend.md).
@@ -205,8 +216,8 @@ Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lo
 
 > ⚠ **Toolchain** : lancer impérativement sous le Node épinglé (`mise.toml` → Node 24.15.0), p. ex. `mise exec node@24.15.0 -- env -u GOROOT make test`. Sous Node 25, jsdom expose un `localStorage` cassé → 46 faux échecs.
 
-- `make test` : **229 tests front passent**, paquets back passent avec `-race`.
-- `make test-e2e` : **30/30 tests E2E verts** (Chromium, ~10 s).
+- `make test` : **239 tests front passent**, paquets back passent avec `-race`.
+- `make test-e2e` : **31/31 tests E2E verts** (Chromium, ~13 s).
 - `make lint` : ESLint + Prettier propres, golangci-lint 0 issue.
 - `make typecheck` : `tsc --noEmit` propre.
 - `make build` : bundle front + binaire back OK, chunk principal **348 KB**, `dist/sw.js` précache les 4 PNG.
@@ -216,6 +227,7 @@ Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lo
 
 ## Dernières décisions importantes
 
+- 2026-06-13 : **périmètre étendu à HSK 3.0 niveaux 1–2** (RFC 0012). Sourcing cumulatif (niveau = plus bas d'apparition), fichiers générés **par niveau** + merge au chargement (HSK 1 byte-identique, HSK 3 trivial), schéma inchangé, filtre niveau au glossaire.
 - 2026-06-13 : **Lot 3 — déploiement single-origin + merge par champ** (RFC 0011). Le binaire Go sert front + API ; merge par champ symétrique client/serveur (max attempts, tie → last_seen), schéma inchangé. Clôt le critère de sortie multi-appareils.
 - 2026-06-13 : **sync = best-effort silencieux en offline-first**. Backend absent / hors-ligne = cas nominal : journalisé en `console.debug`, jamais `console.error`. `RestSyncClient.pull` vérifie le content-type.
 - 2026-06-13 : **icônes PNG rastérisées via Playwright Chromium** (`make build-icons`), pas de dépendance de rastérisation. SVG conservés comme source de vérité.
@@ -260,6 +272,8 @@ Aucun.
 - ✅ ~~**Audit Lighthouse production**~~ : fait (2026-06-13). Perf 97 / A11y 100 / Best-practices 100.
 - ✅ ~~**Icônes PNG**~~ : fait (2026-06-13). 192/512 normal + maskable, manifest + SW à jour.
 - ✅ ~~**Offline API / sync**~~ : traité avec le Lot 3 (RFC 0011) — sync best-effort silencieuse, déclencheurs focus/online, merge par champ.
+- ✅ ~~**Import HSK 2**~~ : fait (2026-06-13, RFC 0012). 598 caractères / 1256 mots, fichiers par niveau + merge, filtre niveau au glossaire. HSK 3+ = ajout trivial d'un niveau.
+- **Audit accessibilité (navigation clavier)** : reduced-motion/contrast OK (Lighthouse a11y 100) ; reste un passage clavier dédié à faire.
 - **Audit installabilité réel** : tester l'installation sur Boox Air 5c et sur ordinateur (nécessite le matériel). Inclut désormais un test de **sync réelle Boox ↔ ordinateur** sur le LAN via `make serve`.
 
 ## Lot 3 — clôturé

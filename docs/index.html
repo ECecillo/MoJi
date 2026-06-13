@@ -167,15 +167,15 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <body>
 <nav class="topnav"><div class="wrap">
   <a href="#etat">État courant</a>
-  <a href="#rfc">RFC (11)</a>
-  <a href="#journal">Journal (25)</a>
+  <a href="#rfc">RFC (12)</a>
+  <a href="#journal">Journal (26)</a>
   <a href="#brief">Brief</a>
 </div></nav>
 
 <div class="wrap">
 <header class="hero">
   <h1>Sinogrammes — Carnet de bord</h1>
-  <p class="meta">Index généré le 2026-06-13 09:58. 11 RFC · 25 entrées de journal.</p>
+  <p class="meta">Index généré le 2026-06-13 14:36. 12 RFC · 26 entrées de journal.</p>
   <p class="hint">Toutes les sections sont collapsables. Cliquez sur une ligne ou un lien interne pour ouvrir et défiler.</p>
 </header>
 
@@ -185,9 +185,9 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <blockquote>
 <p><strong>Fichier toujours à jour.</strong> À mettre à jour à la fin de chaque session de travail. Répond à la question : &quot;où en est le projet, là, maintenant ?&quot;</p>
 </blockquote>
-<p><strong>Dernière mise à jour</strong> : 2026-06-13 (Lot 3 — sync backend : critère de sortie atteint)</p>
+<p><strong>Dernière mise à jour</strong> : 2026-06-13 (Lot 5 — import HSK 2)</p>
 <h2>Lot en cours</h2>
-<p><strong>Lot 5 — Polish &amp; PWA</strong> : 🟡 <strong>en cours</strong>, socle PWA offline livré.</p>
+<p><strong>Lot 5 — Polish &amp; PWA</strong> : 🟡 <strong>en cours</strong> — PWA/offline/Lighthouse/icônes + <strong>import HSK 2</strong> livrés. Reste : test d&#39;installation réel sur Boox (matériel).</p>
 <p><strong>Lot 4 — Synthèse vocale</strong> : ✅ <strong>clôturé</strong> (API SpeechSynthesis, SpeakButton intégré).</p>
 <p><strong>Lot 3 — Système de révision</strong> : ✅ <strong>clôturé, critère de sortie atteint</strong> — sync backend single-origin + merge par champ (RFC 0011, 2026-06-13).</p>
 <p><strong>Lot 2</strong> : ✅ clôturé officiellement (RFC 0007 + RFC 0010).</p>
@@ -313,6 +313,16 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li>✅ <strong>Accessibilité e-ink baseline</strong> : <code>prefers-reduced-motion</code> et <code>prefers-contrast: more</code> pris en compte dans <code>index.css</code>.</li>
 <li>✅ <strong>Validation offline production</strong> : <code>vite preview</code> + Chromium Playwright, activation SW puis reload offline OK (<code>offline-ok</code>).</li>
 </ul>
+<h3>Lot 5 — import HSK 2 (2026-06-13)</h3>
+<p>Cf. <a href="#journal-2026-06-13-lot5-hsk2"><code>docs/journal/2026-06-13-lot5-hsk2.md</code></a> et <a href="#rfc-0012">RFC 0012</a>.</p>
+<ul>
+<li>✅ <strong>Périmètre étendu à HSK 3.0 niveaux 1–2</strong> : 598 caractères (300 + 298) et 1256 mots (506 + 750). <code>CLAUDE.md</code>/<code>AGENTS.md</code> à jour.</li>
+<li>✅ <strong>Sourcing généralisé</strong> (<code>vendor-sources.ts</code>, <code>LEVELS=[1,2]</code>) : <code>drkameleon-hsk30-l{1,2}.json</code> + <code>makemeahanzi-hsk{1,2}-meta.jsonl</code> (chars exclusifs par niveau). Couverture <code>hanzi-writer-data</code> vérifiée (0 manquant).</li>
+<li>✅ <strong>Build par niveau</strong> (<code>build-hsk1-data.ts</code>) : niveau = plus bas d&#39;apparition, niveaux disjoints. Émet <code>hsk2.generated.json</code> + <code>hsk2-stroke-data.generated.json</code>. <strong>Sorties HSK 1 byte-identiques</strong>. Schéma inchangé (Zod acceptait déjà 1–9).</li>
+<li>✅ <strong>Merge au chargement</strong> : <code>bundledReferenceData</code> + loader de tracés fusionnent les niveaux ; chaque niveau reste un <strong>chunk paresseux</strong> séparé (shell inchangé ~350 KB).</li>
+<li>✅ <strong>Filtre par niveau HSK</strong> dans le glossaire (<code>GlossaryFilters.hskLevels</code> + FilterPanel + i18n).</li>
+<li>✅ <strong>Tests</strong> : <code>hsk2.generated.test</code> (compteurs, niveau, disjonction, intégrité inter-fichiers), <code>hsk2-stroke-data.test</code>, filtre niveau, e2e (compteur 598 + filtre HSK 2).</li>
+</ul>
 <h3>Lot 3 — synchronisation backend, critère de sortie atteint (2026-06-13)</h3>
 <p>Cf. <a href="#journal-2026-06-13-lot3-sync-backend"><code>docs/journal/2026-06-13-lot3-sync-backend.md</code></a> et <a href="#rfc-0011">RFC 0011</a>.</p>
 <ul>
@@ -360,8 +370,8 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <p>⚠ <strong>Toolchain</strong> : lancer impérativement sous le Node épinglé (<code>mise.toml</code> → Node 24.15.0), p. ex. <code>mise exec node@24.15.0 -- env -u GOROOT make test</code>. Sous Node 25, jsdom expose un <code>localStorage</code> cassé → 46 faux échecs.</p>
 </blockquote>
 <ul>
-<li><code>make test</code> : <strong>229 tests front passent</strong>, paquets back passent avec <code>-race</code>.</li>
-<li><code>make test-e2e</code> : <strong>30/30 tests E2E verts</strong> (Chromium, ~10 s).</li>
+<li><code>make test</code> : <strong>239 tests front passent</strong>, paquets back passent avec <code>-race</code>.</li>
+<li><code>make test-e2e</code> : <strong>31/31 tests E2E verts</strong> (Chromium, ~13 s).</li>
 <li><code>make lint</code> : ESLint + Prettier propres, golangci-lint 0 issue.</li>
 <li><code>make typecheck</code> : <code>tsc --noEmit</code> propre.</li>
 <li><code>make build</code> : bundle front + binaire back OK, chunk principal <strong>348 KB</strong>, <code>dist/sw.js</code> précache les 4 PNG.</li>
@@ -371,6 +381,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </ul>
 <h2>Dernières décisions importantes</h2>
 <ul>
+<li>2026-06-13 : <strong>périmètre étendu à HSK 3.0 niveaux 1–2</strong> (RFC 0012). Sourcing cumulatif (niveau = plus bas d&#39;apparition), fichiers générés <strong>par niveau</strong> + merge au chargement (HSK 1 byte-identique, HSK 3 trivial), schéma inchangé, filtre niveau au glossaire.</li>
 <li>2026-06-13 : <strong>Lot 3 — déploiement single-origin + merge par champ</strong> (RFC 0011). Le binaire Go sert front + API ; merge par champ symétrique client/serveur (max attempts, tie → last_seen), schéma inchangé. Clôt le critère de sortie multi-appareils.</li>
 <li>2026-06-13 : <strong>sync = best-effort silencieux en offline-first</strong>. Backend absent / hors-ligne = cas nominal : journalisé en <code>console.debug</code>, jamais <code>console.error</code>. <code>RestSyncClient.pull</code> vérifie le content-type.</li>
 <li>2026-06-13 : <strong>icônes PNG rastérisées via Playwright Chromium</strong> (<code>make build-icons</code>), pas de dépendance de rastérisation. SVG conservés comme source de vérité.</li>
@@ -413,6 +424,8 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li>✅ <del><strong>Audit Lighthouse production</strong></del> : fait (2026-06-13). Perf 97 / A11y 100 / Best-practices 100.</li>
 <li>✅ <del><strong>Icônes PNG</strong></del> : fait (2026-06-13). 192/512 normal + maskable, manifest + SW à jour.</li>
 <li>✅ <del><strong>Offline API / sync</strong></del> : traité avec le Lot 3 (RFC 0011) — sync best-effort silencieuse, déclencheurs focus/online, merge par champ.</li>
+<li>✅ <del><strong>Import HSK 2</strong></del> : fait (2026-06-13, RFC 0012). 598 caractères / 1256 mots, fichiers par niveau + merge, filtre niveau au glossaire. HSK 3+ = ajout trivial d&#39;un niveau.</li>
+<li><strong>Audit accessibilité (navigation clavier)</strong> : reduced-motion/contrast OK (Lighthouse a11y 100) ; reste un passage clavier dédié à faire.</li>
 <li><strong>Audit installabilité réel</strong> : tester l&#39;installation sur Boox Air 5c et sur ordinateur (nécessite le matériel). Inclut désormais un test de <strong>sync réelle Boox ↔ ordinateur</strong> sur le LAN via <code>make serve</code>.</li>
 </ul>
 <h2>Lot 3 — clôturé</h2>
@@ -503,6 +516,12 @@ après sync (single-origin, merge par champ).</p>
 <tr>
   <td><a href="#rfc-0011">0011</a></td>
   <td><a href="#rfc-0011">Synchronisation backend de la progression</a></td>
+  <td><span class="status status-Accepté">Accepté</span></td>
+  <td>2026-06-13</td>
+</tr>
+<tr>
+  <td><a href="#rfc-0012">0012</a></td>
+  <td><a href="#rfc-0012">Extension du jeu de données à HSK 2</a></td>
   <td><span class="status status-Accepté">Accepté</span></td>
   <td>2026-06-13</td>
 </tr></tbody>
@@ -1664,6 +1683,70 @@ si un réel besoin multi-appareils concurrent apparaît.</li>
 </ul>
 </div>
 </details>
+<details id="rfc-0012">
+  <summary>RFC 0012 — Extension du jeu de données à HSK 2<span class="meta">2026-06-13 · <span class="status status-Accepté">Accepté</span></span></summary>
+  <div class="content"><h1>RFC 0012 — Extension du jeu de données à HSK 2</h1>
+<ul>
+<li><strong>Statut</strong> : Accepté</li>
+<li><strong>Date</strong> : 2026-06-13</li>
+<li><strong>Auteur(s)</strong> : Enzo</li>
+<li><strong>Lié à</strong> : RFC 0004 (format de données et versioning), RFC 0007 (découpage en lots — Lot 5), RFC 0008 (sourcing HSK 1)</li>
+</ul>
+<h2>Contexte</h2>
+<p>Le Lot 5 (RFC 0007) prévoit « Import HSK 2 (extension du jeu de données) ». Jusqu&#39;ici
+le BRIEF et <code>CLAUDE.md</code> cadraient le projet sur <strong>HSK 3.0 niveau 1</strong>. Étendre à HSK 2
+est une évolution de périmètre : comme le brief est figé, elle passe par cette RFC.</p>
+<p>La même source que pour HSK 1 (<code>drkameleon/complete-hsk-vocabulary</code>, RFC 0008) expose
+<code>wordlists/inclusive/new/2.json</code>. Le dossier <code>inclusive</code> est <strong>cumulatif</strong> : <code>2.json</code>
+(1256 mots) <strong>contient</strong> les 506 mots de <code>1.json</code>. <code>makemeahanzi</code> et <code>hanzi-writer-data</code>
+couvrent l&#39;intégralité des caractères concernés (vérifié : 0 manquant sur les 298
+caractères HSK 2 exclusifs).</p>
+<h2>Décision</h2>
+<h3>Périmètre</h3>
+<p>Le projet couvre désormais <strong>HSK 3.0 niveaux 1 et 2</strong> : 598 caractères (300 + 298) et
+1256 mots (506 + 750) au total.</p>
+<h3>Affectation de niveau</h3>
+<p>Le niveau d&#39;un mot ou d&#39;un caractère est <strong>le plus bas où il apparaît</strong> (les niveaux
+sont donc disjoints à l&#39;émission). Concrètement : ce qui est dans HSK 1 reste HSK 1 ;
+HSK 2 ne contient que ses entrées <strong>exclusives</strong>. <code>hsk_level</code> est posé en conséquence
+(le schéma v1 acceptait déjà 1–9, <strong>aucune migration</strong>).</p>
+<h3>Fichiers par niveau + merge au chargement</h3>
+<p>Plutôt qu&#39;un fichier monolithique, on garde les artefacts HSK 1 <strong>intacts</strong> et on
+ajoute des fichiers niveau 2, fusionnés à l&#39;exécution :</p>
+<ul>
+<li>Vendoring (<code>vendor-sources.ts</code>) : généralisé sur <code>LEVELS = [1, 2]</code>. Sauve
+<code>drkameleon-hsk30-l{1,2}.json</code> verbatim et dérive <code>makemeahanzi-hsk{1,2}-meta.jsonl</code>
+(chaque meta = caractères <strong>exclusifs</strong> au niveau, par différence ensembliste).</li>
+<li>Build (<code>build-hsk1-data.ts</code>) : généralisé par niveau. Émet <code>hsk{1,2}.generated.json</code>
+et <code>hsk{1,2}-stroke-data.generated.json</code>. Les sorties HSK 1 restent <strong>byte-identiques</strong>.</li>
+<li>Front : <code>bundledReferenceData.ts</code> et le loader de tracés de <code>HanziWriterRenderer</code>
+importent dynamiquement les deux niveaux et les <strong>fusionnent</strong> (concat / <code>Object.assign</code>).
+Chaque niveau reste un <strong>chunk paresseux</strong> séparé (même stratégie de code-splitting que
+HSK 1) — le shell applicatif ne grossit pas. Ajouter HSK 3 = ajouter un import.</li>
+</ul>
+<h3>Filtre par niveau dans le glossaire</h3>
+<p><code>GlossaryFilters</code> gagne <code>hskLevels?: ReadonlySet&lt;number&gt;</code> ; le <code>FilterPanel</code> expose des
+bascules « HSK 1 / HSK 2 ». Indispensable pour garder navigable une liste qui double.</p>
+<h2>Conséquences</h2>
+<ul>
+<li>Référentiel <strong>inter-fichiers</strong> : un mot HSK 2 peut référencer un caractère HSK 1 (qui
+vit dans <code>hsk1.generated.json</code>). L&#39;intégrité est donc vérifiée sur le jeu <strong>fusionné</strong>
+(test dédié), pas par fichier isolé.</li>
+<li>Volume : <code>hsk2.generated.json</code> (~290 KB) et <code>hsk2-stroke-data.generated.json</code> (~710 KB)
+s&#39;ajoutent en chunks paresseux, précachés par le service worker (offline préservé).</li>
+<li><code>CLAUDE.md</code> mis à jour : « HSK 3.0 niveau 1 » → « niveaux 1–2 ».</li>
+</ul>
+<h2>Alternatives considérées</h2>
+<ul>
+<li><strong>Fichier monolithique <code>hsk.generated.json</code></strong> : rejeté. Renommer casserait l&#39;identité
+des artefacts HSK 1 (churn, tests, perte de la garantie byte-identique) sans bénéfice ;
+le merge au chargement est plus simple et extensible.</li>
+<li><strong>Champ de niveau cumulatif</strong> (HSK 2 ré-émet HSK 1) : rejeté. Duplication, et
+contradiction avec l&#39;affectation « plus bas niveau ».</li>
+<li><strong>Reporter HSK 2 en post-MVP</strong> : écarté par décision produit (faire l&#39;import maintenant).</li>
+</ul>
+</div>
+</details>
 </section>
 
 <section id="journal">
@@ -1834,6 +1917,76 @@ hors-ligne) se journalise en <code>debug</code>, jamais en <code>error</code>.</
 index → données) ; sans impact mesurable (TBT 0, CLS ~0).</li>
 <li>Hors Lot 5 : câblage complet de la sync backend (déclenchement au focus, conflit),
 qui fermerait le critère de sortie multi-appareils du Lot 3.</li>
+</ul>
+</div>
+</details>
+<details id="journal-2026-06-13-lot5-hsk2">
+  <summary>2026-06-13 — Lot 5 : import HSK 2</summary>
+  <div class="content"><h1>2026-06-13 — Lot 5 : import HSK 2</h1>
+<h2>Objectif de la session</h2>
+<p>Réaliser l&#39;item « Import HSK 2 » du Lot 5 (RFC 0007) : étendre le jeu de données du
+niveau 1 au niveau 2. Évolution de périmètre → <strong>RFC 0012</strong> (le BRIEF est figé).</p>
+<h2>Ce qui a été fait</h2>
+<h3>Sourcing (réseau, une fois)</h3>
+<ul>
+<li><code>vendor-sources.ts</code> généralisé sur <code>LEVELS = [1, 2]</code>. Récupère <code>new/1.json</code> et
+<code>new/2.json</code> (dossier <code>inclusive</code>, <strong>cumulatif</strong>), les sauve verbatim
+(<code>drkameleon-hsk30-l{1,2}.json</code>), et dérive <code>makemeahanzi-hsk{1,2}-meta.jsonl</code> où
+chaque meta couvre les caractères <strong>exclusifs</strong> au niveau (différence ensembliste).</li>
+<li>Couverture vérifiée <strong>avant tout</strong> (étape 0) : les 298 caractères HSK 2 exclusifs ont
+tous des données <code>hanzi-writer-data</code> ET un <code>stroke_count</code> makemeahanzi (0 manquant).</li>
+</ul>
+<h3>Build (offline)</h3>
+<ul>
+<li><code>build-hsk1-data.ts</code> généralisé par niveau : <code>readDrkameleon</code>/<code>readMeta</code> paramétrés,
+<code>buildCharacters</code>/<code>buildWords</code>/<code>buildDecks</code> reçoivent le niveau, <code>buildStrokeData</code> un
+chemin de sortie. Le niveau d&#39;un mot/caractère = le plus bas où il apparaît (on retire
+des niveaux supérieurs ce qui est déjà attribué).</li>
+<li>Émet <code>hsk2.generated.json</code> (298 chars + 750 mots, <code>hsk_level: 2</code>, decks <code>deck_hsk2_*</code>)
+et <code>hsk2-stroke-data.generated.json</code> (298 tracés). <strong>Les sorties HSK 1 restent
+byte-identiques</strong> (vérifié via git).</li>
+</ul>
+<h3>Frontend</h3>
+<ul>
+<li><code>bundledReferenceData.ts</code> et le loader de tracés (<code>HanziWriterRenderer</code>) importent
+dynamiquement les <strong>deux niveaux</strong> et les fusionnent (concat / <code>Object.assign</code>). Chaque
+niveau reste un <strong>chunk paresseux</strong> séparé → le shell ne grossit pas.</li>
+<li><strong>Filtre par niveau HSK</strong> : <code>GlossaryFilters.hskLevels</code> + bascules « HSK 1 / HSK 2 »
+dans le <code>FilterPanel</code>, i18n FR/EN.</li>
+</ul>
+<h3>Tests</h3>
+<ul>
+<li><code>hsk2.generated.test.ts</code> : 298 chars / ~750 mots, tous niveau 2, decks, IDs uniques,
+disjonction avec HSK 1, et <strong>intégrité référentielle inter-fichiers</strong> (un mot HSK 2
+référence un caractère HSK 1).</li>
+<li><code>hsk2-stroke-data.generated.test.ts</code> : couverture exacte des 298 tracés.</li>
+<li><code>glossaryFilters.test.ts</code> : cas du filtre par niveau.</li>
+<li>E2E <code>glossary.spec.ts</code> : compteur « Caractères (598) » (merge des deux niveaux) +
+filtre HSK 2 qui masque 你.</li>
+</ul>
+<h2>Gain / bundle</h2>
+<ul>
+<li>Build : <code>hsk2.generated</code> (287 KB / gzip 58) et <code>hsk2-stroke-data</code> (710 KB / gzip 291)
+en chunks paresseux séparés. Chunk principal inchangé (~350 KB).</li>
+</ul>
+<h2>Vérifications (sous Node épinglé)</h2>
+<ul>
+<li><code>make vendor-sources</code> (réseau) puis <code>make build-data</code> : OK, validation Zod dure.</li>
+<li><code>make test</code> : <strong>239 tests front</strong> (+10) + backend <code>-race</code>.</li>
+<li><code>make lint</code> / <code>make typecheck</code> : propres.</li>
+<li><code>make test-e2e</code> : <strong>31/31</strong>.</li>
+<li><code>make build</code> : chunks HSK 2 paresseux séparés.</li>
+</ul>
+<h2>Décisions (cf. RFC 0012)</h2>
+<ul>
+<li>Périmètre étendu à <strong>HSK 3.0 niveaux 1–2</strong> (<code>CLAUDE.md</code>/<code>AGENTS.md</code> mis à jour).</li>
+<li><strong>Affectation au plus bas niveau</strong> ; niveaux disjoints à l&#39;émission ; schéma inchangé.</li>
+<li><strong>Fichiers par niveau + merge au chargement</strong> (HSK 1 intact, extensible à HSK 3).</li>
+</ul>
+<h2>Reste / pistes</h2>
+<ul>
+<li>HSK 3+ : trivial désormais (ajouter le niveau dans <code>LEVELS</code> + un import au merge).</li>
+<li>Test d&#39;installation/sync réel sur Boox (matériel) — seul reste du Lot 5.</li>
 </ul>
 </div>
 </details>
@@ -3806,7 +3959,7 @@ CRDT (sommation des compteurs) — sur-ingénierie pour l&#39;instant.</li>
 </section>
 
 <footer>
-<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-06-13 09:58 par <code>make docs</code>.</p>
+<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-06-13 14:36 par <code>make docs</code>.</p>
 </footer>
 </div>
 

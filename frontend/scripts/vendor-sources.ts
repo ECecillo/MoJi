@@ -2,10 +2,13 @@
  * vendor-sources.ts — rafraîchit les sources upstream vendorées dans `shared/data/sources/`.
  *
  * Étapes :
- *  1. Fetch des URLs upstream pinnées par SHA (cf. RFC 0008).
- *  2. Sauvegarde verbatim du fichier drkameleon `1.json`.
- *  3. Filtrage / dérivation du sous-ensemble makemeahanzi (300 hanzi HSK 1) avec
- *     pour chacun : { character, hex, stroke_count, radical, decomposition }.
+ *  1. Fetch des URLs upstream pinnées par SHA (cf. RFC 0008, RFC 0012).
+ *  2. Sauvegarde verbatim des fichiers drkameleon `1.json` et `2.json` (dossier
+ *     `inclusive`, cumulatif : `2.json` contient `1.json`).
+ *  3. Dérivation des sous-ensembles makemeahanzi par niveau, avec pour chaque hanzi :
+ *     { character, hex, stroke_count, radical, decomposition, definition, pinyin }.
+ *     Le niveau d'un caractère est le plus bas où il apparaît : `makemeahanzi-hsk1-meta`
+ *     couvre les chars de HSK 1, `makemeahanzi-hsk2-meta` les chars **exclusifs** à HSK 2.
  *  4. Mise à jour de `_provenance.json` (URLs, SHAs, dates, SHA-256 des fichiers).
  *
  * À rejouer rarement, **manuellement**, quand on veut bumper les SHAs upstream.
@@ -32,13 +35,20 @@ interface UpstreamSource {
 const DRKAMELEON_SHA = '7ac65bf1a6387d35f1ade478906172a19311c7f9';
 const MMAH_SHA = 'bddc96d41bef78427ed0e034e9f7e31d71fd1b92';
 
-const DRKAMELEON: UpstreamSource = {
-  name: 'drkameleon/complete-hsk-vocabulary',
-  repo: 'drkameleon/complete-hsk-vocabulary',
-  ref: DRKAMELEON_SHA,
-  path: 'wordlists/inclusive/new/1.json',
-  url: `https://raw.githubusercontent.com/drkameleon/complete-hsk-vocabulary/${DRKAMELEON_SHA}/wordlists/inclusive/new/1.json`,
-};
+// Niveaux HSK importés (dossier `inclusive` = cumulatif). Pour en ajouter un
+// (HSK 3…), il suffit d'étendre ce tableau.
+const LEVELS = [1, 2] as const;
+
+function drkSource(level: number): UpstreamSource {
+  const path = `wordlists/inclusive/new/${level}.json`;
+  return {
+    name: `drkameleon/complete-hsk-vocabulary (new/${level}.json)`,
+    repo: 'drkameleon/complete-hsk-vocabulary',
+    ref: DRKAMELEON_SHA,
+    path,
+    url: `https://raw.githubusercontent.com/drkameleon/complete-hsk-vocabulary/${DRKAMELEON_SHA}/${path}`,
+  };
+}
 
 const MMAH_DICT: UpstreamSource = {
   name: 'skishore/makemeahanzi (dictionary.txt)',
@@ -114,49 +124,27 @@ function parseJsonl<T>(text: string): T[] {
   return out;
 }
 
-async function main(): Promise<void> {
-  mkdirSync(SHARED_SOURCES, { recursive: true });
-
-  // 1. drkameleon HSK 3.0 level 1 — verbatim
-  const drkText = await fetchText(DRKAMELEON.url, DRKAMELEON.name);
-  const drkPath = resolve(SHARED_SOURCES, 'drkameleon-hsk30-l1.json');
-  writeFileSync(drkPath, drkText);
-  console.log(`  → ${drkPath} (${drkText.length} bytes)`);
-
-  // 2. Distinct hanzi from drkameleon
-  const drkEntries = JSON.parse(drkText) as DrkameleonEntry[];
-  const hanziSet = new Set<string>();
-  for (const entry of drkEntries) {
-    for (const ch of entry.simplified) {
-      hanziSet.add(ch);
-    }
+function distinctHanzi(drkText: string): Set<string> {
+  const entries = JSON.parse(drkText) as DrkameleonEntry[];
+  const set = new Set<string>();
+  for (const entry of entries) {
+    for (const ch of entry.simplified) set.add(ch);
   }
-  console.log(`  → ${hanziSet.size} hanzi distincts`);
+  return set;
+}
 
-  // 3. makemeahanzi dictionary.txt — index by character
-  const dictText = await fetchText(MMAH_DICT.url, MMAH_DICT.name);
-  const dictByChar = new Map<string, MmahDictLine>();
-  for (const obj of parseJsonl<MmahDictLine>(dictText)) {
-    if (hanziSet.has(obj.character)) dictByChar.set(obj.character, obj);
-  }
-
-  // 4. makemeahanzi graphics.txt — stroke counts only
-  const graphText = await fetchText(MMAH_GRAPH.url, MMAH_GRAPH.name);
-  const strokeCountByChar = new Map<string, number>();
-  for (const obj of parseJsonl<MmahGraphLine>(graphText)) {
-    if (hanziSet.has(obj.character)) {
-      strokeCountByChar.set(obj.character, obj.strokes.length);
-    }
-  }
-
-  // 5. Derive subset
-  const sortedHanzi = [...hanziSet].sort();
+function deriveMeta(
+  chars: string[],
+  dictByChar: Map<string, MmahDictLine>,
+  strokeCountByChar: Map<string, number>,
+): { derived: DerivedMeta[]; missing: string[] } {
   const missing: string[] = [];
   const derived: DerivedMeta[] = [];
-  for (const ch of sortedHanzi) {
+  for (const ch of [...chars].sort()) {
     const dict = dictByChar.get(ch);
     const strokeCount = strokeCountByChar.get(ch);
-    if (!dict || strokeCount === undefined) {
+    // stroke_count (graphics) est requis pour le tracé ; le reste est best-effort.
+    if (strokeCount === undefined) {
       missing.push(ch);
       continue;
     }
@@ -164,51 +152,99 @@ async function main(): Promise<void> {
       character: ch,
       hex: toHex(ch),
       stroke_count: strokeCount,
-      radical: dict.radical ?? '',
-      decomposition: dict.decomposition ?? '',
-      definition: dict.definition ?? '',
-      pinyin: dict.pinyin ?? [],
+      radical: dict?.radical ?? '',
+      decomposition: dict?.decomposition ?? '',
+      definition: dict?.definition ?? '',
+      pinyin: dict?.pinyin ?? [],
     });
   }
-  if (missing.length > 0) {
-    console.warn(`  ⚠ caractères sans données makemeahanzi : ${missing.join(' ')}`);
+  return { derived, missing };
+}
+
+async function main(): Promise<void> {
+  mkdirSync(SHARED_SOURCES, { recursive: true });
+
+  // 1. drkameleon par niveau (dossier inclusive, cumulatif) — verbatim.
+  const drkLevels: { level: number; source: UpstreamSource; text: string; chars: Set<string> }[] =
+    [];
+  for (const level of LEVELS) {
+    const source = drkSource(level);
+    const text = await fetchText(source.url, source.name);
+    const path = resolve(SHARED_SOURCES, `drkameleon-hsk30-l${level}.json`);
+    writeFileSync(path, text);
+    console.log(`  → ${path} (${text.length} bytes)`);
+    drkLevels.push({ level, source, text, chars: distinctHanzi(text) });
   }
 
-  const metaPath = resolve(SHARED_SOURCES, 'makemeahanzi-hsk1-meta.jsonl');
-  const metaText = derived.map((m) => JSON.stringify(m)).join('\n') + '\n';
-  writeFileSync(metaPath, metaText);
-  console.log(`  → ${metaPath} (${derived.length} lignes, ${metaText.length} bytes)`);
+  // Union de tous les hanzi (le niveau le plus haut couvre les autres).
+  const allChars = new Set<string>();
+  for (const { chars } of drkLevels) {
+    for (const ch of chars) allChars.add(ch);
+  }
+  console.log(`  → ${allChars.size} hanzi distincts (tous niveaux)`);
 
-  // 6. Provenance
+  // 2. makemeahanzi dictionary.txt + graphics.txt, indexés sur l'union.
+  const dictText = await fetchText(MMAH_DICT.url, MMAH_DICT.name);
+  const dictByChar = new Map<string, MmahDictLine>();
+  for (const obj of parseJsonl<MmahDictLine>(dictText)) {
+    if (allChars.has(obj.character)) dictByChar.set(obj.character, obj);
+  }
+  const graphText = await fetchText(MMAH_GRAPH.url, MMAH_GRAPH.name);
+  const strokeCountByChar = new Map<string, number>();
+  for (const obj of parseJsonl<MmahGraphLine>(graphText)) {
+    if (allChars.has(obj.character)) strokeCountByChar.set(obj.character, obj.strokes.length);
+  }
+
+  // 3. Dérive un meta par niveau : chaque caractère est attribué au plus bas
+  //    niveau où il apparaît (différence ensembliste avec les niveaux inférieurs).
+  const provenanceSources: Record<string, unknown>[] = [];
+  const seen = new Set<string>();
+  for (const { level, source, text, chars } of drkLevels) {
+    const exclusive = [...chars].filter((ch) => !seen.has(ch));
+    for (const ch of chars) seen.add(ch);
+
+    const { derived, missing } = deriveMeta(exclusive, dictByChar, strokeCountByChar);
+    if (missing.length > 0) {
+      console.warn(`  ⚠ HSK ${level} — sans stroke_count makemeahanzi : ${missing.join(' ')}`);
+    }
+    const metaName = `makemeahanzi-hsk${level}-meta.jsonl`;
+    const metaText = derived.map((m) => JSON.stringify(m)).join('\n') + '\n';
+    writeFileSync(resolve(SHARED_SOURCES, metaName), metaText);
+    console.log(`  → ${metaName} (${derived.length} lignes, HSK ${level} exclusif)`);
+
+    provenanceSources.push({
+      ...source,
+      vendored_as: `drkameleon-hsk30-l${level}.json`,
+      sha256: sha256(text),
+      bytes: text.length,
+    });
+    provenanceSources.push({
+      name: `derived: ${metaName}`,
+      sha256: sha256(metaText),
+      bytes: metaText.length,
+      entries: derived.length,
+      missing,
+    });
+  }
+
+  // 4. Provenance.
   const provenance = {
     generated_at: new Date().toISOString(),
     note: 'Fichier régénéré par frontend/scripts/vendor-sources.ts. Ne pas éditer à la main.',
     sources: [
-      {
-        ...DRKAMELEON,
-        vendored_as: 'drkameleon-hsk30-l1.json',
-        sha256: sha256(drkText),
-        bytes: drkText.length,
-      },
+      ...provenanceSources,
       {
         ...MMAH_DICT,
         derived_into:
-          'makemeahanzi-hsk1-meta.jsonl (champs: character, hex, radical, decomposition, definition, pinyin)',
+          'makemeahanzi-hsk{1,2}-meta.jsonl (champs: character, hex, radical, decomposition, definition, pinyin)',
         upstream_sha256: sha256(dictText),
         upstream_bytes: dictText.length,
       },
       {
         ...MMAH_GRAPH,
-        derived_into: 'makemeahanzi-hsk1-meta.jsonl (champ: stroke_count)',
+        derived_into: 'makemeahanzi-hsk{1,2}-meta.jsonl (champ: stroke_count)',
         upstream_sha256: sha256(graphText),
         upstream_bytes: graphText.length,
-      },
-      {
-        name: 'derived: makemeahanzi-hsk1-meta.jsonl',
-        sha256: sha256(metaText),
-        bytes: metaText.length,
-        entries: derived.length,
-        missing,
       },
     ],
   };

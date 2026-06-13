@@ -28,8 +28,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 const REPO_ROOT = resolve(__dirname, '../..');
 const SOURCES = resolve(REPO_ROOT, 'shared/data/sources');
-const OUT_PATH = resolve(__dirname, '../src/data/hsk1.generated.json');
-const STROKE_DATA_OUT_PATH = resolve(__dirname, '../src/data/hsk1-stroke-data.generated.json');
+const DATA_DIR = resolve(__dirname, '../src/data');
 
 interface DrkTranscriptions {
   pinyin: string;
@@ -66,13 +65,13 @@ interface PinyinReading {
   tone: number;
 }
 
-function readDrkameleon(): DrkEntry[] {
-  const raw = readFileSync(resolve(SOURCES, 'drkameleon-hsk30-l1.json'), 'utf-8');
+function readDrkameleon(file: string): DrkEntry[] {
+  const raw = readFileSync(resolve(SOURCES, file), 'utf-8');
   return JSON.parse(raw) as DrkEntry[];
 }
 
-function readMeta(): Map<string, MetaLine> {
-  const raw = readFileSync(resolve(SOURCES, 'makemeahanzi-hsk1-meta.jsonl'), 'utf-8');
+function readMeta(file: string): Map<string, MetaLine> {
+  const raw = readFileSync(resolve(SOURCES, file), 'utf-8');
   const map = new Map<string, MetaLine>();
   for (const line of raw.split('\n')) {
     const trimmed = line.trim();
@@ -186,6 +185,7 @@ interface BuiltData {
 function buildCharacters(
   drkEntries: DrkEntry[],
   meta: Map<string, MetaLine>,
+  level: number,
 ): { characters: BuiltCharacter[]; missing: string[] } {
   // Collect every distinct hanzi appearing in any entry.
   const allHanzi = new Set<string>();
@@ -234,7 +234,9 @@ function buildCharacters(
 
   const missing: string[] = [];
   const characters: BuiltCharacter[] = [];
-  const sortedHanzi = [...allHanzi].sort();
+  // On n'émet que les caractères attribués à ce niveau (les readings sont
+  // agrégées depuis toutes les entrées du fichier, y compris niveaux inférieurs).
+  const sortedHanzi = [...allHanzi].filter((ch) => meta.has(ch)).sort();
   for (const ch of sortedHanzi) {
     const m = meta.get(ch);
     if (!m) {
@@ -266,7 +268,7 @@ function buildCharacters(
       hanzi: ch,
       pinyin: readings,
       translations: { en: englishGloss },
-      hsk_level: 1,
+      hsk_level: level,
       stroke_count: m.stroke_count,
       radicals: radicalsFor(m),
       tags: [],
@@ -279,7 +281,7 @@ function buildCharacters(
   return { characters, missing };
 }
 
-function buildWords(drkEntries: DrkEntry[]): BuiltWord[] {
+function buildWords(drkEntries: DrkEntry[], level: number, excludeIds?: Set<string>): BuiltWord[] {
   const words: BuiltWord[] = [];
   for (const entry of drkEntries) {
     const form = entry.forms[0];
@@ -295,7 +297,7 @@ function buildWords(drkEntries: DrkEntry[]): BuiltWord[] {
       pinyin: readings,
       translations:
         form.meanings && form.meanings.length > 0 ? { en: form.meanings } : { en: [''] },
-      hsk_level: 1,
+      hsk_level: level,
       character_refs: characterRefs,
       examples: [],
       tags: [],
@@ -308,21 +310,24 @@ function buildWords(drkEntries: DrkEntry[]): BuiltWord[] {
   for (const w of words) {
     if (!seen.has(w.id)) seen.set(w.id, w);
   }
-  return [...seen.values()];
+  // excludeIds : on retire les mots déjà attribués à un niveau inférieur
+  // (le dossier inclusive est cumulatif).
+  const result = [...seen.values()];
+  return excludeIds ? result.filter((w) => !excludeIds.has(w.id)) : result;
 }
 
-function buildDecks(characters: BuiltCharacter[], words: BuiltWord[]): BuiltDeck[] {
+function buildDecks(characters: BuiltCharacter[], words: BuiltWord[], level: number): BuiltDeck[] {
   return [
     {
-      id: 'deck_hsk1_words',
-      name: 'HSK 1 — vocabulaire',
-      description: 'Vocabulaire HSK 3.0 niveau 1 (entrées drkameleon, 2026-03).',
+      id: `deck_hsk${level}_words`,
+      name: `HSK ${level} — vocabulaire`,
+      description: `Vocabulaire HSK 3.0 niveau ${level} (entrées drkameleon, 2026-03).`,
       items: words.map((w) => ({ type: 'word' as const, ref: w.id })),
     },
     {
-      id: 'deck_hsk1_characters',
-      name: 'HSK 1 — caractères',
-      description: 'Caractères distincts apparaissant dans le vocabulaire HSK 3.0 niveau 1.',
+      id: `deck_hsk${level}_characters`,
+      name: `HSK ${level} — caractères`,
+      description: `Caractères distincts apparaissant dans le vocabulaire HSK 3.0 niveau ${level}.`,
       items: characters.map((c) => ({ type: 'character' as const, ref: c.id })),
     },
   ];
@@ -341,7 +346,11 @@ interface StrokeData {
  * renderer charge ce seul fichier (cf. `HanziWriterRenderer`). Échec dur si un
  * caractère n'a pas de données ou si elles sont malformées : aucun fichier écrit.
  */
-function buildStrokeData(characters: ReadonlyArray<{ hanzi: string }>): void {
+function buildStrokeData(
+  characters: ReadonlyArray<{ hanzi: string }>,
+  outPath: string,
+  level: number,
+): void {
   const dataDir = dirname(require.resolve('hanzi-writer-data/package.json'));
   const map: Record<string, StrokeData> = {};
   const missing: string[] = [];
@@ -371,27 +380,28 @@ function buildStrokeData(characters: ReadonlyArray<{ hanzi: string }>): void {
   }
 
   // Minifié : données purement machine (chemins SVG), volumineuses, non revues à l'œil.
-  writeFileSync(STROKE_DATA_OUT_PATH, JSON.stringify(map) + '\n');
-  console.log(
-    `[build] tracés HSK 1 : ${Object.keys(map).length} caractères → ${STROKE_DATA_OUT_PATH}`,
-  );
+  writeFileSync(outPath, JSON.stringify(map) + '\n');
+  console.log(`[build] tracés HSK ${level} : ${Object.keys(map).length} caractères → ${outPath}`);
 }
 
-function main(): void {
-  console.log(`[build] lecture des sources vendorées (${SOURCES})`);
-  const drkEntries = readDrkameleon();
-  const meta = readMeta();
-  console.log(`  drkameleon: ${drkEntries.length} entrées`);
-  console.log(`  makemeahanzi meta: ${meta.size} hanzi`);
+// Niveaux à générer. Le dossier drkameleon `inclusive` est cumulatif : le niveau
+// d'un mot/caractère est le plus bas où il apparaît. On retire donc des niveaux
+// supérieurs ce qui a déjà été attribué (cf. RFC 0012).
+const LEVELS = [1, 2] as const;
 
-  const { characters, missing } = buildCharacters(drkEntries, meta);
+function buildLevel(level: number, excludeWordIds: Set<string>): Set<string> {
+  const drkEntries = readDrkameleon(`drkameleon-hsk30-l${level}.json`);
+  const meta = readMeta(`makemeahanzi-hsk${level}-meta.jsonl`);
+  console.log(`[build] HSK ${level} : ${drkEntries.length} entrées, ${meta.size} hanzi (meta)`);
+
+  const { characters, missing } = buildCharacters(drkEntries, meta, level);
   if (missing.length > 0) {
     console.warn(
-      `  ⚠ ${missing.length} caractère(s) sans données complètes : ${missing.join(' ')}`,
+      `  ⚠ HSK ${level} — ${missing.length} caractère(s) sans readings : ${missing.join(' ')}`,
     );
   }
-  const words = buildWords(drkEntries);
-  const decks = buildDecks(characters, words);
+  const words = buildWords(drkEntries, level, excludeWordIds);
+  const decks = buildDecks(characters, words, level);
 
   const data: BuiltData = {
     schema_version: REFERENCE_SCHEMA_VERSION,
@@ -399,12 +409,11 @@ function main(): void {
     words,
     decks,
   };
-
   console.log(
-    `[build] characters=${characters.length}  words=${words.length}  decks=${decks.length}`,
+    `  HSK ${level} : characters=${characters.length} words=${words.length} decks=${decks.length}`,
   );
 
-  console.log('[build] validation Zod…');
+  console.log('  validation Zod…');
   const parsed = referenceDataSchema.safeParse(data);
   if (!parsed.success) {
     console.error('❌ validation Zod échouée :');
@@ -418,11 +427,27 @@ function main(): void {
   }
   console.log('  ✓ conforme au schéma v1');
 
-  mkdirSync(dirname(OUT_PATH), { recursive: true });
-  writeFileSync(OUT_PATH, JSON.stringify(parsed.data, null, 2) + '\n');
-  console.log(`[build] écrit : ${OUT_PATH}`);
+  const outPath = resolve(DATA_DIR, `hsk${level}.generated.json`);
+  writeFileSync(outPath, JSON.stringify(parsed.data, null, 2) + '\n');
+  console.log(`  écrit : ${outPath}`);
 
-  buildStrokeData(parsed.data.characters);
+  buildStrokeData(
+    parsed.data.characters,
+    resolve(DATA_DIR, `hsk${level}-stroke-data.generated.json`),
+    level,
+  );
+
+  return new Set(parsed.data.words.map((w) => w.id));
+}
+
+function main(): void {
+  console.log(`[build] lecture des sources vendorées (${SOURCES})`);
+  mkdirSync(DATA_DIR, { recursive: true });
+  const seenWordIds = new Set<string>();
+  for (const level of LEVELS) {
+    const ids = buildLevel(level, seenWordIds);
+    for (const id of ids) seenWordIds.add(id);
+  }
 }
 
 main();

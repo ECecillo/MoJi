@@ -17,6 +17,7 @@ Une RFC documente **une décision structurante** : contexte, décision, conséqu
 | 0009  | [Stratégie de tests end-to-end (Playwright)](0009-tests-e2e.md)       | Accepté   | 2026-05-28 |
 | 0010  | [Surcharges de traductions locales (éditeur FR)](0010-surcharges-traductions-locales.md) | Accepté | 2026-05-30 |
 | 0011  | [Synchronisation backend de la progression](0011-sync-backend.md)     | Accepté   | 2026-06-13 |
+| 0012  | [Extension du jeu de données à HSK 2](0012-extension-hsk2.md)         | Accepté   | 2026-06-13 |
 
 ## Statuts possibles
 

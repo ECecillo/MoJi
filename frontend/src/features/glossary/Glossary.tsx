@@ -261,9 +261,17 @@ function FilterPanel({
     setFilters({ ...filters, frequencyRank: { ...filters.frequencyRank, [key]: value } });
   };
 
+  const toggleHskLevel = (level: number) => {
+    const set = new Set(filters.hskLevels ?? []);
+    if (set.has(level)) set.delete(level);
+    else set.add(level);
+    setFilters({ ...filters, hskLevels: set });
+  };
+
   const reset = () => setFilters({});
 
   const statuses: LearningStatus[] = ['new', 'learning', 'due', 'mastered'];
+  const hskLevels = [1, 2];
 
   return (
     <div className="flex flex-col gap-2" data-testid="filter-panel">
@@ -317,6 +325,30 @@ function FilterPanel({
                     data-testid={`status-${s}`}
                   >
                     {t(`glossary.filters.status_${s}`)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <span className="text-xs font-medium uppercase tracking-wider text-ink-muted">
+              {t('glossary.filters.hsk_level')}
+            </span>
+            <div className="flex flex-wrap gap-1">
+              {hskLevels.map((level) => {
+                const selected = filters.hskLevels?.has(level) ?? false;
+                return (
+                  <button
+                    key={level}
+                    type="button"
+                    onClick={() => toggleHskLevel(level)}
+                    className={`border border-ink px-2 py-1 text-xs ${
+                      selected ? 'bg-ink text-paper' : ''
+                    }`}
+                    data-testid={`hsk-level-${level}`}
+                  >
+                    {t('glossary.filters.hsk_level_n', { level })}
                   </button>
                 );
               })}

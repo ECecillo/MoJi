@@ -26,12 +26,14 @@ type HanziWriterWithQuiz = HanziWriter & {
 };
 
 /**
- * Carte hanzi → données de tracé Hanzi Writer, restreinte aux caractères HSK 1.
+ * Carte hanzi → données de tracé Hanzi Writer, restreinte aux caractères HSK.
  *
- * Générée hors-ligne par `make build-data` dans `hsk1-stroke-data.generated.json`
- * (cf. RFC 0008). On charge ce seul fichier en import dynamique paresseux plutôt
- * que de globber les ~9 600 JSON de `hanzi-writer-data` : un seul chunk, une seule
- * entrée de précache service worker, ~640 KB au lieu de tout l'amont.
+ * Générée hors-ligne par `make build-data`, un fichier par niveau
+ * (`hsk1-stroke-data.generated.json`, `hsk2-stroke-data.generated.json`, …),
+ * cf. RFC 0008 et RFC 0012. On charge ces fichiers en import dynamique paresseux
+ * et on les fusionne, plutôt que de globber les ~9 600 JSON de `hanzi-writer-data` :
+ * des chunks séparés précachés par le service worker. Ajouter HSK 3 = ajouter son
+ * import ici.
  */
 type BundledStrokeDataMap = Record<string, CharacterJson>;
 
@@ -39,8 +41,11 @@ let bundledStrokeDataPromise: Promise<BundledStrokeDataMap> | null = null;
 
 function loadBundledStrokeDataMap(): Promise<BundledStrokeDataMap> {
   if (!bundledStrokeDataPromise) {
-    bundledStrokeDataPromise = import('../../data/hsk1-stroke-data.generated.json').then(
-      (module) => module.default as BundledStrokeDataMap,
+    bundledStrokeDataPromise = Promise.all([
+      import('../../data/hsk1-stroke-data.generated.json'),
+      import('../../data/hsk2-stroke-data.generated.json'),
+    ]).then(
+      (modules) => Object.assign({}, ...modules.map((m) => m.default)) as BundledStrokeDataMap,
     );
   }
   return bundledStrokeDataPromise;

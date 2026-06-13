@@ -25,11 +25,13 @@ export interface GlossaryFilters {
   strokeCount?: { min?: number | null; max?: number | null };
   frequencyRank?: { min?: number | null; max?: number | null };
   status?: ReadonlySet<LearningStatus>;
+  hskLevels?: ReadonlySet<number>;
 }
 
 export function isFilterActive(filters: GlossaryFilters): boolean {
   if (filters.tags && filters.tags.size > 0) return true;
   if (filters.status && filters.status.size > 0) return true;
+  if (filters.hskLevels && filters.hskLevels.size > 0) return true;
   if (filters.strokeCount && (isSet(filters.strokeCount.min) || isSet(filters.strokeCount.max))) {
     return true;
   }
@@ -46,6 +48,7 @@ export function activeFilterCount(filters: GlossaryFilters): number {
   let count = 0;
   if (filters.tags && filters.tags.size > 0) count++;
   if (filters.status && filters.status.size > 0) count++;
+  if (filters.hskLevels && filters.hskLevels.size > 0) count++;
   if (filters.strokeCount && (isSet(filters.strokeCount.min) || isSet(filters.strokeCount.max))) {
     count++;
   }
@@ -76,6 +79,10 @@ export function matchesFilters(
   today?: Date,
 ): boolean {
   if (!matchesTags(item, filters.tags)) return false;
+
+  if (filters.hskLevels && filters.hskLevels.size > 0 && !filters.hskLevels.has(item.hsk_level)) {
+    return false;
+  }
 
   if (filters.status && filters.status.size > 0 && today) {
     const status = getLearningStatus(item, progress, today);

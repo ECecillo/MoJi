@@ -4,7 +4,7 @@
 
 ## Le projet en trois lignes
 
-Application web personnelle d'apprentissage des sinogrammes (HSK 3.0 niveau 1), centrée sur le **tracé manuel au stylet** sur tablette Boox Air 5c (e-ink). Mono-utilisateur, offline-first, installable en PWA. Stack : Vite + React + TS strict côté front, Go + SQLite côté back, architecture hexagonale des deux côtés.
+Application web personnelle d'apprentissage des sinogrammes (HSK 3.0 niveaux 1–2, cf. RFC 0012), centrée sur le **tracé manuel au stylet** sur tablette Boox Air 5c (e-ink). Mono-utilisateur, offline-first, installable en PWA. Stack : Vite + React + TS strict côté front, Go + SQLite côté back, architecture hexagonale des deux côtés.
 
 ## Point d'entrée pour reprendre le projet
 

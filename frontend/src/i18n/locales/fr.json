@@ -52,6 +52,8 @@
       "status_learning": "En cours",
       "status_due": "À réviser",
       "status_mastered": "Maîtrisé",
+      "hsk_level": "Niveau HSK",
+      "hsk_level_n": "HSK {{level}}",
       "min": "min",
       "max": "max"
     },
