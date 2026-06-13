@@ -167,15 +167,15 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <body>
 <nav class="topnav"><div class="wrap">
   <a href="#etat">État courant</a>
-  <a href="#rfc">RFC (10)</a>
-  <a href="#journal">Journal (24)</a>
+  <a href="#rfc">RFC (11)</a>
+  <a href="#journal">Journal (25)</a>
   <a href="#brief">Brief</a>
 </div></nav>
 
 <div class="wrap">
 <header class="hero">
   <h1>Sinogrammes — Carnet de bord</h1>
-  <p class="meta">Index généré le 2026-06-13 09:18. 10 RFC · 24 entrées de journal.</p>
+  <p class="meta">Index généré le 2026-06-13 09:58. 11 RFC · 25 entrées de journal.</p>
   <p class="hint">Toutes les sections sont collapsables. Cliquez sur une ligne ou un lien interne pour ouvrir et défiler.</p>
 </header>
 
@@ -185,11 +185,11 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <blockquote>
 <p><strong>Fichier toujours à jour.</strong> À mettre à jour à la fin de chaque session de travail. Répond à la question : &quot;où en est le projet, là, maintenant ?&quot;</p>
 </blockquote>
-<p><strong>Dernière mise à jour</strong> : 2026-06-13 (Lot 5 — icônes PNG + audit Lighthouse)</p>
+<p><strong>Dernière mise à jour</strong> : 2026-06-13 (Lot 3 — sync backend : critère de sortie atteint)</p>
 <h2>Lot en cours</h2>
 <p><strong>Lot 5 — Polish &amp; PWA</strong> : 🟡 <strong>en cours</strong>, socle PWA offline livré.</p>
 <p><strong>Lot 4 — Synthèse vocale</strong> : ✅ <strong>clôturé</strong> (API SpeechSynthesis, SpeakButton intégré).</p>
-<p><strong>Lot 3</strong> : ✅ clôturé officiellement.</p>
+<p><strong>Lot 3 — Système de révision</strong> : ✅ <strong>clôturé, critère de sortie atteint</strong> — sync backend single-origin + merge par champ (RFC 0011, 2026-06-13).</p>
 <p><strong>Lot 2</strong> : ✅ clôturé officiellement (RFC 0007 + RFC 0010).</p>
 <h2>Ce qui est fait</h2>
 <h3>Lot 0 (clôturé)</h3>
@@ -313,6 +313,16 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li>✅ <strong>Accessibilité e-ink baseline</strong> : <code>prefers-reduced-motion</code> et <code>prefers-contrast: more</code> pris en compte dans <code>index.css</code>.</li>
 <li>✅ <strong>Validation offline production</strong> : <code>vite preview</code> + Chromium Playwright, activation SW puis reload offline OK (<code>offline-ok</code>).</li>
 </ul>
+<h3>Lot 3 — synchronisation backend, critère de sortie atteint (2026-06-13)</h3>
+<p>Cf. <a href="#journal-2026-06-13-lot3-sync-backend"><code>docs/journal/2026-06-13-lot3-sync-backend.md</code></a> et <a href="#rfc-0011">RFC 0011</a>.</p>
+<ul>
+<li>✅ <strong>Déploiement single-origin</strong> : le binaire Go sert le <code>dist/</code> <strong>et</strong> l&#39;API sur une seule origine (<code>SINO_STATIC_DIR</code>, SPA fallback). API same-origin, zéro CORS. Cible <code>make serve</code> (build + <code>SINO_HOST=0.0.0.0</code> pour le LAN). Proxy Vite <code>/api → :8787</code> en dev.</li>
+<li>✅ <strong>Merge par champ</strong> (RFC 0011), symétrique client + serveur : record le plus avancé adopté (max <code>attempts</code>, tie → <code>last_seen</code>), record entier, refs disjointes conservées. Côté serveur via clause <code>WHERE</code> sur l&#39;upsert SQLite ; côté client via <code>lib/progressMerge.ts</code>.</li>
+<li>✅ <strong><code>useProgress.sync</code></strong> = pull → merge → push (protège le local plus avancé) ; déclencheurs <code>focus</code>/<code>visibilitychange</code>/<code>online</code> + garde anti-concurrence ; indicateur de sync discret (footer).</li>
+<li>✅ <strong>Vérif HTTP réelle</strong> : binaire servant <code>dist/</code>, POST/GET round-trip OK, merge par champ confirmé (périmé ignoré, plus avancé gagne).</li>
+<li>✅ <strong>E2E</strong> <code>e2e/sync.spec.ts</code> (API mockée via <code>page.route</code>) : progression distante fusionnée au chargement, état local poussé au serveur.</li>
+<li>⚠ <strong>Limite assumée</strong> : <code>attempts</code> non sommés entre appareils (max), sans perte de progression en mono-utilisateur. Schéma inchangé (pas de migration).</li>
+</ul>
 <h3>Lot 5 — icônes PNG + audit Lighthouse (2026-06-13)</h3>
 <p>Cf. <a href="#journal-2026-06-13-lot5-icones-png-lighthouse"><code>docs/journal/2026-06-13-lot5-icones-png-lighthouse.md</code></a>.</p>
 <ul>
@@ -350,8 +360,8 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <p>⚠ <strong>Toolchain</strong> : lancer impérativement sous le Node épinglé (<code>mise.toml</code> → Node 24.15.0), p. ex. <code>mise exec node@24.15.0 -- env -u GOROOT make test</code>. Sous Node 25, jsdom expose un <code>localStorage</code> cassé → 46 faux échecs.</p>
 </blockquote>
 <ul>
-<li><code>make test</code> : <strong>221 tests front passent</strong>, paquets back passent avec <code>-race</code>.</li>
-<li><code>make test-e2e</code> : <strong>28/28 tests E2E verts</strong> (Chromium, ~10 s).</li>
+<li><code>make test</code> : <strong>229 tests front passent</strong>, paquets back passent avec <code>-race</code>.</li>
+<li><code>make test-e2e</code> : <strong>30/30 tests E2E verts</strong> (Chromium, ~10 s).</li>
 <li><code>make lint</code> : ESLint + Prettier propres, golangci-lint 0 issue.</li>
 <li><code>make typecheck</code> : <code>tsc --noEmit</code> propre.</li>
 <li><code>make build</code> : bundle front + binaire back OK, chunk principal <strong>348 KB</strong>, <code>dist/sw.js</code> précache les 4 PNG.</li>
@@ -361,6 +371,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </ul>
 <h2>Dernières décisions importantes</h2>
 <ul>
+<li>2026-06-13 : <strong>Lot 3 — déploiement single-origin + merge par champ</strong> (RFC 0011). Le binaire Go sert front + API ; merge par champ symétrique client/serveur (max attempts, tie → last_seen), schéma inchangé. Clôt le critère de sortie multi-appareils.</li>
 <li>2026-06-13 : <strong>sync = best-effort silencieux en offline-first</strong>. Backend absent / hors-ligne = cas nominal : journalisé en <code>console.debug</code>, jamais <code>console.error</code>. <code>RestSyncClient.pull</code> vérifie le content-type.</li>
 <li>2026-06-13 : <strong>icônes PNG rastérisées via Playwright Chromium</strong> (<code>make build-icons</code>), pas de dépendance de rastérisation. SVG conservés comme source de vérité.</li>
 <li>2026-06-13 : <strong><code>ink.faint</code> = <code>#6F6F6F</code></strong> (au lieu de <code>#888888</code>) pour franchir le seuil de contraste AA (4,5:1) sur petit texte.</li>
@@ -401,17 +412,19 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li>✅ <del><strong>Code-splitting du chunk principal</strong></del> : fait (2026-06-13). Données en chunk paresseux, chunk principal 573 KB → 348 KB. Le reste est du vendor incompressible (React/i18n/zod) ; lazy-load des vues = gain marginal, non prioritaire.</li>
 <li>✅ <del><strong>Audit Lighthouse production</strong></del> : fait (2026-06-13). Perf 97 / A11y 100 / Best-practices 100.</li>
 <li>✅ <del><strong>Icônes PNG</strong></del> : fait (2026-06-13). 192/512 normal + maskable, manifest + SW à jour.</li>
-<li><strong>Audit installabilité réel</strong> : tester l&#39;installation sur Boox Air 5c et sur ordinateur (nécessite le matériel).</li>
-<li><strong>Offline API / sync</strong> : préciser la stratégie pour les données de progression quand le backend est absent ou revient après offline (le log est désormais silencieux ; reste le déclenchement au focus et la résolution de conflits).</li>
+<li>✅ <del><strong>Offline API / sync</strong></del> : traité avec le Lot 3 (RFC 0011) — sync best-effort silencieuse, déclencheurs focus/online, merge par champ.</li>
+<li><strong>Audit installabilité réel</strong> : tester l&#39;installation sur Boox Air 5c et sur ordinateur (nécessite le matériel). Inclut désormais un test de <strong>sync réelle Boox ↔ ordinateur</strong> sur le LAN via <code>make serve</code>.</li>
 </ul>
-<h2>Prochaines étapes — Lot 3 sprints suivants</h2>
-<p>Sprint 1 livré (session 4). Reste :</p>
+<h2>Lot 3 — clôturé</h2>
+<p>Sprint 1 (révision locale SRS), sprint 2 (UI/dashboard), sprint 3 (infra backend),
+puis sync de bout en bout (RFC 0011, 2026-06-13). <strong>Critère de sortie RFC 0007
+atteint</strong> : révision quotidienne locale + progression retrouvée sur un autre appareil
+après sync (single-origin, merge par champ).</p>
+<p>Pistes ultérieures, non bloquantes (hors Lot 3) :</p>
 <ul>
-<li><strong>UI tableau de bord / statuts</strong> : vue dédiée &quot;aujourd&#39;hui / cette semaine / en retard&quot;, historique d&#39;attempts par caractère sur la fiche détaillée, badge &quot;déjà vu N fois&quot; sur les cartes du glossaire, filtre &quot;statut d&#39;apprentissage&quot; reporté du Lot 2.</li>
-<li><strong>Sync backend</strong> : RFC pour la stratégie de sync (conflict resolution, best-effort, offline-first), schéma SQL côté Go, endpoint REST <code>/progress</code>, <code>RestApiClient</code>, sync au focus de l&#39;app.</li>
 <li><strong>IndexedDB (quand justifié)</strong> : bascule de localStorage vers IndexedDB si le volume ou les besoins de query (indexes par date, transactions) le justifient. Nécessitera une RFC qui documente le schéma et la migration depuis localStorage.</li>
+<li><strong>Sync concurrente avancée</strong> : horodatage / CRDT (sommation des compteurs) seulement si un réel besoin multi-appareils concurrent apparaît.</li>
 </ul>
-<p>Critère de sortie du Lot 3 (cf. RFC 0007) : faire une session de révision quotidienne et retrouver sa progression sur un autre appareil après sync. Le sprint 1 ne couvre que la révision locale ; la sync est l&#39;objectif de la prochaine phase backend.</p>
 <h2>Liens utiles</h2>
 <ul>
 <li>Brief figé : <a href="#brief"><code>../../BRIEF.md</code></a></li>
@@ -486,6 +499,12 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
   <td><a href="#rfc-0010">Surcharges de traductions locales (éditeur FR)</a></td>
   <td><span class="status status-Accepté">Accepté</span></td>
   <td>2026-05-30</td>
+</tr>
+<tr>
+  <td><a href="#rfc-0011">0011</a></td>
+  <td><a href="#rfc-0011">Synchronisation backend de la progression</a></td>
+  <td><span class="status status-Accepté">Accepté</span></td>
+  <td>2026-06-13</td>
 </tr></tbody>
 </table>
 <details id="rfc-0001">
@@ -1557,6 +1576,94 @@ clearAll(): Promise&lt;void&gt;;
 </ul>
 </div>
 </details>
+<details id="rfc-0011">
+  <summary>RFC 0011 — Synchronisation backend de la progression<span class="meta">2026-06-13 · <span class="status status-Accepté">Accepté</span></span></summary>
+  <div class="content"><h1>RFC 0011 — Synchronisation backend de la progression</h1>
+<ul>
+<li><strong>Statut</strong> : Accepté</li>
+<li><strong>Date</strong> : 2026-06-13</li>
+<li><strong>Auteur(s)</strong> : Enzo</li>
+<li><strong>Lié à</strong> : RFC 0003 (hexagonale), RFC 0006 (offline-first), RFC 0007 (découpage en lots — clôture du Lot 3)</li>
+</ul>
+<h2>Contexte</h2>
+<p>Le critère de sortie du Lot 3 (cf. RFC 0007) est : « faire une session de révision
+quotidienne <strong>et retrouver sa progression sur un autre appareil après sync</strong> ».
+L&#39;infrastructure existait déjà (backend SQLite, <code>GET/POST /api/progress</code>, port
+<code>SyncClient</code> + <code>RestSyncClient</code>, auto-sync dans <code>useProgress</code>), mais trois trous
+empêchaient la sync de fonctionner réellement :</p>
+<ol>
+<li><strong>Aucune accessibilité du backend</strong> : pas de proxy en dev (le front sur <code>:5173</code>
+appelait <code>/api</code> qui tapait Vite, pas <code>:8787</code>) ; le binaire Go ne servait pas le
+front → aucun hôte commun aux deux appareils en production.</li>
+<li><strong>Résolution de conflits naïve</strong> : <code>UpsertBatch</code> écrasait inconditionnellement,
+et le client adoptait le distant sur pull → le travail local plus avancé pouvait
+être perdu lors d&#39;un pull de données périmées.</li>
+<li><strong>Déclencheurs limités</strong> : sync au chargement et après session seulement.</li>
+</ol>
+<p>Cette RFC formalise la stratégie de sync mono-utilisateur, offline-first, qui clôt
+le Lot 3.</p>
+<h2>Décision</h2>
+<h3>Déploiement single-origin</h3>
+<p>Le binaire Go sert <strong>le front bundlé (<code>dist/</code>) et l&#39;API sur une seule origine</strong>.
+Activé par la variable d&#39;environnement <code>SINO_STATIC_DIR</code> (vide = désactivé, le
+serveur n&#39;expose alors que <code>/health</code> et <code>/api/*</code>). Les routes inconnues retombent
+sur <code>index.html</code> (SPA fallback) ; <code>/health</code> et <code>/api/progress</code> gardent la priorité.</p>
+<p>Conséquence opérationnelle : on lance <strong>un seul artefact</strong> sur un hôte joignable par
+les deux appareils (ex. l&#39;ordinateur sur le LAN, <code>SINO_HOST=0.0.0.0</code>). La Boox et
+l&#39;ordinateur ouvrent cette URL, installent la PWA depuis là, et l&#39;API est
+<strong>same-origin</strong> (zéro CORS, aucune URL d&#39;API à configurer). En dev, un proxy Vite
+<code>/api → 127.0.0.1:8787</code> rétablit la parité pour <code>make dev</code>.</p>
+<h3>Protocole de sync</h3>
+<p>Inchangé dans sa forme, best-effort et silencieux hors-ligne (un échec se journalise
+en <code>console.debug</code>, jamais <code>console.error</code> — le backend est optionnel) :</p>
+<ol>
+<li><strong>pull</strong> du serveur (<code>GET /api/progress</code>) ;</li>
+<li><strong>merge</strong> par champ avec l&#39;état local ;</li>
+<li><strong>push</strong> de l&#39;état mergé complet (<code>POST /api/progress</code>), que le serveur re-merge.</li>
+</ol>
+<p>Déclencheurs : au chargement initial, après chaque session de révision, et au retour
+d&#39;activité de l&#39;app (<code>focus</code>, <code>visibilitychange</code> visible, <code>online</code>). Une garde
+anti-concurrence évite d&#39;empiler des cycles simultanés.</p>
+<h3>Résolution de conflits : merge par champ, sans horodatage</h3>
+<p>Pour une même entrée (<code>ref</code>) présente des deux côtés, le record <strong>le plus avancé</strong>
+est adopté <strong>en entier</strong> :</p>
+<ul>
+<li>plus d&#39;<code>attempts</code> gagne ;</li>
+<li>à <code>attempts</code> égaux, le <code>last_seen</code> le plus récent gagne (dates ISO comparables).</li>
+</ul>
+<p>Le record entier est adopté (pas de mélange de champs) pour garder un état SRS
+cohérent. Les refs présentes d&#39;un seul côté sont conservées. La règle est
+<strong>symétrique client (<code>lib/progressMerge.ts</code>) et serveur (clause <code>WHERE</code> sur l&#39;upsert
+SQLite)</strong>, donc commutative : l&#39;ordre de synchronisation n&#39;a pas d&#39;importance.</p>
+<p><strong>Schéma de données inchangé</strong> : pas d&#39;<code>updated_at</code>, donc pas de migration ni de bump
+SemVer (cf. RFC 0004). C&#39;est volontairement plus simple qu&#39;un last-write-wins
+horodaté, qui dépendrait de l&#39;horloge des appareils.</p>
+<h2>Conséquences</h2>
+<ul>
+<li>Le critère de sortie du Lot 3 est atteint : la progression se retrouve sur un autre
+appareil après sync.</li>
+<li><strong>Limite assumée</strong> : les <code>attempts</code> ne sont <strong>pas sommés</strong> entre appareils (on prend
+le max). Si le même caractère est étudié indépendamment sur deux appareils entre
+deux syncs, on conserve le plus avancé sans additionner — sans perte de progression
+dans le cas réaliste mono-utilisateur, et sans la complexité d&#39;un CRDT.</li>
+<li>Le serveur reste un <strong>service de persistance et de sync</strong>, jamais un point de passage
+obligé (cf. RFC 0006) : l&#39;app fonctionne entièrement hors-ligne, la sync est un bonus
+quand l&#39;hôte est joignable.</li>
+<li>Le binaire doit tourner sur un hôte accessible aux deux appareils (<code>SINO_HOST=0.0.0.0</code>
+en LAN). Cible <code>make serve</code> fournie (build front + lancement single-origin).</li>
+</ul>
+<h2>Alternatives considérées</h2>
+<ul>
+<li><strong>Last-write-wins horodaté</strong> (<code>updated_at</code>) : rejeté pour cette itération. Ajoute une
+migration de schéma et fait dépendre la correction de l&#39;horloge des appareils, pour
+un bénéfice marginal en mono-utilisateur.</li>
+<li><strong>Front et API hébergés séparément</strong> (URL d&#39;API configurable + CORS) : rejeté. Plus de
+pièces mobiles (config, CORS, deux déploiements) sans bénéfice pour un usage personnel.</li>
+<li><strong>CRDT / sommation des compteurs</strong> : sur-ingénierie pour un mono-utilisateur ; reporté
+si un réel besoin multi-appareils concurrent apparaît.</li>
+</ul>
+</div>
+</details>
 </section>
 
 <section id="journal">
@@ -1817,6 +1924,76 @@ marginaux pour une complexité Suspense réelle — non prioritaire.</li>
 <li>Icônes PNG 192/512 si l&#39;audit Boox/Chrome les exige.</li>
 <li>Audit Lighthouse sur build de production.</li>
 <li>Test d&#39;installation réel sur Boox Air 5c (nécessite le matériel).</li>
+</ul>
+</div>
+</details>
+<details id="journal-2026-06-13-lot3-sync-backend">
+  <summary>2026-06-13 — Lot 3 : synchronisation backend de bout en bout</summary>
+  <div class="content"><h1>2026-06-13 — Lot 3 : synchronisation backend de bout en bout</h1>
+<h2>Objectif de la session</h2>
+<p>Atteindre réellement le critère de sortie du Lot 3 (RFC 0007) : « faire une session
+de révision quotidienne <strong>et retrouver sa progression sur un autre appareil après
+sync</strong> ». L&#39;infra existait mais trois trous la rendaient inopérante (cf. RFC 0011).</p>
+<h2>Ce qui a été fait</h2>
+<h3>Backend (Go)</h3>
+<ul>
+<li><strong>Service statique single-origin</strong> (<code>internal/adapters/http/static.go</code>,
+<code>server.go</code>, <code>config</code>) : nouveau <code>SINO_STATIC_DIR</code>. <code>NewServer(store, staticDir)</code>
+sert le <code>dist/</code> avec fallback SPA vers <code>index.html</code> ; <code>/health</code> et <code>/api/progress</code>
+gardent la priorité. Les routes <code>/api/progress</code> sont enregistrées en <strong>chemin exact
+sans slash</strong> (ce que le client appelle), pour ne pas être avalées par le catch-all.</li>
+<li><strong>Merge par champ</strong> (<code>progress_repository.go</code>) : clause <code>WHERE</code> ajoutée à l&#39;upsert
+SQLite — le record entrant n&#39;est adopté que s&#39;il est plus avancé (plus d&#39;<code>attempts</code>,
+ou à égalité <code>last_seen</code> plus récent).</li>
+</ul>
+<h3>Frontend</h3>
+<ul>
+<li><strong><code>lib/progressMerge.ts</code></strong> (TDD) : <code>mergeEntry</code> / <code>mergeProgress</code>, règle symétrique
+avec le serveur, record entier adopté.</li>
+<li><strong><code>useProgress.sync</code></strong> : passe de « upsert aveugle du distant » à <strong>pull → merge →
+push</strong>, protégeant le local plus avancé. Déclencheurs ajoutés : <code>focus</code>,
+<code>visibilitychange</code> (visible), <code>online</code>, avec garde anti-concurrence (<code>syncInFlight</code>).</li>
+<li><strong>Proxy Vite dev</strong> : <code>/api → 127.0.0.1:8787</code> pour <code>make dev</code>.</li>
+<li><strong>Indicateur de sync</strong> discret dans le footer (réutilise <code>syncing</code>), i18n FR/EN.</li>
+</ul>
+<h3>Outillage / doc</h3>
+<ul>
+<li><strong><code>make serve</code></strong> : build front + lance le backend single-origin (<code>SINO_STATIC_DIR</code>,
+<code>SINO_HOST=0.0.0.0</code>) pour l&#39;accès LAN. <code>make build-icons</code> ajouté au help.</li>
+<li><strong>RFC 0011</strong> publiée ; CURRENT_STATE et carnet HTML mis à jour.</li>
+</ul>
+<h2>Vérifications</h2>
+<p>Sous le Node épinglé (<code>mise exec node@24.15.0 -- …</code>) :</p>
+<ul>
+<li><code>make test</code> : <strong>229 tests front</strong> (+ merge, +3 useProgress sync) + backend <code>-race</code>
+(merge par champ, service statique) OK.</li>
+<li><code>make lint</code> / <code>make typecheck</code> : propres.</li>
+<li><code>make test-e2e</code> : <strong>30/30</strong> (incl. <code>e2e/sync.spec.ts</code>, API mockée via <code>page.route</code>).</li>
+<li><strong>End-to-end HTTP réel</strong> (binaire <code>make build</code> + <code>SINO_STATIC_DIR=frontend/dist</code>) :<ul>
+<li><code>/</code> sert <code>index.html</code>, <code>/api/progress</code> répond du JSON ;</li>
+<li>POST persiste, GET relit ;</li>
+<li>merge par champ vérifié : un POST périmé (attempts 2 &lt; 4) est ignoré, un POST plus
+avancé (attempts 9) gagne.</li>
+</ul>
+</li>
+</ul>
+<h2>Décisions prises (cf. RFC 0011)</h2>
+<ul>
+<li><strong>Déploiement single-origin</strong> : un binaire sert front + API, same-origin, zéro CORS.</li>
+<li><strong>Merge par champ sans horodatage</strong> : plus d&#39;attempts gagne, tie → last_seen ; schéma
+inchangé (pas de migration). Limite assumée : attempts non sommés entre appareils.</li>
+<li><strong>Sync best-effort</strong> : silencieuse hors-ligne, déclenchée au focus/online en plus du
+chargement et des sessions.</li>
+</ul>
+<h2>État du Lot 3</h2>
+<p>✅ <strong>Critère de sortie atteint.</strong> Révision locale (sprint 1) + persistance et sync
+multi-appareils single-origin (cette session). Le binaire doit tourner sur un hôte
+joignable par les deux appareils (<code>make serve</code>, <code>SINO_HOST=0.0.0.0</code> en LAN).</p>
+<h2>Reste / pistes futures (hors Lot 3)</h2>
+<ul>
+<li>Test d&#39;installation/sync réel Boox ↔ ordinateur sur le LAN (nécessite le matériel).</li>
+<li>Si un besoin multi-appareils concurrent réel apparaît : envisager un horodatage ou un
+CRDT (sommation des compteurs) — sur-ingénierie pour l&#39;instant.</li>
 </ul>
 </div>
 </details>
@@ -3629,7 +3806,7 @@ marginaux pour une complexité Suspense réelle — non prioritaire.</li>
 </section>
 
 <footer>
-<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-06-13 09:18 par <code>make docs</code>.</p>
+<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-06-13 09:58 par <code>make docs</code>.</p>
 </footer>
 </div>
 

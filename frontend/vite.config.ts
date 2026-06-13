@@ -10,6 +10,15 @@ export default defineConfig({
     host: '127.0.0.1',
     port: 5173,
     strictPort: true,
+    // En dev, le front (5173) et le back (8787) sont sur des origines distinctes.
+    // On proxifie /api vers le backend pour que la sync fonctionne via `make dev`
+    // (en prod, le binaire Go sert le front et l'API sur une seule origine).
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8787',
+        changeOrigin: true,
+      },
+    },
   },
   test: {
     globals: true,

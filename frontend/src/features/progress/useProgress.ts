@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LocalStorageProgressRepository } from '../../adapters/storage/LocalStorageProgressRepository';
 import { RestSyncClient } from '../../adapters/api/RestSyncClient';
+import { mergeProgress } from '../../lib/progressMerge';
 import { applyReview } from '../../lib/srs/sm2';
 import type { ReviewSessionResult } from '../../lib/srs/quality';
 import { qualityFromSession } from '../../lib/srs/quality';
@@ -44,30 +45,33 @@ export function useProgress(
   const [entries, setEntries] = useState<ProgressEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  // Garde anti-concurrence : les déclencheurs (focus/online/...) peuvent appeler
+  // sync() en rafale ; on évite d'empiler des cycles pull/push simultanés.
+  const syncInFlight = useRef(false);
 
   const sync = useCallback(async () => {
+    if (syncInFlight.current) return;
+    syncInFlight.current = true;
     setSyncing(true);
     try {
-      // Stratégie Batch Upsert Simple :
-      // 1. Pull du serveur
+      // Protocole pull → merge → push (cf. RFC 0011) :
+      // 1. Pull du serveur.
       const remote = await client.pull();
-
-      if (remote.length > 0) {
-        // 2. Upsert dans le repo local
-        await repo.upsertBatch(remote);
-      }
-
-      // 3. Push de l'état local complet (merge client-side pour cette version)
+      // 2. Merge par champ avec le local (protège le local plus avancé d'un
+      //    écrasement par des données distantes périmées).
       const local = await repo.list();
-      await client.push(local);
-
-      setEntries(local);
+      const merged = mergeProgress(local, remote);
+      // 3. Persiste le merge en local et le pousse au serveur (qui re-merge).
+      await repo.upsertBatch(merged);
+      await client.push(merged);
+      setEntries(merged);
     } catch (err: unknown) {
       // Offline-first : le backend de sync est optionnel. Un échec (hors-ligne,
       // backend absent) est un cas nominal, pas une erreur — on le journalise en
       // debug pour ne pas polluer la console ni l'audit (cf. Lighthouse).
       console.debug('Sync best-effort indisponible (hors-ligne ?) :', err);
     } finally {
+      syncInFlight.current = false;
       setSyncing(false);
     }
   }, [repo, client]);
@@ -94,6 +98,24 @@ export function useProgress(
       cancelled = true;
     };
   }, [repo, sync]);
+
+  // Re-sync quand l'app redevient active ou retrouve le réseau, pour rafraîchir
+  // la progression entre appareils (cf. RFC 0011). La garde syncInFlight évite
+  // les cycles concurrents si plusieurs évènements se déclenchent ensemble.
+  useEffect(() => {
+    const onActive = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+      void sync();
+    };
+    window.addEventListener('focus', onActive);
+    window.addEventListener('online', onActive);
+    document.addEventListener('visibilitychange', onActive);
+    return () => {
+      window.removeEventListener('focus', onActive);
+      window.removeEventListener('online', onActive);
+      document.removeEventListener('visibilitychange', onActive);
+    };
+  }, [sync]);
 
   const recordSession = useCallback(
     async (

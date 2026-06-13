@@ -12,6 +12,9 @@
   "common": {
     "listen": "Écouter"
   },
+  "sync": {
+    "syncing": "Synchronisation…"
+  },
   "speech": {
     "voice_select": "Voix chinoise",
     "automatic": "Voix auto",

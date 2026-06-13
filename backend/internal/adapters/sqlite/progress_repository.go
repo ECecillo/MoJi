@@ -81,6 +81,10 @@ func (r *progressRepository) UpsertBatch(ctx context.Context, entries []domain.P
 	// Best-effort rollback : no-op après un Commit réussi.
 	defer func() { _ = tx.Rollback() }()
 
+	// Merge par champ (cf. RFC 0011) : en cas de collision de clé, on n'adopte le record entrant
+	// que s'il est « plus avancé » — plus d'attempts, ou à attempts égaux un
+	// last_seen plus récent. Sinon le record local (serveur) est conservé. Cette
+	// règle est symétrique avec le merge client, donc l'ordre de sync n'importe pas.
 	query := `INSERT INTO progress (target_type, target_id, interval_days, ease, due, attempts, successes, last_seen)
 	          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 	          ON CONFLICT(target_type, target_id) DO UPDATE SET
@@ -89,7 +93,9 @@ func (r *progressRepository) UpsertBatch(ctx context.Context, entries []domain.P
 	            due = excluded.due,
 	            attempts = excluded.attempts,
 	            successes = excluded.successes,
-	            last_seen = excluded.last_seen`
+	            last_seen = excluded.last_seen
+	          WHERE excluded.attempts > progress.attempts
+	             OR (excluded.attempts = progress.attempts AND excluded.last_seen >= progress.last_seen)`
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {

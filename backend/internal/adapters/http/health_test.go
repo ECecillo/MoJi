@@ -28,7 +28,7 @@ func TestHealthHandler_ReturnsOK(t *testing.T) {
 }
 
 func TestServer_HealthRouteIsWired(t *testing.T) {
-	srv := NewServer(nil)
+	srv := NewServer(nil, "")
 
 	req := httptest.NewRequest(http.MethodGet, "/health", nil)
 	rr := httptest.NewRecorder()
@@ -39,7 +39,7 @@ func TestServer_HealthRouteIsWired(t *testing.T) {
 }
 
 func TestServer_UnknownRouteReturns404(t *testing.T) {
-	srv := NewServer(nil)
+	srv := NewServer(nil, "")
 
 	req := httptest.NewRequest(http.MethodGet, "/does-not-exist", nil)
 	rr := httptest.NewRecorder()

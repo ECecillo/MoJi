@@ -16,6 +16,7 @@ Une RFC documente **une décision structurante** : contexte, décision, conséqu
 | 0008  | [Sourcing des données HSK 3.0 niveau 1](0008-sourcing-hsk1.md)        | Accepté   | 2026-05-24 |
 | 0009  | [Stratégie de tests end-to-end (Playwright)](0009-tests-e2e.md)       | Accepté   | 2026-05-28 |
 | 0010  | [Surcharges de traductions locales (éditeur FR)](0010-surcharges-traductions-locales.md) | Accepté | 2026-05-30 |
+| 0011  | [Synchronisation backend de la progression](0011-sync-backend.md)     | Accepté   | 2026-06-13 |
 
 ## Statuts possibles
 

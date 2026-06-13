@@ -9,7 +9,11 @@ import (
 )
 
 // NewServer builds the HTTP router with all routes registered.
-func NewServer(progressStore ports.ProgressStore) http.Handler {
+//
+// When staticDir is non-empty, the built frontend it contains is served on the
+// same origin as the API (single-origin deployment, cf. RFC 0011) : unknown
+// routes fall back to index.html for the SPA. /health and /api/* keep priority.
+func NewServer(progressStore ports.ProgressStore, staticDir string) http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
@@ -18,10 +22,14 @@ func NewServer(progressStore ports.ProgressStore) http.Handler {
 	r.Method(http.MethodGet, "/health", NewHealthHandler())
 
 	progressH := NewProgressHandler(progressStore)
-	r.Route("/api/progress", func(r chi.Router) {
-		r.Get("/", progressH.List)
-		r.Post("/", progressH.UpsertBatch)
-	})
+	// Chemin exact sans slash final : c'est ce que le client appelle, et cela
+	// évite que le catch-all SPA n'avale /api/progress.
+	r.Get("/api/progress", progressH.List)
+	r.Post("/api/progress", progressH.UpsertBatch)
+
+	if staticDir != "" {
+		r.Handle("/*", spaFileServer(staticDir))
+	}
 
 	return r
 }

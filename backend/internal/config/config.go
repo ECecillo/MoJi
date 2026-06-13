@@ -14,6 +14,10 @@ type Config struct {
 	Port          int
 	DBPath        string
 	MigrationsDir string
+	// StaticDir is the directory whose contents are served as the frontend
+	// (single-origin deployment). Empty disables static serving — the server
+	// then only exposes /health and /api/*.
+	StaticDir string
 }
 
 // Load reads configuration from the environment and returns a populated Config.
@@ -23,6 +27,7 @@ func Load() (Config, error) {
 		Host:          getEnv("SINO_HOST", "127.0.0.1"),
 		DBPath:        getEnv("SINO_DB_PATH", "data/sinogrammes.db"),
 		MigrationsDir: getEnv("SINO_MIGRATIONS_DIR", "migrations"),
+		StaticDir:     getEnv("SINO_STATIC_DIR", ""),
 	}
 
 	portStr := getEnv("SINO_PORT", "8787")

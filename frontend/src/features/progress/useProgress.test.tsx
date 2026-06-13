@@ -1,12 +1,22 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useProgress } from './useProgress';
+import { LocalStorageProgressRepository } from '../../adapters/storage/LocalStorageProgressRepository';
+import type { ProgressEntry } from '../../domain/ports/ProgressRepository';
 import type { SyncClient } from '../../domain/ports/SyncClient';
 
 const mockSyncClient: SyncClient = {
   pull: vi.fn().mockResolvedValue([]),
   push: vi.fn().mockResolvedValue(undefined),
 };
+
+function entry(id: `char_${string}`, attempts: number, lastSeen: string): ProgressEntry {
+  return {
+    ref: { type: 'character', id },
+    srs_state: { interval_days: attempts, ease: 2.5, due: '2026-06-20' },
+    stats: { attempts, successes: attempts, last_seen: lastSeen },
+  };
+}
 
 describe('useProgress (intégration localStorage + SM-2)', () => {
   beforeEach(() => {
@@ -106,5 +116,49 @@ describe('useProgress (intégration localStorage + SM-2)', () => {
     await waitFor(() => expect(second.result.current.loading).toBe(false));
     expect(second.result.current.entries).toHaveLength(1);
     expect(second.result.current.entries[0]?.ref.id).toBe('char_Z');
+  });
+
+  it('sync : un distant plus avancé met à jour le local', async () => {
+    const repo = new LocalStorageProgressRepository();
+    await repo.upsert(entry('char_M', 1, '2026-06-01'));
+    const client: SyncClient = {
+      pull: vi.fn().mockResolvedValue([entry('char_M', 5, '2026-06-10')]),
+      push: vi.fn().mockResolvedValue(undefined),
+    };
+
+    const { result } = renderHook(() => useProgress(repo, client));
+    await waitFor(() => expect(result.current.entries[0]?.stats.attempts).toBe(5));
+    expect(client.push).toHaveBeenCalled();
+  });
+
+  it('sync : un distant périmé n’écrase pas le local plus avancé', async () => {
+    const repo = new LocalStorageProgressRepository();
+    await repo.upsert(entry('char_M', 5, '2026-06-10'));
+    const client: SyncClient = {
+      pull: vi.fn().mockResolvedValue([entry('char_M', 1, '2026-06-01')]),
+      push: vi.fn().mockResolvedValue(undefined),
+    };
+
+    const { result } = renderHook(() => useProgress(repo, client));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await waitFor(() => expect(client.pull).toHaveBeenCalled());
+    expect(result.current.entries[0]?.stats.attempts).toBe(5);
+  });
+
+  it('sync est redéclenché quand la fenêtre reprend le focus', async () => {
+    const client: SyncClient = {
+      pull: vi.fn().mockResolvedValue([]),
+      push: vi.fn().mockResolvedValue(undefined),
+    };
+    const { result } = renderHook(() => useProgress(undefined, client));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await waitFor(() => expect(client.pull).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      window.dispatchEvent(new Event('focus'));
+    });
+    await waitFor(() =>
+      expect((client.pull as ReturnType<typeof vi.fn>).mock.calls.length).toBeGreaterThan(1),
+    );
   });
 });

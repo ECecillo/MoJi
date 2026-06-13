@@ -12,6 +12,9 @@
   "common": {
     "listen": "Listen"
   },
+  "sync": {
+    "syncing": "Syncing…"
+  },
   "speech": {
     "voice_select": "Chinese voice",
     "automatic": "Auto voice",

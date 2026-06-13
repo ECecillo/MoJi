@@ -2,7 +2,7 @@
 
 > **Fichier toujours à jour.** À mettre à jour à la fin de chaque session de travail. Répond à la question : "où en est le projet, là, maintenant ?"
 
-**Dernière mise à jour** : 2026-06-13 (Lot 5 — icônes PNG + audit Lighthouse)
+**Dernière mise à jour** : 2026-06-13 (Lot 3 — sync backend : critère de sortie atteint)
 
 ## Lot en cours
 
@@ -10,7 +10,7 @@
 
 **Lot 4 — Synthèse vocale** : ✅ **clôturé** (API SpeechSynthesis, SpeakButton intégré).
 
-**Lot 3** : ✅ clôturé officiellement.
+**Lot 3 — Système de révision** : ✅ **clôturé, critère de sortie atteint** — sync backend single-origin + merge par champ (RFC 0011, 2026-06-13).
 
 **Lot 2** : ✅ clôturé officiellement (RFC 0007 + RFC 0010).
 
@@ -154,6 +154,17 @@ Cf. [`docs/journal/2026-06-01-lot5-pwa-baseline.md`](../journal/2026-06-01-lot5-
 - ✅ **Accessibilité e-ink baseline** : `prefers-reduced-motion` et `prefers-contrast: more` pris en compte dans `index.css`.
 - ✅ **Validation offline production** : `vite preview` + Chromium Playwright, activation SW puis reload offline OK (`offline-ok`).
 
+### Lot 3 — synchronisation backend, critère de sortie atteint (2026-06-13)
+
+Cf. [`docs/journal/2026-06-13-lot3-sync-backend.md`](../journal/2026-06-13-lot3-sync-backend.md) et [RFC 0011](../rfc/0011-sync-backend.md).
+
+- ✅ **Déploiement single-origin** : le binaire Go sert le `dist/` **et** l'API sur une seule origine (`SINO_STATIC_DIR`, SPA fallback). API same-origin, zéro CORS. Cible `make serve` (build + `SINO_HOST=0.0.0.0` pour le LAN). Proxy Vite `/api → :8787` en dev.
+- ✅ **Merge par champ** (RFC 0011), symétrique client + serveur : record le plus avancé adopté (max `attempts`, tie → `last_seen`), record entier, refs disjointes conservées. Côté serveur via clause `WHERE` sur l'upsert SQLite ; côté client via `lib/progressMerge.ts`.
+- ✅ **`useProgress.sync`** = pull → merge → push (protège le local plus avancé) ; déclencheurs `focus`/`visibilitychange`/`online` + garde anti-concurrence ; indicateur de sync discret (footer).
+- ✅ **Vérif HTTP réelle** : binaire servant `dist/`, POST/GET round-trip OK, merge par champ confirmé (périmé ignoré, plus avancé gagne).
+- ✅ **E2E** `e2e/sync.spec.ts` (API mockée via `page.route`) : progression distante fusionnée au chargement, état local poussé au serveur.
+- ⚠ **Limite assumée** : `attempts` non sommés entre appareils (max), sans perte de progression en mono-utilisateur. Schéma inchangé (pas de migration).
+
 ### Lot 5 — icônes PNG + audit Lighthouse (2026-06-13)
 
 Cf. [`docs/journal/2026-06-13-lot5-icones-png-lighthouse.md`](../journal/2026-06-13-lot5-icones-png-lighthouse.md).
@@ -194,8 +205,8 @@ Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lo
 
 > ⚠ **Toolchain** : lancer impérativement sous le Node épinglé (`mise.toml` → Node 24.15.0), p. ex. `mise exec node@24.15.0 -- env -u GOROOT make test`. Sous Node 25, jsdom expose un `localStorage` cassé → 46 faux échecs.
 
-- `make test` : **221 tests front passent**, paquets back passent avec `-race`.
-- `make test-e2e` : **28/28 tests E2E verts** (Chromium, ~10 s).
+- `make test` : **229 tests front passent**, paquets back passent avec `-race`.
+- `make test-e2e` : **30/30 tests E2E verts** (Chromium, ~10 s).
 - `make lint` : ESLint + Prettier propres, golangci-lint 0 issue.
 - `make typecheck` : `tsc --noEmit` propre.
 - `make build` : bundle front + binaire back OK, chunk principal **348 KB**, `dist/sw.js` précache les 4 PNG.
@@ -205,6 +216,7 @@ Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lo
 
 ## Dernières décisions importantes
 
+- 2026-06-13 : **Lot 3 — déploiement single-origin + merge par champ** (RFC 0011). Le binaire Go sert front + API ; merge par champ symétrique client/serveur (max attempts, tie → last_seen), schéma inchangé. Clôt le critère de sortie multi-appareils.
 - 2026-06-13 : **sync = best-effort silencieux en offline-first**. Backend absent / hors-ligne = cas nominal : journalisé en `console.debug`, jamais `console.error`. `RestSyncClient.pull` vérifie le content-type.
 - 2026-06-13 : **icônes PNG rastérisées via Playwright Chromium** (`make build-icons`), pas de dépendance de rastérisation. SVG conservés comme source de vérité.
 - 2026-06-13 : **`ink.faint` = `#6F6F6F`** (au lieu de `#888888`) pour franchir le seuil de contraste AA (4,5:1) sur petit texte.
@@ -247,18 +259,20 @@ Aucun.
 - ✅ ~~**Code-splitting du chunk principal**~~ : fait (2026-06-13). Données en chunk paresseux, chunk principal 573 KB → 348 KB. Le reste est du vendor incompressible (React/i18n/zod) ; lazy-load des vues = gain marginal, non prioritaire.
 - ✅ ~~**Audit Lighthouse production**~~ : fait (2026-06-13). Perf 97 / A11y 100 / Best-practices 100.
 - ✅ ~~**Icônes PNG**~~ : fait (2026-06-13). 192/512 normal + maskable, manifest + SW à jour.
-- **Audit installabilité réel** : tester l'installation sur Boox Air 5c et sur ordinateur (nécessite le matériel).
-- **Offline API / sync** : préciser la stratégie pour les données de progression quand le backend est absent ou revient après offline (le log est désormais silencieux ; reste le déclenchement au focus et la résolution de conflits).
+- ✅ ~~**Offline API / sync**~~ : traité avec le Lot 3 (RFC 0011) — sync best-effort silencieuse, déclencheurs focus/online, merge par champ.
+- **Audit installabilité réel** : tester l'installation sur Boox Air 5c et sur ordinateur (nécessite le matériel). Inclut désormais un test de **sync réelle Boox ↔ ordinateur** sur le LAN via `make serve`.
 
-## Prochaines étapes — Lot 3 sprints suivants
+## Lot 3 — clôturé
 
-Sprint 1 livré (session 4). Reste :
+Sprint 1 (révision locale SRS), sprint 2 (UI/dashboard), sprint 3 (infra backend),
+puis sync de bout en bout (RFC 0011, 2026-06-13). **Critère de sortie RFC 0007
+atteint** : révision quotidienne locale + progression retrouvée sur un autre appareil
+après sync (single-origin, merge par champ).
 
-- **UI tableau de bord / statuts** : vue dédiée "aujourd'hui / cette semaine / en retard", historique d'attempts par caractère sur la fiche détaillée, badge "déjà vu N fois" sur les cartes du glossaire, filtre "statut d'apprentissage" reporté du Lot 2.
-- **Sync backend** : RFC pour la stratégie de sync (conflict resolution, best-effort, offline-first), schéma SQL côté Go, endpoint REST `/progress`, `RestApiClient`, sync au focus de l'app.
+Pistes ultérieures, non bloquantes (hors Lot 3) :
+
 - **IndexedDB (quand justifié)** : bascule de localStorage vers IndexedDB si le volume ou les besoins de query (indexes par date, transactions) le justifient. Nécessitera une RFC qui documente le schéma et la migration depuis localStorage.
-
-Critère de sortie du Lot 3 (cf. RFC 0007) : faire une session de révision quotidienne et retrouver sa progression sur un autre appareil après sync. Le sprint 1 ne couvre que la révision locale ; la sync est l'objectif de la prochaine phase backend.
+- **Sync concurrente avancée** : horodatage / CRDT (sommation des compteurs) seulement si un réel besoin multi-appareils concurrent apparaît.
 
 ## Liens utiles
 

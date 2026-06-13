@@ -8,7 +8,7 @@ SHELL := /bin/sh
         test test-front test-back test-e2e \
         lint lint-front lint-back \
         typecheck build build-front build-back \
-        vendor-sources build-data docs \
+        vendor-sources build-data build-icons docs serve \
         clean
 
 help:
@@ -21,8 +21,10 @@ help:
 	@echo "  make lint        — exécute lint + format check des deux côtés"
 	@echo "  make typecheck   — typecheck strict TypeScript"
 	@echo "  make build       — compile front et back"
+	@echo "  make serve       — build + sert front ET API sur une seule origine (LAN, cf. RFC 0011)"
 	@echo "  make vendor-sources — rafraîchit shared/data/sources/ depuis les SHA upstream (rare, réseau)"
 	@echo "  make build-data  — régénère frontend/src/data/hsk1.generated.json (offline)"
+	@echo "  make build-icons — régénère les icônes PNG de la PWA (192/512, via Chromium Playwright)"
 	@echo "  make docs        — régénère docs/index.html (carnet de bord HTML)"
 	@echo "  make clean       — nettoie artefacts de build et caches"
 	@echo ""
@@ -92,6 +94,14 @@ build-back:
 	cd backend && mkdir -p bin && go build -o bin/server ./cmd/server
 
 build: build-front build-back
+
+# ─────────── déploiement single-origin (cf. RFC 0011) ───────────
+
+# Construit le front puis lance le backend qui sert le dist/ ET l'API sur une
+# seule origine, accessible depuis le réseau local. La Boox et l'ordinateur
+# ouvrent http://<ip-de-cette-machine>:8787 et installent la PWA depuis là.
+serve: build
+	cd backend && SINO_STATIC_DIR=../frontend/dist SINO_HOST=0.0.0.0 ./bin/server
 
 # ─────────── data pipeline (cf. RFC 0008) ───────────
 

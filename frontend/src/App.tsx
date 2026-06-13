@@ -33,7 +33,7 @@ export function App() {
 
   const renderer = useMemo(() => new HanziWriterRenderer(), []);
   const speechProvider = useMemo(() => new WebSpeechProvider(), []);
-  const { entries, recordSession } = useProgress();
+  const { entries, recordSession, syncing } = useProgress();
 
   // Charge le bundle pour pouvoir résoudre hanzi → entryId et bouton Réviser
   // → hanzi à pratiquer.
@@ -220,6 +220,7 @@ export function App() {
         <footer className="shrink-0 flex flex-col items-center gap-1 py-2 border-t border-ink w-full">
           <p className="text-xs text-ink-faint" data-testid="current-language">
             {current} • Lot 3 — Révision (sprint 1)
+            {syncing ? <span data-testid="sync-indicator"> • {t('sync.syncing')}</span> : null}
           </p>
         </footer>
       </main>
