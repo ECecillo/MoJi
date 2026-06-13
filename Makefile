@@ -101,6 +101,9 @@ vendor-sources:
 build-data:
 	cd frontend && npm run build:data
 
+build-icons:
+	cd frontend && npm run build:icons
+
 # ─────────── carnet de bord HTML ───────────
 
 docs:

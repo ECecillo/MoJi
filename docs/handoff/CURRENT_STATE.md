@@ -2,7 +2,7 @@
 
 > **Fichier toujours à jour.** À mettre à jour à la fin de chaque session de travail. Répond à la question : "où en est le projet, là, maintenant ?"
 
-**Dernière mise à jour** : 2026-06-13 (Lot 5 — code-splitting du chunk principal)
+**Dernière mise à jour** : 2026-06-13 (Lot 5 — icônes PNG + audit Lighthouse)
 
 ## Lot en cours
 
@@ -154,6 +154,15 @@ Cf. [`docs/journal/2026-06-01-lot5-pwa-baseline.md`](../journal/2026-06-01-lot5-
 - ✅ **Accessibilité e-ink baseline** : `prefers-reduced-motion` et `prefers-contrast: more` pris en compte dans `index.css`.
 - ✅ **Validation offline production** : `vite preview` + Chromium Playwright, activation SW puis reload offline OK (`offline-ok`).
 
+### Lot 5 — icônes PNG + audit Lighthouse (2026-06-13)
+
+Cf. [`docs/journal/2026-06-13-lot5-icones-png-lighthouse.md`](../journal/2026-06-13-lot5-icones-png-lighthouse.md).
+
+- ✅ **Icônes PNG 192/512** (normales + maskable) générées par `make build-icons` (script `build-icons.ts`, rastérisation via le Chromium Playwright, sans nouvelle dépendance). Manifest, `apple-touch-icon`, favicon de repli et précache SW mis à jour. SVG conservés comme source.
+- ✅ **Audit Lighthouse** (mobile, build prod via `vite preview` + Chromium Playwright) : Performance **97**, Accessibilité **100**, Bonnes pratiques **100** (FCP ~1,5 s, LCP ~2,3 s, TBT 0 ms, CLS ~0,001).
+- ✅ **Correctif a11y contraste** : `ink.faint` `#888888` (3,54:1) → `#6F6F6F` (~5:1), franchit le seuil AA sur petit texte (cartes glossaire, footer).
+- ✅ **Correctif best-practices / offline-first** : un sync raté (backend absent) ne pollue plus la console — `useProgress` journalise en `console.debug` (best-effort) ; `RestSyncClient.pull` détecte une réponse non-JSON et lève une erreur claire (+1 test).
+
 ### Lot 5 — code-splitting du chunk principal (2026-06-13)
 
 Cf. [`docs/journal/2026-06-13-lot5-code-splitting.md`](../journal/2026-06-13-lot5-code-splitting.md).
@@ -185,15 +194,20 @@ Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lo
 
 > ⚠ **Toolchain** : lancer impérativement sous le Node épinglé (`mise.toml` → Node 24.15.0), p. ex. `mise exec node@24.15.0 -- env -u GOROOT make test`. Sous Node 25, jsdom expose un `localStorage` cassé → 46 faux échecs.
 
-- `make test` : **220 tests front passent**, paquets back passent avec `-race`.
+- `make test` : **221 tests front passent**, paquets back passent avec `-race`.
 - `make test-e2e` : **28/28 tests E2E verts** (Chromium, ~10 s).
 - `make lint` : ESLint + Prettier propres, golangci-lint 0 issue.
 - `make typecheck` : `tsc --noEmit` propre.
-- `make build` : bundle front + binaire back OK, chunk principal **348 KB**, `dist/sw.js` 2,3 KB.
+- `make build` : bundle front + binaire back OK, chunk principal **348 KB**, `dist/sw.js` précache les 4 PNG.
+- `make build-icons` : 4 PNG (192/512, normal + maskable) régénérés.
+- **Lighthouse** (mobile, prod) : Performance 97 · Accessibilité 100 · Bonnes pratiques 100.
 - `make docs` : `docs/index.html` à jour.
 
 ## Dernières décisions importantes
 
+- 2026-06-13 : **sync = best-effort silencieux en offline-first**. Backend absent / hors-ligne = cas nominal : journalisé en `console.debug`, jamais `console.error`. `RestSyncClient.pull` vérifie le content-type.
+- 2026-06-13 : **icônes PNG rastérisées via Playwright Chromium** (`make build-icons`), pas de dépendance de rastérisation. SVG conservés comme source de vérité.
+- 2026-06-13 : **`ink.faint` = `#6F6F6F`** (au lieu de `#888888`) pour franchir le seuil de contraste AA (4,5:1) sur petit texte.
 - 2026-06-13 : **données de référence chargées en dynamique** (`loadBundledDataSource`), instance `BundledDataSource` partagée. Chunk principal −39 % ; le shell ne dépend plus de la taille des données pour son premier rendu.
 - 2026-06-13 : **`hanzi-writer` reste eager**. Son lazy-load casse l'interaction canvas en production (SVG différé qui capte les clics, prouvé par bisection E2E) ; 37 KB ne le justifient pas.
 - 2026-06-13 : **données de tracé = sous-ensemble généré hors-ligne**, pas de glob de `hanzi-writer-data` au build. Le pipeline (RFC 0008) produit un fichier unique restreint à HSK 1, chargé en import dynamique paresseux. Réduit le précache SW de ~260 KB à 2,25 KB et le bundle de ~9 600 à 93 modules.
@@ -231,10 +245,10 @@ Aucun.
 
 - ✅ ~~**Optimisation assets Hanzi Writer**~~ : fait (2026-06-13). Sous-ensemble généré, glob supprimé, précache SW ~260 KB → 2,3 KB.
 - ✅ ~~**Code-splitting du chunk principal**~~ : fait (2026-06-13). Données en chunk paresseux, chunk principal 573 KB → 348 KB. Le reste est du vendor incompressible (React/i18n/zod) ; lazy-load des vues = gain marginal, non prioritaire.
-- **Audit installabilité réel** : tester l'installation sur Boox Air 5c et sur ordinateur.
-- **Audit Lighthouse production** : vérifier installabilité, offline, performance et accessibilité.
-- **Icônes PNG** : ajouter 192/512 si Chrome/Boox/Lighthouse ne considèrent pas les SVG suffisants.
-- **Offline API / sync** : préciser la stratégie pour les données de progression quand le backend est absent ou revient après offline.
+- ✅ ~~**Audit Lighthouse production**~~ : fait (2026-06-13). Perf 97 / A11y 100 / Best-practices 100.
+- ✅ ~~**Icônes PNG**~~ : fait (2026-06-13). 192/512 normal + maskable, manifest + SW à jour.
+- **Audit installabilité réel** : tester l'installation sur Boox Air 5c et sur ordinateur (nécessite le matériel).
+- **Offline API / sync** : préciser la stratégie pour les données de progression quand le backend est absent ou revient après offline (le log est désormais silencieux ; reste le déclenchement au focus et la résolution de conflits).
 
 ## Prochaines étapes — Lot 3 sprints suivants
 

@@ -63,7 +63,10 @@ export function useProgress(
 
       setEntries(local);
     } catch (err: unknown) {
-      console.error('Sync failed:', err);
+      // Offline-first : le backend de sync est optionnel. Un échec (hors-ligne,
+      // backend absent) est un cas nominal, pas une erreur — on le journalise en
+      // debug pour ne pas polluer la console ni l'audit (cf. Lighthouse).
+      console.debug('Sync best-effort indisponible (hors-ligne ?) :', err);
     } finally {
       setSyncing(false);
     }

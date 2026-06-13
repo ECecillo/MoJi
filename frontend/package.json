@@ -16,6 +16,7 @@
     "vendor:sources": "tsx scripts/vendor-sources.ts",
     "build:data": "tsx scripts/build-hsk1-data.ts",
     "build:docs": "tsx scripts/build-docs-index.ts",
+    "build:icons": "tsx scripts/build-icons.ts",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:ui": "playwright test --ui"

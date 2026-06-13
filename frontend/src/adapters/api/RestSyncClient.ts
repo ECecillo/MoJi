@@ -9,6 +9,13 @@ export class RestSyncClient implements SyncClient {
     if (!resp.ok) {
       throw new Error(`Failed to pull progress: ${resp.statusText}`);
     }
+    // Backend absent : le fallback SPA renvoie l'index.html en 200. On le détecte
+    // sur le content-type pour lever une erreur claire au lieu d'un SyntaxError
+    // cryptique au parse JSON (cf. offline-first, le sync est best-effort).
+    const contentType = resp.headers.get('content-type') ?? '';
+    if (!contentType.includes('application/json')) {
+      throw new Error(`Failed to pull progress: réponse non-JSON (${contentType || 'inconnu'})`);
+    }
     return (await resp.json()) as ProgressEntry[];
   }
 

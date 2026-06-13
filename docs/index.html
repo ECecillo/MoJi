@@ -168,14 +168,14 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <nav class="topnav"><div class="wrap">
   <a href="#etat">État courant</a>
   <a href="#rfc">RFC (10)</a>
-  <a href="#journal">Journal (23)</a>
+  <a href="#journal">Journal (24)</a>
   <a href="#brief">Brief</a>
 </div></nav>
 
 <div class="wrap">
 <header class="hero">
   <h1>Sinogrammes — Carnet de bord</h1>
-  <p class="meta">Index généré le 2026-06-13 09:07. 10 RFC · 23 entrées de journal.</p>
+  <p class="meta">Index généré le 2026-06-13 09:18. 10 RFC · 24 entrées de journal.</p>
   <p class="hint">Toutes les sections sont collapsables. Cliquez sur une ligne ou un lien interne pour ouvrir et défiler.</p>
 </header>
 
@@ -185,7 +185,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <blockquote>
 <p><strong>Fichier toujours à jour.</strong> À mettre à jour à la fin de chaque session de travail. Répond à la question : &quot;où en est le projet, là, maintenant ?&quot;</p>
 </blockquote>
-<p><strong>Dernière mise à jour</strong> : 2026-06-13 (Lot 5 — code-splitting du chunk principal)</p>
+<p><strong>Dernière mise à jour</strong> : 2026-06-13 (Lot 5 — icônes PNG + audit Lighthouse)</p>
 <h2>Lot en cours</h2>
 <p><strong>Lot 5 — Polish &amp; PWA</strong> : 🟡 <strong>en cours</strong>, socle PWA offline livré.</p>
 <p><strong>Lot 4 — Synthèse vocale</strong> : ✅ <strong>clôturé</strong> (API SpeechSynthesis, SpeakButton intégré).</p>
@@ -313,6 +313,14 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li>✅ <strong>Accessibilité e-ink baseline</strong> : <code>prefers-reduced-motion</code> et <code>prefers-contrast: more</code> pris en compte dans <code>index.css</code>.</li>
 <li>✅ <strong>Validation offline production</strong> : <code>vite preview</code> + Chromium Playwright, activation SW puis reload offline OK (<code>offline-ok</code>).</li>
 </ul>
+<h3>Lot 5 — icônes PNG + audit Lighthouse (2026-06-13)</h3>
+<p>Cf. <a href="#journal-2026-06-13-lot5-icones-png-lighthouse"><code>docs/journal/2026-06-13-lot5-icones-png-lighthouse.md</code></a>.</p>
+<ul>
+<li>✅ <strong>Icônes PNG 192/512</strong> (normales + maskable) générées par <code>make build-icons</code> (script <code>build-icons.ts</code>, rastérisation via le Chromium Playwright, sans nouvelle dépendance). Manifest, <code>apple-touch-icon</code>, favicon de repli et précache SW mis à jour. SVG conservés comme source.</li>
+<li>✅ <strong>Audit Lighthouse</strong> (mobile, build prod via <code>vite preview</code> + Chromium Playwright) : Performance <strong>97</strong>, Accessibilité <strong>100</strong>, Bonnes pratiques <strong>100</strong> (FCP ~1,5 s, LCP ~2,3 s, TBT 0 ms, CLS ~0,001).</li>
+<li>✅ <strong>Correctif a11y contraste</strong> : <code>ink.faint</code> <code>#888888</code> (3,54:1) → <code>#6F6F6F</code> (~5:1), franchit le seuil AA sur petit texte (cartes glossaire, footer).</li>
+<li>✅ <strong>Correctif best-practices / offline-first</strong> : un sync raté (backend absent) ne pollue plus la console — <code>useProgress</code> journalise en <code>console.debug</code> (best-effort) ; <code>RestSyncClient.pull</code> détecte une réponse non-JSON et lève une erreur claire (+1 test).</li>
+</ul>
 <h3>Lot 5 — code-splitting du chunk principal (2026-06-13)</h3>
 <p>Cf. <a href="#journal-2026-06-13-lot5-code-splitting"><code>docs/journal/2026-06-13-lot5-code-splitting.md</code></a>.</p>
 <ul>
@@ -342,15 +350,20 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <p>⚠ <strong>Toolchain</strong> : lancer impérativement sous le Node épinglé (<code>mise.toml</code> → Node 24.15.0), p. ex. <code>mise exec node@24.15.0 -- env -u GOROOT make test</code>. Sous Node 25, jsdom expose un <code>localStorage</code> cassé → 46 faux échecs.</p>
 </blockquote>
 <ul>
-<li><code>make test</code> : <strong>220 tests front passent</strong>, paquets back passent avec <code>-race</code>.</li>
+<li><code>make test</code> : <strong>221 tests front passent</strong>, paquets back passent avec <code>-race</code>.</li>
 <li><code>make test-e2e</code> : <strong>28/28 tests E2E verts</strong> (Chromium, ~10 s).</li>
 <li><code>make lint</code> : ESLint + Prettier propres, golangci-lint 0 issue.</li>
 <li><code>make typecheck</code> : <code>tsc --noEmit</code> propre.</li>
-<li><code>make build</code> : bundle front + binaire back OK, chunk principal <strong>348 KB</strong>, <code>dist/sw.js</code> 2,3 KB.</li>
+<li><code>make build</code> : bundle front + binaire back OK, chunk principal <strong>348 KB</strong>, <code>dist/sw.js</code> précache les 4 PNG.</li>
+<li><code>make build-icons</code> : 4 PNG (192/512, normal + maskable) régénérés.</li>
+<li><strong>Lighthouse</strong> (mobile, prod) : Performance 97 · Accessibilité 100 · Bonnes pratiques 100.</li>
 <li><code>make docs</code> : <code>docs/index.html</code> à jour.</li>
 </ul>
 <h2>Dernières décisions importantes</h2>
 <ul>
+<li>2026-06-13 : <strong>sync = best-effort silencieux en offline-first</strong>. Backend absent / hors-ligne = cas nominal : journalisé en <code>console.debug</code>, jamais <code>console.error</code>. <code>RestSyncClient.pull</code> vérifie le content-type.</li>
+<li>2026-06-13 : <strong>icônes PNG rastérisées via Playwright Chromium</strong> (<code>make build-icons</code>), pas de dépendance de rastérisation. SVG conservés comme source de vérité.</li>
+<li>2026-06-13 : <strong><code>ink.faint</code> = <code>#6F6F6F</code></strong> (au lieu de <code>#888888</code>) pour franchir le seuil de contraste AA (4,5:1) sur petit texte.</li>
 <li>2026-06-13 : <strong>données de référence chargées en dynamique</strong> (<code>loadBundledDataSource</code>), instance <code>BundledDataSource</code> partagée. Chunk principal −39 % ; le shell ne dépend plus de la taille des données pour son premier rendu.</li>
 <li>2026-06-13 : <strong><code>hanzi-writer</code> reste eager</strong>. Son lazy-load casse l&#39;interaction canvas en production (SVG différé qui capte les clics, prouvé par bisection E2E) ; 37 KB ne le justifient pas.</li>
 <li>2026-06-13 : <strong>données de tracé = sous-ensemble généré hors-ligne</strong>, pas de glob de <code>hanzi-writer-data</code> au build. Le pipeline (RFC 0008) produit un fichier unique restreint à HSK 1, chargé en import dynamique paresseux. Réduit le précache SW de ~260 KB à 2,25 KB et le bundle de ~9 600 à 93 modules.</li>
@@ -386,10 +399,10 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <ul>
 <li>✅ <del><strong>Optimisation assets Hanzi Writer</strong></del> : fait (2026-06-13). Sous-ensemble généré, glob supprimé, précache SW ~260 KB → 2,3 KB.</li>
 <li>✅ <del><strong>Code-splitting du chunk principal</strong></del> : fait (2026-06-13). Données en chunk paresseux, chunk principal 573 KB → 348 KB. Le reste est du vendor incompressible (React/i18n/zod) ; lazy-load des vues = gain marginal, non prioritaire.</li>
-<li><strong>Audit installabilité réel</strong> : tester l&#39;installation sur Boox Air 5c et sur ordinateur.</li>
-<li><strong>Audit Lighthouse production</strong> : vérifier installabilité, offline, performance et accessibilité.</li>
-<li><strong>Icônes PNG</strong> : ajouter 192/512 si Chrome/Boox/Lighthouse ne considèrent pas les SVG suffisants.</li>
-<li><strong>Offline API / sync</strong> : préciser la stratégie pour les données de progression quand le backend est absent ou revient après offline.</li>
+<li>✅ <del><strong>Audit Lighthouse production</strong></del> : fait (2026-06-13). Perf 97 / A11y 100 / Best-practices 100.</li>
+<li>✅ <del><strong>Icônes PNG</strong></del> : fait (2026-06-13). 192/512 normal + maskable, manifest + SW à jour.</li>
+<li><strong>Audit installabilité réel</strong> : tester l&#39;installation sur Boox Air 5c et sur ordinateur (nécessite le matériel).</li>
+<li><strong>Offline API / sync</strong> : préciser la stratégie pour les données de progression quand le backend est absent ou revient après offline (le log est désormais silencieux ; reste le déclenchement au focus et la résolution de conflits).</li>
 </ul>
 <h2>Prochaines étapes — Lot 3 sprints suivants</h2>
 <p>Sprint 1 livré (session 4). Reste :</p>
@@ -1640,6 +1653,80 @@ bundle principal, une seule entrée de précache service worker.</li>
 <li>Icônes PNG 192/512 si l&#39;audit Boox/Chrome les exige.</li>
 <li>Audit Lighthouse sur build de production.</li>
 <li>Test d&#39;installation réel sur Boox Air 5c (nécessite le matériel).</li>
+</ul>
+</div>
+</details>
+<details id="journal-2026-06-13-lot5-icones-png-lighthouse">
+  <summary>2026-06-13 — Lot 5 : icônes PNG + audit Lighthouse</summary>
+  <div class="content"><h1>2026-06-13 — Lot 5 : icônes PNG + audit Lighthouse</h1>
+<h2>Objectif de la session</h2>
+<p>Compléter le socle PWA : fournir des icônes PNG (Chrome/Boox les préfèrent aux SVG
+pour l&#39;installabilité) et lancer un premier audit Lighthouse sur le build de
+production pour mesurer perf / accessibilité / bonnes pratiques et corriger ce qui
+sort facilement.</p>
+<h2>Ce qui a été fait</h2>
+<h3>Icônes PNG 192/512</h3>
+<ul>
+<li><strong>Script reproductible</strong> <code>frontend/scripts/build-icons.ts</code> : rastérise les SVG de
+<code>public/icons/</code> en PNG via le Chromium déjà installé pour Playwright (pas de
+nouvelle dépendance, pas de réseau, sortie déterministe). Produit <code>icon-192.png</code>,
+<code>icon-512.png</code>, <code>icon-maskable-192.png</code>, <code>icon-maskable-512.png</code>.</li>
+<li><strong>Cible <code>make build-icons</code></strong> + script npm <code>build:icons</code>.</li>
+<li><strong>Manifest</strong> : entrées PNG 192/512 ajoutées en <code>purpose: any</code> et <code>maskable</code>, les
+SVG <code>any</code>/<code>maskable</code> conservés.</li>
+<li><strong><code>index.html</code></strong> : <code>apple-touch-icon</code> repointé sur le PNG 192 (iOS ne gère pas le
+SVG), favicon PNG de repli ajouté.</li>
+<li><strong>Service worker</strong> : les 4 PNG ajoutés à <code>PUBLIC_PRECACHE_URLS</code> (ils sont dans
+<code>public/</code>, donc hors bundle hashé — à lister explicitement) pour rester offline.</li>
+</ul>
+<h3>Audit Lighthouse (mobile, build de production via <code>vite preview</code>)</h3>
+<p>Lancé avec le Chromium de Playwright (<code>CHROME_PATH</code>), catégories performance /
+accessibility / best-practices (Lighthouse 12 a retiré la catégorie PWA dédiée).</p>
+<p><strong>Avant</strong> : Performance 98 · Accessibilité 95 · Bonnes pratiques 96.
+<strong>Après corrections</strong> : Performance 97 · <strong>Accessibilité 100</strong> · <strong>Bonnes pratiques 100</strong>.</p>
+<p>Métriques perf : FCP ~1,5 s, LCP ~2,3 s, TBT 0 ms, CLS ~0,001 — confortables.</p>
+<p>Deux défauts identifiés et corrigés :</p>
+<ol>
+<li><strong>Erreurs console (best-practices)</strong> : <code>Sync failed: SyntaxError … &#39;&lt;&#39;</code>. Le sync
+appelle <code>/api/progress</code> ; backend absent → le fallback SPA renvoie l&#39;<code>index.html</code>
+en 200, et <code>response.json()</code> plante. En offline-first le backend est <strong>optionnel</strong>,
+donc un sync raté est un cas nominal :<ul>
+<li><code>useProgress</code> journalise désormais l&#39;échec en <code>console.debug</code> (best-effort), plus
+en <code>console.error</code>.</li>
+<li><code>RestSyncClient.pull</code> vérifie le <code>content-type</code> et lève une erreur claire
+« réponse non-JSON » au lieu d&#39;un <code>SyntaxError</code> cryptique. +1 test.</li>
+</ul>
+</li>
+<li><strong>Contraste (accessibilité)</strong> : <code>text-ink-faint</code> <code>#888888</code> sur blanc = 3,54:1,
+sous le seuil AA 4,5:1 (cartes du glossaire, footer). <code>ink.faint</code> passé à
+<code>#6F6F6F</code> (~5:1) — plus sombre, donc aussi meilleur pour l&#39;e-ink.</li>
+</ol>
+<h2>Vérifications</h2>
+<p>Toutes sous le Node épinglé (<code>mise exec node@24.15.0 -- …</code>) :</p>
+<ul>
+<li><code>make test</code> : 221 tests front (+1 RestSyncClient) + backend <code>-race</code> OK.</li>
+<li><code>make lint</code> : ESLint + Prettier + golangci-lint, 0 issue.</li>
+<li><code>make typecheck</code> : <code>tsc --noEmit</code> propre.</li>
+<li><code>make build</code> : OK, <code>sw.js</code> précache les 4 PNG.</li>
+<li><code>make build-icons</code> : 4 PNG régénérés.</li>
+<li><code>make test-e2e</code> : 28/28 Chromium.</li>
+<li>Lighthouse : Perf 97 / A11y 100 / Best-practices 100.</li>
+</ul>
+<h2>Décisions prises</h2>
+<ul>
+<li><strong>Icônes PNG rastérisées via Playwright Chromium</strong>, pas de dépendance de
+rastérisation. SVG conservés comme source de vérité et entrées <code>any</code>.</li>
+<li><strong>Sync = best-effort silencieux en offline-first.</strong> Un échec (backend absent /
+hors-ligne) se journalise en <code>debug</code>, jamais en <code>error</code>.</li>
+<li><strong><code>ink.faint</code> = <code>#6F6F6F</code></strong> pour franchir le seuil de contraste AA sur petit texte.</li>
+</ul>
+<h2>Reste à faire / prochaines étapes (Lot 5)</h2>
+<ul>
+<li>Test d&#39;installation réel sur Boox Air 5c et ordinateur (nécessite le matériel).</li>
+<li>L&#39;<code>insight</code> Lighthouse « network dependency tree » reste informatif (chaîne
+index → données) ; sans impact mesurable (TBT 0, CLS ~0).</li>
+<li>Hors Lot 5 : câblage complet de la sync backend (déclenchement au focus, conflit),
+qui fermerait le critère de sortie multi-appareils du Lot 3.</li>
 </ul>
 </div>
 </details>
@@ -3542,7 +3629,7 @@ marginaux pour une complexité Suspense réelle — non prioritaire.</li>
 </section>
 
 <footer>
-<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-06-13 09:07 par <code>make docs</code>.</p>
+<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-06-13 09:18 par <code>make docs</code>.</p>
 </footer>
 </div>
 

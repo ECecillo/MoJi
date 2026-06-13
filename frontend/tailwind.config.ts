@@ -10,7 +10,9 @@ const config: Config = {
         ink: {
           DEFAULT: '#111111',
           muted: '#444444',
-          faint: '#888888',
+          // #6F6F6F ≈ 5:1 sur blanc : franchit le seuil AA (4.5:1) pour le petit
+          // texte, contrairement à l'ancien #888888 (3.54:1) signalé par Lighthouse.
+          faint: '#6F6F6F',
         },
         paper: {
           DEFAULT: '#FFFFFF',

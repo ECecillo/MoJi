@@ -17,6 +17,7 @@ describe('RestSyncClient', () => {
 
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
+      headers: new Headers({ 'content-type': 'application/json' }),
       json: async () => mockData,
     });
 
@@ -24,6 +25,18 @@ describe('RestSyncClient', () => {
 
     expect(global.fetch).toHaveBeenCalledWith(baseUrl);
     expect(result).toEqual(mockData);
+  });
+
+  it('lève une erreur claire si la réponse est non-JSON (backend absent, fallback SPA)', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      headers: new Headers({ 'content-type': 'text/html' }),
+      json: async () => {
+        throw new SyntaxError("Unexpected token '<'");
+      },
+    });
+
+    await expect(client.pull()).rejects.toThrow('réponse non-JSON');
   });
 
   it('push envoie les données au serveur', async () => {
