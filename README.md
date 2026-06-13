@@ -46,6 +46,18 @@ Sans mise, il faut installer manuellement Node 24.15.0, Go 1.26.2 et golangci-li
 
 Toutes les commandes liées au projet sont centralisées dans le [`Makefile`](Makefile). Lancer `make help` depuis la racine pour voir les cibles disponibles.
 
+## Déploiement auto-hébergé
+
+Une seule image Docker sert la PWA **et** l'API (single-origin), avec la base SQLite sur un volume persistant. Cf. [RFC 0013](docs/rfc/0013-deploiement-docker.md).
+
+```sh
+docker compose up -d --build   # ou : make docker-up
+```
+
+L'app est alors accessible sur `http://<hôte>:8787` (la Boox et l'ordinateur s'y connectent sur le réseau local et installent la PWA depuis là). Les données persistent dans le volume `sinogrammes-data`. Arrêt : `make docker-down`.
+
+> ⚠️ **Sécurité** : l'API n'est pas authentifiée — à n'exposer que sur un **réseau de confiance (LAN)**. Une exposition publique nécessiterait au préalable un jeton d'accès + TLS (cf. RFC 0013).
+
 ## Documentation
 
 - [`BRIEF.md`](BRIEF.md) — brief de cadrage initial, figé.
@@ -55,7 +67,7 @@ Toutes les commandes liées au projet sont centralisées dans le [`Makefile`](Ma
 
 ## Statut
 
-Lot 3 en cours : le tracé, le glossaire et la première boucle de révision locale sont en place. Voir `CURRENT_STATE.md` pour le détail.
+**MVP complet (Lots 0→5)** : tracé, glossaire (HSK 1–2), révision SRS, sync multi-appareils, synthèse vocale, PWA installable et offline. Déploiement auto-hébergé Docker + CI en place. Voir `CURRENT_STATE.md` pour le détail et les pistes post-MVP.
 
 ## Licence
 

@@ -2,11 +2,11 @@
 
 > **Fichier toujours à jour.** À mettre à jour à la fin de chaque session de travail. Répond à la question : "où en est le projet, là, maintenant ?"
 
-**Dernière mise à jour** : 2026-06-13 (Lot 5 clôturé — MVP complet)
+**Dernière mise à jour** : 2026-06-13 (post-MVP — déploiement Docker + CI)
 
 ## Statut global
 
-🎉 **MVP complet : Lots 0 → 5 tous clôturés.** L'app est installable et utilisable sur Boox Air 5c et ordinateur, fonctionne hors-ligne, synchronise la progression entre appareils, et couvre HSK 3.0 niveaux 1–2. La suite est du post-MVP (cf. RFC 0007 « Ce qui suit »).
+🎉 **MVP complet (Lots 0 → 5).** Post-MVP en cours : **déploiement auto-hébergé Docker + CI livré** (RFC 0013). L'app est installable/utilisable sur Boox Air 5c et ordinateur, hors-ligne, sync multi-appareils, HSK 3.0 niveaux 1–2.
 
 **Lot 5 — Polish & PWA** : ✅ **clôturé, critère de sortie atteint** — installable + 100 % offline + Lighthouse 97/100/100. Validé en réel sur Boox le 2026-06-13 (installation, tracé HSK 1/2, hors-ligne, sync multi-appareils via `make serve` sur le LAN).
 
@@ -17,6 +17,16 @@
 **Lot 2** : ✅ clôturé officiellement (RFC 0007 + RFC 0010).
 
 ## Ce qui est fait
+
+### Post-MVP — déploiement auto-hébergé Docker + CI (2026-06-13)
+
+Cf. [`docs/journal/2026-06-13-deploiement-docker.md`](../journal/2026-06-13-deploiement-docker.md) et [RFC 0013](../rfc/0013-deploiement-docker.md).
+
+- ✅ **`Dockerfile`** multi-étapes single-origin (front `vite build` → Go statique `CGO_ENABLED=0` → runtime Alpine non-root + migrations + dist + healthcheck `/health`). **Validé** : `docker run` → endpoints OK + persistance après restart.
+- ✅ **`docker-compose.yml`** : volume nommé `/data` (SQLite), `restart: unless-stopped`. `make docker-up`/`down`/`build`.
+- ✅ **CI GitHub Actions** (`.github/workflows/ci.yml`) : jobs frontend (vitest/eslint/prettier/tsc/playwright), backend (`go test -race`, golangci-lint), docker build. **Outils appelés directement** (pas `make`) pour découpler la CI du task runner ; toolchain via `jdx/mise-action` (parité Node 24.15.0).
+- ⚠ **Sécurité** : API non authentifiée → LAN / réseau de confiance uniquement ; jeton + TLS requis avant exposition publique (RFC 0013, incrément ultérieur).
+
 
 ### Lot 0 (clôturé)
 
@@ -229,6 +239,7 @@ Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lo
 
 ## Dernières décisions importantes
 
+- 2026-06-13 : **déploiement auto-hébergé Docker** (RFC 0013) — image single-origin (Alpine, binaire statique, SQLite sur volume), docker-compose, CI GitHub Actions appelant les outils **directement** (indépendante du Makefile). API non authentifiée → LAN uniquement.
 - 2026-06-13 : **indicateur de focus clavier global** (`:focus-visible` noir, e-ink) dans `index.css`, en plus du renforcement `prefers-contrast`. Les `focus:outline-none` nus des champs sont retirés (focus clavier redevenu visible).
 - 2026-06-13 : **périmètre étendu à HSK 3.0 niveaux 1–2** (RFC 0012). Sourcing cumulatif (niveau = plus bas d'apparition), fichiers générés **par niveau** + merge au chargement (HSK 1 byte-identique, HSK 3 trivial), schéma inchangé, filtre niveau au glossaire.
 - 2026-06-13 : **Lot 3 — déploiement single-origin + merge par champ** (RFC 0011). Le binaire Go sert front + API ; merge par champ symétrique client/serveur (max attempts, tie → last_seen), schéma inchangé. Clôt le critère de sortie multi-appareils.
@@ -289,7 +300,7 @@ Le MVP est complet ; pistes ultérieures, non engagées :
 - **Export / import Anki**.
 - **Statistiques avancées** (heatmap, courbes de rétention).
 - **HSK 3, 4, …** : ajout trivial d'un niveau dans le pipeline (`LEVELS` + un import au merge, cf. RFC 0012).
-- **Docker / CI / déploiement formalisé**.
+- ✅ ~~**Docker / CI / déploiement formalisé**~~ : fait (2026-06-13, RFC 0013). Reste éventuellement : durcissement sécurité (jeton + TLS) pour exposition publique, image multi-arch (arm64/Pi).
 - **IndexedDB** (si volume/query le justifient ; RFC à écrire) ; **sync concurrente avancée** (horodatage/CRDT) si besoin multi-appareils concurrent réel.
 - Détails mineurs : avertissement Vite « chunk > 500 KB » sur les données de tracé (intentionnel, chunks paresseux) ; focus clavier déplacé au changement de vue (amélioration a11y facultative).
 

@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Annule les runs précédents sur la même réf si un nouveau push arrive.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # NB : on appelle les outils directement (npx / go / golangci-lint), pas le
+  # Makefile, pour rester indépendant du task runner. mise-action ne sert qu'à
+  # provisionner la toolchain pinnée (mise.toml) — parité de version exacte,
+  # notamment Node 24.15.0 (Node 25 casse le localStorage de jsdom).
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Tests unitaires (Vitest)
+        run: npx vitest run
+      - name: Lint (ESLint)
+        run: npx eslint .
+      - name: Format (Prettier)
+        run: npx prettier --check .
+      - name: Typecheck (tsc strict)
+        run: npx tsc --noEmit
+      - name: Tests E2E (Playwright / Chromium)
+        run: npx playwright test
+
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - name: Tests (go test -race)
+        run: go test ./... -race -count=1
+      - name: Lint (golangci-lint)
+        run: golangci-lint run ./...
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build de l'image (sanity, sans push)
+        run: docker build -t sinogrammes:ci .

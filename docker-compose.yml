@@ -1,0 +1,26 @@
+# Déploiement auto-hébergé single-origin (cf. RFC 0013).
+# `docker compose up -d --build` puis ouvrir http://<hôte>:8787.
+# ⚠ L'API n'est pas authentifiée : à exposer sur un réseau de confiance (LAN).
+
+services:
+  sinogrammes:
+    build: .
+    image: sinogrammes:latest
+    container_name: sinogrammes
+    ports:
+      - '8787:8787'
+    volumes:
+      - sinogrammes-data:/data # base SQLite persistante
+    environment:
+      # Tout est déjà défini dans l'image ; surcharger ici au besoin.
+      SINO_PORT: '8787'
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:8787/health']
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  sinogrammes-data:

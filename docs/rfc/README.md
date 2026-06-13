@@ -18,6 +18,7 @@ Une RFC documente **une décision structurante** : contexte, décision, conséqu
 | 0010  | [Surcharges de traductions locales (éditeur FR)](0010-surcharges-traductions-locales.md) | Accepté | 2026-05-30 |
 | 0011  | [Synchronisation backend de la progression](0011-sync-backend.md)     | Accepté   | 2026-06-13 |
 | 0012  | [Extension du jeu de données à HSK 2](0012-extension-hsk2.md)         | Accepté   | 2026-06-13 |
+| 0013  | [Déploiement auto-hébergé (Docker) et CI](0013-deploiement-docker.md) | Accepté   | 2026-06-13 |
 
 ## Statuts possibles
 

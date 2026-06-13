@@ -167,15 +167,15 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <body>
 <nav class="topnav"><div class="wrap">
   <a href="#etat">État courant</a>
-  <a href="#rfc">RFC (12)</a>
-  <a href="#journal">Journal (28)</a>
+  <a href="#rfc">RFC (13)</a>
+  <a href="#journal">Journal (29)</a>
   <a href="#brief">Brief</a>
 </div></nav>
 
 <div class="wrap">
 <header class="hero">
   <h1>Sinogrammes — Carnet de bord</h1>
-  <p class="meta">Index généré le 2026-06-13 15:06. 12 RFC · 28 entrées de journal.</p>
+  <p class="meta">Index généré le 2026-06-13 15:28. 13 RFC · 29 entrées de journal.</p>
   <p class="hint">Toutes les sections sont collapsables. Cliquez sur une ligne ou un lien interne pour ouvrir et défiler.</p>
 </header>
 
@@ -185,14 +185,22 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <blockquote>
 <p><strong>Fichier toujours à jour.</strong> À mettre à jour à la fin de chaque session de travail. Répond à la question : &quot;où en est le projet, là, maintenant ?&quot;</p>
 </blockquote>
-<p><strong>Dernière mise à jour</strong> : 2026-06-13 (Lot 5 clôturé — MVP complet)</p>
+<p><strong>Dernière mise à jour</strong> : 2026-06-13 (post-MVP — déploiement Docker + CI)</p>
 <h2>Statut global</h2>
-<p>🎉 <strong>MVP complet : Lots 0 → 5 tous clôturés.</strong> L&#39;app est installable et utilisable sur Boox Air 5c et ordinateur, fonctionne hors-ligne, synchronise la progression entre appareils, et couvre HSK 3.0 niveaux 1–2. La suite est du post-MVP (cf. RFC 0007 « Ce qui suit »).</p>
+<p>🎉 <strong>MVP complet (Lots 0 → 5).</strong> Post-MVP en cours : <strong>déploiement auto-hébergé Docker + CI livré</strong> (RFC 0013). L&#39;app est installable/utilisable sur Boox Air 5c et ordinateur, hors-ligne, sync multi-appareils, HSK 3.0 niveaux 1–2.</p>
 <p><strong>Lot 5 — Polish &amp; PWA</strong> : ✅ <strong>clôturé, critère de sortie atteint</strong> — installable + 100 % offline + Lighthouse 97/100/100. Validé en réel sur Boox le 2026-06-13 (installation, tracé HSK 1/2, hors-ligne, sync multi-appareils via <code>make serve</code> sur le LAN).</p>
 <p><strong>Lot 4 — Synthèse vocale</strong> : ✅ <strong>clôturé</strong> (API SpeechSynthesis, SpeakButton intégré).</p>
 <p><strong>Lot 3 — Système de révision</strong> : ✅ <strong>clôturé, critère de sortie atteint</strong> — sync backend single-origin + merge par champ (RFC 0011, 2026-06-13).</p>
 <p><strong>Lot 2</strong> : ✅ clôturé officiellement (RFC 0007 + RFC 0010).</p>
 <h2>Ce qui est fait</h2>
+<h3>Post-MVP — déploiement auto-hébergé Docker + CI (2026-06-13)</h3>
+<p>Cf. <a href="#journal-2026-06-13-deploiement-docker"><code>docs/journal/2026-06-13-deploiement-docker.md</code></a> et <a href="#rfc-0013">RFC 0013</a>.</p>
+<ul>
+<li>✅ <strong><code>Dockerfile</code></strong> multi-étapes single-origin (front <code>vite build</code> → Go statique <code>CGO_ENABLED=0</code> → runtime Alpine non-root + migrations + dist + healthcheck <code>/health</code>). <strong>Validé</strong> : <code>docker run</code> → endpoints OK + persistance après restart.</li>
+<li>✅ <strong><code>docker-compose.yml</code></strong> : volume nommé <code>/data</code> (SQLite), <code>restart: unless-stopped</code>. <code>make docker-up</code>/<code>down</code>/<code>build</code>.</li>
+<li>✅ <strong>CI GitHub Actions</strong> (<code>.github/workflows/ci.yml</code>) : jobs frontend (vitest/eslint/prettier/tsc/playwright), backend (<code>go test -race</code>, golangci-lint), docker build. <strong>Outils appelés directement</strong> (pas <code>make</code>) pour découpler la CI du task runner ; toolchain via <code>jdx/mise-action</code> (parité Node 24.15.0).</li>
+<li>⚠ <strong>Sécurité</strong> : API non authentifiée → LAN / réseau de confiance uniquement ; jeton + TLS requis avant exposition publique (RFC 0013, incrément ultérieur).</li>
+</ul>
 <h3>Lot 0 (clôturé)</h3>
 <p>Cf. <a href="#journal-2026-05-24-lot0-fondations"><code>docs/journal/2026-05-24-lot0-fondations.md</code></a>. Documentation initiale, structure du monorepo, schéma de données v1 + fixture, backend Go avec <code>/health</code> en TDD, frontend Vite/React/TS strict + Tailwind + Vitest + i18n FR/EN, ports hexagonaux, orchestrateur de migrations, Makefile racine.</p>
 <h3>Lot 1 (clôturé) — Canvas et validation de tracé</h3>
@@ -382,6 +390,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </ul>
 <h2>Dernières décisions importantes</h2>
 <ul>
+<li>2026-06-13 : <strong>déploiement auto-hébergé Docker</strong> (RFC 0013) — image single-origin (Alpine, binaire statique, SQLite sur volume), docker-compose, CI GitHub Actions appelant les outils <strong>directement</strong> (indépendante du Makefile). API non authentifiée → LAN uniquement.</li>
 <li>2026-06-13 : <strong>indicateur de focus clavier global</strong> (<code>:focus-visible</code> noir, e-ink) dans <code>index.css</code>, en plus du renforcement <code>prefers-contrast</code>. Les <code>focus:outline-none</code> nus des champs sont retirés (focus clavier redevenu visible).</li>
 <li>2026-06-13 : <strong>périmètre étendu à HSK 3.0 niveaux 1–2</strong> (RFC 0012). Sourcing cumulatif (niveau = plus bas d&#39;apparition), fichiers générés <strong>par niveau</strong> + merge au chargement (HSK 1 byte-identique, HSK 3 trivial), schéma inchangé, filtre niveau au glossaire.</li>
 <li>2026-06-13 : <strong>Lot 3 — déploiement single-origin + merge par champ</strong> (RFC 0011). Le binaire Go sert front + API ; merge par champ symétrique client/serveur (max attempts, tie → last_seen), schéma inchangé. Clôt le critère de sortie multi-appareils.</li>
@@ -438,7 +447,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li><strong>Export / import Anki</strong>.</li>
 <li><strong>Statistiques avancées</strong> (heatmap, courbes de rétention).</li>
 <li><strong>HSK 3, 4, …</strong> : ajout trivial d&#39;un niveau dans le pipeline (<code>LEVELS</code> + un import au merge, cf. RFC 0012).</li>
-<li><strong>Docker / CI / déploiement formalisé</strong>.</li>
+<li>✅ <del><strong>Docker / CI / déploiement formalisé</strong></del> : fait (2026-06-13, RFC 0013). Reste éventuellement : durcissement sécurité (jeton + TLS) pour exposition publique, image multi-arch (arm64/Pi).</li>
 <li><strong>IndexedDB</strong> (si volume/query le justifient ; RFC à écrire) ; <strong>sync concurrente avancée</strong> (horodatage/CRDT) si besoin multi-appareils concurrent réel.</li>
 <li>Détails mineurs : avertissement Vite « chunk &gt; 500 KB » sur les données de tracé (intentionnel, chunks paresseux) ; focus clavier déplacé au changement de vue (amélioration a11y facultative).</li>
 </ul>
@@ -536,6 +545,12 @@ après sync (single-origin, merge par champ).</p>
 <tr>
   <td><a href="#rfc-0012">0012</a></td>
   <td><a href="#rfc-0012">Extension du jeu de données à HSK 2</a></td>
+  <td><span class="status status-Accepté">Accepté</span></td>
+  <td>2026-06-13</td>
+</tr>
+<tr>
+  <td><a href="#rfc-0013">0013</a></td>
+  <td><a href="#rfc-0013">Déploiement auto-hébergé (Docker) et intégration continue</a></td>
   <td><span class="status status-Accepté">Accepté</span></td>
   <td>2026-06-13</td>
 </tr></tbody>
@@ -1761,6 +1776,76 @@ contradiction avec l&#39;affectation « plus bas niveau ».</li>
 </ul>
 </div>
 </details>
+<details id="rfc-0013">
+  <summary>RFC 0013 — Déploiement auto-hébergé (Docker) et intégration continue<span class="meta">2026-06-13 · <span class="status status-Accepté">Accepté</span></span></summary>
+  <div class="content"><h1>RFC 0013 — Déploiement auto-hébergé (Docker) et intégration continue</h1>
+<ul>
+<li><strong>Statut</strong> : Accepté</li>
+<li><strong>Date</strong> : 2026-06-13</li>
+<li><strong>Auteur(s)</strong> : Enzo</li>
+<li><strong>Lié à</strong> : RFC 0007 (découpage en lots — post-MVP), RFC 0011 (sync backend / single-origin)</li>
+</ul>
+<h2>Contexte</h2>
+<p>Le MVP (Lots 0–5) est complet, mais le serveur ne tournait qu&#39;en foreground via
+<code>make serve</code> sur le poste de dev (LAN, machine allumée). RFC 0007 liste « Docker / CI /
+déploiement formalisé » en post-MVP. Objectif : un déploiement <strong>auto-hébergé</strong>
+(VPS / serveur maison / Raspberry Pi) reproductible, persistant et auto-redémarrant,
+plus une CI qui rejoue les barrières sous la toolchain pinnée.</p>
+<h2>Décision</h2>
+<h3>Image Docker single-origin</h3>
+<p>Un <strong><code>Dockerfile</code> multi-étapes</strong> à la racine produit une image unique qui sert la PWA
+<strong>et</strong> l&#39;API (single-origin, cf. RFC 0011) :</p>
+<ol>
+<li><code>node:24.15.0-alpine</code> : <code>npm ci</code> puis <strong><code>npx vite build</code></strong> → <code>dist/</code>. On invoque
+<code>vite build</code> directement, pas <code>npm run build</code> (qui enchaîne <code>tsc --noEmit</code>) : le
+typecheck strict est la responsabilité de la CI, et l&#39;image n&#39;embarque pas <code>shared/</code>.</li>
+<li><code>golang:1.26.2-alpine</code> : <code>CGO_ENABLED=0 go build</code> → <strong>binaire statique</strong> (SQLite est
+pur-Go via <code>modernc.org/sqlite</code>, aucune dépendance C).</li>
+<li><code>alpine:3.20</code> : binaire + <code>backend/migrations/</code> (lues au runtime par goose) +
+<code>dist/</code>, utilisateur <strong>non-root</strong>, <code>HEALTHCHECK</code> sur <code>/health</code>, variables
+<code>SINO_*</code> pré-réglées (<code>STATIC_DIR=/app/dist</code>, <code>DB_PATH=/data/sinogrammes.db</code>,
+<code>MIGRATIONS_DIR=/app/migrations</code>, <code>HOST=0.0.0.0</code>).</li>
+</ol>
+<h3>Persistance et orchestration</h3>
+<p><strong><code>docker-compose.yml</code></strong> : un service <code>sinogrammes</code>, <strong>volume nommé</strong> <code>sinogrammes-data</code>
+monté sur <code>/data</code> (base SQLite persistante), <code>restart: unless-stopped</code>, healthcheck.
+<code>docker compose up -d --build</code>, puis <code>http://&lt;hôte&gt;:8787</code>. Raccourcis <code>make docker-up</code> /
+<code>docker-down</code> / <code>docker-build</code> (la CI, elle, n&#39;utilise pas le Makefile).</p>
+<h3>Intégration continue</h3>
+<p><strong><code>.github/workflows/ci.yml</code></strong> (push <code>main</code> + pull requests), trois jobs :</p>
+<ul>
+<li><strong>frontend</strong> : <code>npx vitest run</code>, <code>npx eslint .</code>, <code>npx prettier --check .</code>,
+<code>npx tsc --noEmit</code>, <code>npx playwright test</code>.</li>
+<li><strong>backend</strong> : <code>go test ./... -race</code>, <code>golangci-lint run ./...</code>.</li>
+<li><strong>docker</strong> : <code>docker build</code> (sanity).</li>
+</ul>
+<p>La CI <strong>appelle les outils directement</strong> (pas le Makefile) pour rester indépendante du
+task runner. La toolchain est provisionnée par <strong><code>jdx/mise-action</code></strong> depuis <code>mise.toml</code>
+(parité de version exacte, dont <strong>Node 24.15.0</strong> — Node 25 casse le <code>localStorage</code> de
+jsdom et ferait échouer les tests).</p>
+<h2>Conséquences</h2>
+<ul>
+<li><strong>Sécurité</strong> : l&#39;API <code>/api/progress</code> <strong>n&#39;est pas authentifiée</strong>. Cet incrément vise un
+<strong>réseau de confiance (LAN)</strong>. Avant toute <strong>exposition publique</strong>, il faudra ajouter un
+<strong>jeton d&#39;accès</strong> (variable d&#39;env côté backend + en-tête côté client) et idéalement du
+TLS via un reverse-proxy. Ce durcissement est un incrément ultérieur explicite, hors de
+cette RFC.</li>
+<li><strong>Aucun changement de code applicatif</strong> : uniquement de l&#39;infra et de la doc.</li>
+<li>Le binaire statique + Alpine donnent une image légère, multi-arch possible (amd64/arm64
+pour Raspberry Pi) via buildx si besoin.</li>
+</ul>
+<h2>Alternatives considérées</h2>
+<ul>
+<li><strong>PaaS managé (Fly.io / Render)</strong> : écarté au profit de l&#39;auto-hébergement (choix
+utilisateur) ; l&#39;image Docker reste compatible si un PaaS est retenu plus tard.</li>
+<li><strong>Image <code>distroless</code>/<code>scratch</code></strong> : plus minimale, mais Alpine offre un shell + <code>wget</code>
+(healthcheck, debug) pour un coût négligeable — préféré pour un usage auto-hébergé.</li>
+<li><strong>CI via <code>make</code></strong> : écarté pour découpler la CI du task runner.</li>
+<li><strong>Embarquer les migrations dans le binaire (<code>embed</code>)</strong> : possible plus tard ; pour
+l&#39;instant elles sont copiées dans l&#39;image (simple, déjà lues depuis un répertoire).</li>
+</ul>
+</div>
+</details>
 </section>
 
 <section id="journal">
@@ -2201,6 +2286,57 @@ joignable par les deux appareils (<code>make serve</code>, <code>SINO_HOST=0.0.0
 <li>Test d&#39;installation/sync réel Boox ↔ ordinateur sur le LAN (nécessite le matériel).</li>
 <li>Si un besoin multi-appareils concurrent réel apparaît : envisager un horodatage ou un
 CRDT (sommation des compteurs) — sur-ingénierie pour l&#39;instant.</li>
+</ul>
+</div>
+</details>
+<details id="journal-2026-06-13-deploiement-docker">
+  <summary>2026-06-13 — Déploiement auto-hébergé (Docker + CI)</summary>
+  <div class="content"><h1>2026-06-13 — Déploiement auto-hébergé (Docker + CI)</h1>
+<h2>Objectif</h2>
+<p>Premier chantier post-MVP : déploiement auto-hébergé reproductible (RFC 0013).
+Une image Docker single-origin (PWA + API + SQLite), orchestrée par docker-compose,
+plus une CI GitHub Actions sous toolchain pinnée.</p>
+<h2>Ce qui a été fait</h2>
+<ul>
+<li><strong><code>Dockerfile</code></strong> multi-étapes : front (<code>node:24.15.0-alpine</code>, <code>npx vite build</code>),
+Go statique (<code>golang:1.26.2-alpine</code>, <code>CGO_ENABLED=0</code>), runtime <code>alpine:3.20</code>
+non-root avec binaire + <code>migrations/</code> + <code>dist/</code>, env <code>SINO_*</code>, <code>HEALTHCHECK /health</code>.
+<code>npx vite build</code> (et non <code>npm run build</code>) : le typecheck est l&#39;affaire de la CI,
+et l&#39;image n&#39;a pas besoin de <code>shared/</code>.</li>
+<li><strong><code>.dockerignore</code></strong> : contexte minimal (exclut node_modules, dist, data, docs…).</li>
+<li><strong><code>docker-compose.yml</code></strong> : service <code>sinogrammes</code>, volume nommé <code>/data</code>,
+<code>restart: unless-stopped</code>, healthcheck.</li>
+<li><strong><code>.github/workflows/ci.yml</code></strong> : jobs frontend (vitest/eslint/prettier/tsc/playwright),
+backend (<code>go test -race</code>, golangci-lint), docker (build). Outils appelés <strong>directement</strong>
+(pas via <code>make</code>) pour découpler la CI du task runner ; toolchain via <code>jdx/mise-action</code>
+(parité de version, dont Node 24.15.0).</li>
+<li><strong>Makefile</strong> : raccourcis <code>docker-build</code> / <code>docker-up</code> / <code>docker-down</code> + <code>make help</code>.</li>
+<li><strong>Docs</strong> : RFC 0013, section README « Déploiement auto-hébergé », <code>CURRENT_STATE</code>.</li>
+</ul>
+<h2>Vérifications</h2>
+<ul>
+<li><strong><code>docker build</code></strong> : OK (3 étapes, image construite). Première tentative en échec
+(<code>npm run build</code> → <code>tsc</code> typecheckait les tests important <code>shared/</code>, absent du contexte
+front) → corrigé en <code>npx vite build</code>.</li>
+<li><strong><code>docker run</code></strong> (volume + port) : <code>/health</code> 200, <code>/</code> sert l&#39;app, <code>POST</code>/<code>GET</code>
+<code>/api/progress</code> round-trip OK, <strong>persistance confirmée après <code>docker restart</code></strong>,
+healthcheck <code>healthy</code>.</li>
+<li><strong><code>docker compose config</code></strong> : valide. <code>make docker-up</code> bloqué uniquement par le port
+8787 déjà occupé localement (instance <code>make serve</code> en cours) — pas un souci de compose.</li>
+<li>CI : syntaxe écrite ; validée au premier push GitHub (non exécutable localement).</li>
+</ul>
+<h2>Décisions (cf. RFC 0013)</h2>
+<ul>
+<li><strong>Image single-origin auto-hébergée</strong> (Alpine, binaire statique, SQLite sur volume).</li>
+<li><strong>CI indépendante du Makefile</strong> (outils directs) + provisionnement par mise-action.</li>
+<li><strong>Sécurité</strong> : API non authentifiée → LAN / réseau de confiance uniquement ; jeton
+d&#39;accès + TLS requis avant toute exposition publique (incrément ultérieur).</li>
+</ul>
+<h2>Reste / pistes</h2>
+<ul>
+<li>Durcissement sécurité (jeton + reverse-proxy TLS) si exposition hors LAN.</li>
+<li>Image multi-arch (arm64) via buildx pour Raspberry Pi, au besoin.</li>
+<li>Migrations embarquées (<code>embed</code>) plus tard si on veut une image sans <code>migrations/</code>.</li>
 </ul>
 </div>
 </details>
@@ -4040,7 +4176,7 @@ HSK 3+, Docker/CI/déploiement, IndexedDB. Rien d&#39;engagé.</p>
 </section>
 
 <footer>
-<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-06-13 15:06 par <code>make docs</code>.</p>
+<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-06-13 15:28 par <code>make docs</code>.</p>
 </footer>
 </div>
 

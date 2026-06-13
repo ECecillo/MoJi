@@ -9,6 +9,7 @@ SHELL := /bin/sh
         lint lint-front lint-back \
         typecheck build build-front build-back \
         vendor-sources build-data build-icons docs serve \
+        docker-build docker-up docker-down \
         clean
 
 help:
@@ -22,6 +23,8 @@ help:
 	@echo "  make typecheck   — typecheck strict TypeScript"
 	@echo "  make build       — compile front et back"
 	@echo "  make serve       — build + sert front ET API sur une seule origine (LAN, cf. RFC 0011)"
+	@echo "  make docker-up   — build l'image et lance le conteneur (docker compose, cf. RFC 0013)"
+	@echo "  make docker-down — arrête le conteneur"
 	@echo "  make vendor-sources — rafraîchit shared/data/sources/ depuis les SHA upstream (rare, réseau)"
 	@echo "  make build-data  — régénère frontend/src/data/hsk1.generated.json (offline)"
 	@echo "  make build-icons — régénère les icônes PNG de la PWA (192/512, via Chromium Playwright)"
@@ -102,6 +105,18 @@ build: build-front build-back
 # ouvrent http://<ip-de-cette-machine>:8787 et installent la PWA depuis là.
 serve: build
 	cd backend && SINO_STATIC_DIR=../frontend/dist SINO_HOST=0.0.0.0 ./bin/server
+
+# ─────────── déploiement Docker (cf. RFC 0013) ───────────
+# Raccourcis développeur — la CI, elle, n'utilise pas le Makefile.
+
+docker-build:
+	docker build -t sinogrammes:latest .
+
+docker-up:
+	docker compose up -d --build
+
+docker-down:
+	docker compose down
 
 # ─────────── data pipeline (cf. RFC 0008) ───────────
 

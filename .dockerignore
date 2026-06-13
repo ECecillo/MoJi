@@ -1,0 +1,17 @@
+# Contexte de build minimal — voir Dockerfile (build multi-étapes).
+.git
+**/node_modules
+frontend/dist
+frontend/test-results
+frontend/playwright-report
+frontend/coverage
+backend/bin
+backend/data
+backend/coverage.out
+backend/coverage.html
+docs
+*.md
+!frontend/**/*.md
+.github
+.claude
+# On garde frontend/src/data/*.generated.json (commités, nécessaires au build front).
