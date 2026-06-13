@@ -159,14 +159,14 @@ export function Glossary({ onSelect, onShowDetail }: GlossaryProps) {
                   key={item.id}
                   className="flex items-center justify-between border border-ink bg-paper p-3"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <div className="relative shrink-0">
                       <span className="text-2xl font-hanzi text-ink">{item.hanzi}</span>
                       <StatusDot status={status} />
                     </div>
-                    <SpeakButton text={item.hanzi} size="sm" />
-                    <div className="flex flex-col">
-                      <span className="text-xs font-medium text-ink-muted">
+                    <SpeakButton text={item.hanzi} size="sm" className="shrink-0" />
+                    <div className="flex min-w-0 flex-col">
+                      <span className="truncate text-xs font-medium text-ink-muted">
                         {pinyinToString(item.pinyin)}
                       </span>
                       <span className="line-clamp-1 text-xs text-ink-faint">{meaning}</span>
