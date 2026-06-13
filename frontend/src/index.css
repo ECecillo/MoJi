@@ -20,6 +20,13 @@
     }
   }
 
+  /* Indicateur de focus clavier global, cohérent et lisible en e-ink (noir net).
+     S'applique à tous les éléments focusables (boutons, champs, zone stylet). */
+  :focus-visible {
+    outline: 2px solid #111111;
+    outline-offset: 2px;
+  }
+
   @media (prefers-contrast: more) {
     :focus-visible {
       outline: 3px solid #111111;

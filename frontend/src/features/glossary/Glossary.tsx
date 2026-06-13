@@ -110,7 +110,7 @@ export function Glossary({ onSelect, onShowDetail }: GlossaryProps) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t('glossary.search_placeholder')}
-            className="w-full border-2 border-ink bg-paper px-3 py-2 text-ink placeholder:text-ink-faint focus:outline-none"
+            className="w-full border-2 border-ink bg-paper px-3 py-2 text-ink placeholder:text-ink-faint"
           />
         </div>
 
@@ -397,7 +397,7 @@ function FilterPanel({
                     placeholder={t('glossary.filters.min') ?? 'min'}
                     value={filters.strokeCount?.min ?? ''}
                     onChange={(e) => updateStrokeRange('min', e.target.value)}
-                    className="w-20 border border-ink bg-paper px-2 py-1 text-sm focus:outline-none"
+                    className="w-20 border border-ink bg-paper px-2 py-1 text-sm"
                     data-testid="filter-stroke-min"
                   />
                   <span className="text-ink-muted">–</span>
@@ -408,7 +408,7 @@ function FilterPanel({
                     placeholder={t('glossary.filters.max') ?? 'max'}
                     value={filters.strokeCount?.max ?? ''}
                     onChange={(e) => updateStrokeRange('max', e.target.value)}
-                    className="w-20 border border-ink bg-paper px-2 py-1 text-sm focus:outline-none"
+                    className="w-20 border border-ink bg-paper px-2 py-1 text-sm"
                     data-testid="filter-stroke-max"
                   />
                 </div>
@@ -426,7 +426,7 @@ function FilterPanel({
                     placeholder={t('glossary.filters.min') ?? 'min'}
                     value={filters.frequencyRank?.min ?? ''}
                     onChange={(e) => updateFrequencyRange('min', e.target.value)}
-                    className="w-20 border border-ink bg-paper px-2 py-1 text-sm focus:outline-none"
+                    className="w-20 border border-ink bg-paper px-2 py-1 text-sm"
                     data-testid="filter-frequency-min"
                   />
                   <span className="text-ink-muted">–</span>
@@ -437,7 +437,7 @@ function FilterPanel({
                     placeholder={t('glossary.filters.max') ?? 'max'}
                     value={filters.frequencyRank?.max ?? ''}
                     onChange={(e) => updateFrequencyRange('max', e.target.value)}
-                    className="w-20 border border-ink bg-paper px-2 py-1 text-sm focus:outline-none"
+                    className="w-20 border border-ink bg-paper px-2 py-1 text-sm"
                     data-testid="filter-frequency-max"
                   />
                 </div>

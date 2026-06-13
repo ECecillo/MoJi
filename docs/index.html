@@ -168,14 +168,14 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <nav class="topnav"><div class="wrap">
   <a href="#etat">État courant</a>
   <a href="#rfc">RFC (12)</a>
-  <a href="#journal">Journal (26)</a>
+  <a href="#journal">Journal (27)</a>
   <a href="#brief">Brief</a>
 </div></nav>
 
 <div class="wrap">
 <header class="hero">
   <h1>Sinogrammes — Carnet de bord</h1>
-  <p class="meta">Index généré le 2026-06-13 14:36. 12 RFC · 26 entrées de journal.</p>
+  <p class="meta">Index généré le 2026-06-13 14:44. 12 RFC · 27 entrées de journal.</p>
   <p class="hint">Toutes les sections sont collapsables. Cliquez sur une ligne ou un lien interne pour ouvrir et défiler.</p>
 </header>
 
@@ -187,7 +187,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </blockquote>
 <p><strong>Dernière mise à jour</strong> : 2026-06-13 (Lot 5 — import HSK 2)</p>
 <h2>Lot en cours</h2>
-<p><strong>Lot 5 — Polish &amp; PWA</strong> : 🟡 <strong>en cours</strong> — PWA/offline/Lighthouse/icônes + <strong>import HSK 2</strong> livrés. Reste : test d&#39;installation réel sur Boox (matériel).</p>
+<p><strong>Lot 5 — Polish &amp; PWA</strong> : 🟡 <strong>en cours</strong> — PWA/offline/Lighthouse/icônes + import HSK 2 + audit a11y clavier livrés. <strong>Seul reste : test d&#39;installation réel sur Boox (matériel).</strong></p>
 <p><strong>Lot 4 — Synthèse vocale</strong> : ✅ <strong>clôturé</strong> (API SpeechSynthesis, SpeakButton intégré).</p>
 <p><strong>Lot 3 — Système de révision</strong> : ✅ <strong>clôturé, critère de sortie atteint</strong> — sync backend single-origin + merge par champ (RFC 0011, 2026-06-13).</p>
 <p><strong>Lot 2</strong> : ✅ clôturé officiellement (RFC 0007 + RFC 0010).</p>
@@ -381,6 +381,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </ul>
 <h2>Dernières décisions importantes</h2>
 <ul>
+<li>2026-06-13 : <strong>indicateur de focus clavier global</strong> (<code>:focus-visible</code> noir, e-ink) dans <code>index.css</code>, en plus du renforcement <code>prefers-contrast</code>. Les <code>focus:outline-none</code> nus des champs sont retirés (focus clavier redevenu visible).</li>
 <li>2026-06-13 : <strong>périmètre étendu à HSK 3.0 niveaux 1–2</strong> (RFC 0012). Sourcing cumulatif (niveau = plus bas d&#39;apparition), fichiers générés <strong>par niveau</strong> + merge au chargement (HSK 1 byte-identique, HSK 3 trivial), schéma inchangé, filtre niveau au glossaire.</li>
 <li>2026-06-13 : <strong>Lot 3 — déploiement single-origin + merge par champ</strong> (RFC 0011). Le binaire Go sert front + API ; merge par champ symétrique client/serveur (max attempts, tie → last_seen), schéma inchangé. Clôt le critère de sortie multi-appareils.</li>
 <li>2026-06-13 : <strong>sync = best-effort silencieux en offline-first</strong>. Backend absent / hors-ligne = cas nominal : journalisé en <code>console.debug</code>, jamais <code>console.error</code>. <code>RestSyncClient.pull</code> vérifie le content-type.</li>
@@ -425,7 +426,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li>✅ <del><strong>Icônes PNG</strong></del> : fait (2026-06-13). 192/512 normal + maskable, manifest + SW à jour.</li>
 <li>✅ <del><strong>Offline API / sync</strong></del> : traité avec le Lot 3 (RFC 0011) — sync best-effort silencieuse, déclencheurs focus/online, merge par champ.</li>
 <li>✅ <del><strong>Import HSK 2</strong></del> : fait (2026-06-13, RFC 0012). 598 caractères / 1256 mots, fichiers par niveau + merge, filtre niveau au glossaire. HSK 3+ = ajout trivial d&#39;un niveau.</li>
-<li><strong>Audit accessibilité (navigation clavier)</strong> : reduced-motion/contrast OK (Lighthouse a11y 100) ; reste un passage clavier dédié à faire.</li>
+<li>✅ <del><strong>Audit accessibilité (navigation clavier)</strong></del> : fait (2026-06-13). Tous les contrôles sont des <code>&lt;button&gt;</code>/champs natifs focusables ; indicateur de focus clavier <strong>global</strong> ajouté (<code>:focus-visible</code> noir e-ink dans <code>index.css</code>) ; <code>focus:outline-none</code> nu retiré des 6 champs (focus redevenu visible). reduced-motion/contrast déjà OK (Lighthouse a11y 100).</li>
 <li><strong>Audit installabilité réel</strong> : tester l&#39;installation sur Boox Air 5c et sur ordinateur (nécessite le matériel). Inclut désormais un test de <strong>sync réelle Boox ↔ ordinateur</strong> sur le LAN via <code>make serve</code>.</li>
 </ul>
 <h2>Lot 3 — clôturé</h2>
@@ -2077,6 +2078,46 @@ marginaux pour une complexité Suspense réelle — non prioritaire.</li>
 <li>Icônes PNG 192/512 si l&#39;audit Boox/Chrome les exige.</li>
 <li>Audit Lighthouse sur build de production.</li>
 <li>Test d&#39;installation réel sur Boox Air 5c (nécessite le matériel).</li>
+</ul>
+</div>
+</details>
+<details id="journal-2026-06-13-lot5-a11y-clavier">
+  <summary>2026-06-13 — Lot 5 : audit accessibilité navigation clavier</summary>
+  <div class="content"><h1>2026-06-13 — Lot 5 : audit accessibilité navigation clavier</h1>
+<h2>Objectif de la session</h2>
+<p>Traiter l&#39;item « Audit accessibilité (navigation clavier) » du Lot 5 (RFC 0007).</p>
+<h2>Audit</h2>
+<ul>
+<li><strong>Atteignabilité</strong> : tous les contrôles interactifs sont des <code>&lt;button&gt;</code> ou des
+champs natifs (<code>input</code>, <code>select</code>) — aucun <code>onClick</code> sur <code>div</code>/<code>span</code>. Donc tout est
+atteignable au clavier (Tab / Entrée) sans <code>tabindex</code> ni <code>role</code> ajoutés. La zone de
+saisie stylet est <code>role=&quot;application&quot;</code> + <code>tabIndex=0</code> (focusable ; le tracé reste
+pointeur, inhérent à l&#39;app).</li>
+<li><strong>Défaut trouvé</strong> : l&#39;indicateur de focus clavier n&#39;existait qu&#39;en
+<code>prefers-contrast: more</code>. En contraste normal, on s&#39;appuyait sur l&#39;anneau par défaut
+du navigateur — <strong>sauf</strong> sur 6 champs (recherche, éditeur FR, 4 plages de filtre) qui
+posaient <code>focus:outline-none</code> <strong>sans remplacement</strong> → focus invisible au clavier.</li>
+</ul>
+<h2>Correctifs</h2>
+<ul>
+<li><code>index.css</code> : ajout d&#39;un <code>:focus-visible { outline: 2px solid #111; outline-offset: 2px }</code>
+<strong>global</strong> (e-ink, noir net), en plus du renforcement à 3px sous <code>prefers-contrast</code>.
+Indicateur cohérent sur tous les éléments focusables.</li>
+<li>Retrait du <code>focus:outline-none</code> nu des 6 champs (<code>Glossary</code> ×5, <code>EntryDetail</code> ×1) :
+ils héritent désormais de l&#39;indicateur global. <code>SpeakButton</code> conserve son anneau
+visible existant.</li>
+</ul>
+<h2>Vérifications (sous Node épinglé)</h2>
+<ul>
+<li><code>make typecheck</code> / <code>make lint</code> : propres.</li>
+<li><code>make test-e2e</code> : 31/31 (Chromium).</li>
+</ul>
+<h2>Reste / pistes</h2>
+<ul>
+<li>Gestion du focus au changement de vue (déplacer le focus vers le bouton retour /
+titre en entrant dans détail/practice/dashboard) : amélioration possible, non
+bloquante — laissée de côté pour ne pas fragiliser le flux canvas.</li>
+<li>Seul reste du Lot 5 : test d&#39;installation réel sur Boox (matériel).</li>
 </ul>
 </div>
 </details>
@@ -3959,7 +4000,7 @@ CRDT (sommation des compteurs) — sur-ingénierie pour l&#39;instant.</li>
 </section>
 
 <footer>
-<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-06-13 14:36 par <code>make docs</code>.</p>
+<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-06-13 14:44 par <code>make docs</code>.</p>
 </footer>
 </div>
 

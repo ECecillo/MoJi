@@ -6,7 +6,7 @@
 
 ## Lot en cours
 
-**Lot 5 — Polish & PWA** : 🟡 **en cours** — PWA/offline/Lighthouse/icônes + **import HSK 2** livrés. Reste : test d'installation réel sur Boox (matériel).
+**Lot 5 — Polish & PWA** : 🟡 **en cours** — PWA/offline/Lighthouse/icônes + import HSK 2 + audit a11y clavier livrés. **Seul reste : test d'installation réel sur Boox (matériel).**
 
 **Lot 4 — Synthèse vocale** : ✅ **clôturé** (API SpeechSynthesis, SpeakButton intégré).
 
@@ -227,6 +227,7 @@ Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lo
 
 ## Dernières décisions importantes
 
+- 2026-06-13 : **indicateur de focus clavier global** (`:focus-visible` noir, e-ink) dans `index.css`, en plus du renforcement `prefers-contrast`. Les `focus:outline-none` nus des champs sont retirés (focus clavier redevenu visible).
 - 2026-06-13 : **périmètre étendu à HSK 3.0 niveaux 1–2** (RFC 0012). Sourcing cumulatif (niveau = plus bas d'apparition), fichiers générés **par niveau** + merge au chargement (HSK 1 byte-identique, HSK 3 trivial), schéma inchangé, filtre niveau au glossaire.
 - 2026-06-13 : **Lot 3 — déploiement single-origin + merge par champ** (RFC 0011). Le binaire Go sert front + API ; merge par champ symétrique client/serveur (max attempts, tie → last_seen), schéma inchangé. Clôt le critère de sortie multi-appareils.
 - 2026-06-13 : **sync = best-effort silencieux en offline-first**. Backend absent / hors-ligne = cas nominal : journalisé en `console.debug`, jamais `console.error`. `RestSyncClient.pull` vérifie le content-type.
@@ -273,7 +274,7 @@ Aucun.
 - ✅ ~~**Icônes PNG**~~ : fait (2026-06-13). 192/512 normal + maskable, manifest + SW à jour.
 - ✅ ~~**Offline API / sync**~~ : traité avec le Lot 3 (RFC 0011) — sync best-effort silencieuse, déclencheurs focus/online, merge par champ.
 - ✅ ~~**Import HSK 2**~~ : fait (2026-06-13, RFC 0012). 598 caractères / 1256 mots, fichiers par niveau + merge, filtre niveau au glossaire. HSK 3+ = ajout trivial d'un niveau.
-- **Audit accessibilité (navigation clavier)** : reduced-motion/contrast OK (Lighthouse a11y 100) ; reste un passage clavier dédié à faire.
+- ✅ ~~**Audit accessibilité (navigation clavier)**~~ : fait (2026-06-13). Tous les contrôles sont des `<button>`/champs natifs focusables ; indicateur de focus clavier **global** ajouté (`:focus-visible` noir e-ink dans `index.css`) ; `focus:outline-none` nu retiré des 6 champs (focus redevenu visible). reduced-motion/contrast déjà OK (Lighthouse a11y 100).
 - **Audit installabilité réel** : tester l'installation sur Boox Air 5c et sur ordinateur (nécessite le matériel). Inclut désormais un test de **sync réelle Boox ↔ ordinateur** sur le LAN via `make serve`.
 
 ## Lot 3 — clôturé

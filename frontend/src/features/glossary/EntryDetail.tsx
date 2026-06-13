@@ -418,7 +418,7 @@ function EditableTranslations({
             type="text"
             value={value}
             onChange={(e) => update(idx, e.target.value)}
-            className="flex-1 border border-ink bg-paper px-2 py-1 text-sm focus:outline-none"
+            className="flex-1 border border-ink bg-paper px-2 py-1 text-sm"
             placeholder={t('glossary.detail.translation_placeholder') ?? ''}
             data-testid="translation-input"
             ref={(el) => {
