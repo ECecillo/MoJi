@@ -168,14 +168,14 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <nav class="topnav"><div class="wrap">
   <a href="#etat">État courant</a>
   <a href="#rfc">RFC (10)</a>
-  <a href="#journal">Journal (22)</a>
+  <a href="#journal">Journal (23)</a>
   <a href="#brief">Brief</a>
 </div></nav>
 
 <div class="wrap">
 <header class="hero">
   <h1>Sinogrammes — Carnet de bord</h1>
-  <p class="meta">Index généré le 2026-06-13 08:47. 10 RFC · 22 entrées de journal.</p>
+  <p class="meta">Index généré le 2026-06-13 09:07. 10 RFC · 23 entrées de journal.</p>
   <p class="hint">Toutes les sections sont collapsables. Cliquez sur une ligne ou un lien interne pour ouvrir et défiler.</p>
 </header>
 
@@ -185,7 +185,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <blockquote>
 <p><strong>Fichier toujours à jour.</strong> À mettre à jour à la fin de chaque session de travail. Répond à la question : &quot;où en est le projet, là, maintenant ?&quot;</p>
 </blockquote>
-<p><strong>Dernière mise à jour</strong> : 2026-06-13 (Lot 5 — optimisation assets Hanzi Writer)</p>
+<p><strong>Dernière mise à jour</strong> : 2026-06-13 (Lot 5 — code-splitting du chunk principal)</p>
 <h2>Lot en cours</h2>
 <p><strong>Lot 5 — Polish &amp; PWA</strong> : 🟡 <strong>en cours</strong>, socle PWA offline livré.</p>
 <p><strong>Lot 4 — Synthèse vocale</strong> : ✅ <strong>clôturé</strong> (API SpeechSynthesis, SpeakButton intégré).</p>
@@ -313,6 +313,13 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li>✅ <strong>Accessibilité e-ink baseline</strong> : <code>prefers-reduced-motion</code> et <code>prefers-contrast: more</code> pris en compte dans <code>index.css</code>.</li>
 <li>✅ <strong>Validation offline production</strong> : <code>vite preview</code> + Chromium Playwright, activation SW puis reload offline OK (<code>offline-ok</code>).</li>
 </ul>
+<h3>Lot 5 — code-splitting du chunk principal (2026-06-13)</h3>
+<p>Cf. <a href="#journal-2026-06-13-lot5-code-splitting"><code>docs/journal/2026-06-13-lot5-code-splitting.md</code></a>.</p>
+<ul>
+<li>✅ <strong>Données de référence en chunk paresseux</strong> : nouveau loader <code>adapters/data/bundledReferenceData.ts</code> (<code>loadBundledDataSource()</code>) qui importe <code>hsk1.generated.json</code> en dynamique et expose une <strong>instance <code>BundledDataSource</code> partagée</strong> (un seul parse Zod). <code>App</code>, <code>Glossary</code>, <code>EntryDetail</code> ne l&#39;importent plus statiquement.</li>
+<li>✅ <strong>Chunk principal 573 KB → 348 KB</strong> (gzip 103 KB, −39 %). Les 226 KB de données forment un chunk séparé chargé en parallèle dès le glossaire (offline préservé via précache SW, masqué par l&#39;état de chargement existant).</li>
+<li>⏹ <strong>Lazy-load de <code>hanzi-writer</code> abandonné</strong> : sorti du chunk principal, il cassait l&#39;interaction canvas en production (le SVG monté en différé interceptait les clics — bisection E2E déterministe). Gain de 37 KB seulement → non justifié. <code>hanzi-writer</code> reste eager.</li>
+</ul>
 <h3>Lot 5 — optimisation des assets Hanzi Writer (2026-06-13)</h3>
 <p>Cf. <a href="#journal-2026-06-13-lot5-optim-assets-hanzi-writer"><code>docs/journal/2026-06-13-lot5-optim-assets-hanzi-writer.md</code></a>.</p>
 <ul>
@@ -339,11 +346,13 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li><code>make test-e2e</code> : <strong>28/28 tests E2E verts</strong> (Chromium, ~10 s).</li>
 <li><code>make lint</code> : ESLint + Prettier propres, golangci-lint 0 issue.</li>
 <li><code>make typecheck</code> : <code>tsc --noEmit</code> propre.</li>
-<li><code>make build</code> : bundle front + binaire back OK, <strong>93 modules</strong> transformés, <code>dist/sw.js</code> 2,25 KB.</li>
+<li><code>make build</code> : bundle front + binaire back OK, chunk principal <strong>348 KB</strong>, <code>dist/sw.js</code> 2,3 KB.</li>
 <li><code>make docs</code> : <code>docs/index.html</code> à jour.</li>
 </ul>
 <h2>Dernières décisions importantes</h2>
 <ul>
+<li>2026-06-13 : <strong>données de référence chargées en dynamique</strong> (<code>loadBundledDataSource</code>), instance <code>BundledDataSource</code> partagée. Chunk principal −39 % ; le shell ne dépend plus de la taille des données pour son premier rendu.</li>
+<li>2026-06-13 : <strong><code>hanzi-writer</code> reste eager</strong>. Son lazy-load casse l&#39;interaction canvas en production (SVG différé qui capte les clics, prouvé par bisection E2E) ; 37 KB ne le justifient pas.</li>
 <li>2026-06-13 : <strong>données de tracé = sous-ensemble généré hors-ligne</strong>, pas de glob de <code>hanzi-writer-data</code> au build. Le pipeline (RFC 0008) produit un fichier unique restreint à HSK 1, chargé en import dynamique paresseux. Réduit le précache SW de ~260 KB à 2,25 KB et le bundle de ~9 600 à 93 modules.</li>
 <li>2026-06-13 : <strong>les tests exigent Node 24.15.0</strong> (épinglé via mise). Sous Node 25 le <code>localStorage</code> jsdom est cassé. Toujours passer par la toolchain mise.</li>
 <li>2026-06-01 : <strong>PWA sans dépendance externe</strong>. Le service worker est généré par un plugin Vite local, actif en production uniquement, avec cache-first assets et network-first API GET.</li>
@@ -375,8 +384,8 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <p>Aucun.</p>
 <h2>Prochaines étapes — Lot 5</h2>
 <ul>
-<li>✅ <del><strong>Optimisation assets Hanzi Writer</strong></del> : fait (2026-06-13). Sous-ensemble généré, glob supprimé, précache SW ~260 KB → 2,25 KB.</li>
-<li><strong>Chunk principal restant</strong> : 573 KB après l&#39;optimisation des tracés. Code-splitting de Hanzi Writer / app à étudier.</li>
+<li>✅ <del><strong>Optimisation assets Hanzi Writer</strong></del> : fait (2026-06-13). Sous-ensemble généré, glob supprimé, précache SW ~260 KB → 2,3 KB.</li>
+<li>✅ <del><strong>Code-splitting du chunk principal</strong></del> : fait (2026-06-13). Données en chunk paresseux, chunk principal 573 KB → 348 KB. Le reste est du vendor incompressible (React/i18n/zod) ; lazy-load des vues = gain marginal, non prioritaire.</li>
 <li><strong>Audit installabilité réel</strong> : tester l&#39;installation sur Boox Air 5c et sur ordinateur.</li>
 <li><strong>Audit Lighthouse production</strong> : vérifier installabilité, offline, performance et accessibilité.</li>
 <li><strong>Icônes PNG</strong> : ajouter 192/512 si Chrome/Boox/Lighthouse ne considèrent pas les SVG suffisants.</li>
@@ -1628,6 +1637,96 @@ bundle principal, une seule entrée de précache service worker.</li>
 <h2>Reste à faire / prochaines étapes (Lot 5)</h2>
 <ul>
 <li>Traiter le chunk principal restant (573 KB) : code-splitting de Hanzi Writer / app.</li>
+<li>Icônes PNG 192/512 si l&#39;audit Boox/Chrome les exige.</li>
+<li>Audit Lighthouse sur build de production.</li>
+<li>Test d&#39;installation réel sur Boox Air 5c (nécessite le matériel).</li>
+</ul>
+</div>
+</details>
+<details id="journal-2026-06-13-lot5-code-splitting">
+  <summary>2026-06-13 — Lot 5 : code-splitting du chunk principal</summary>
+  <div class="content"><h1>2026-06-13 — Lot 5 : code-splitting du chunk principal</h1>
+<h2>Objectif de la session</h2>
+<p>Suite directe de l&#39;optimisation des assets Hanzi Writer : le chunk principal JS
+restait à ~573 KB. Le réduire par code-splitting pour accélérer le démarrage du
+shell applicatif sur la Boox.</p>
+<h2>Ce qui a été fait</h2>
+<ul>
+<li><strong>Données de référence en chunk paresseux</strong> (<code>hsk1.generated.json</code>, ~480 KB brut,
+226 KB minifié). Nouveau loader mémoïsé <code>adapters/data/bundledReferenceData.ts</code>
+qui importe le JSON en dynamique et expose une <strong>instance <code>BundledDataSource</code>
+partagée</strong> (un seul parse Zod au lieu de trois). <code>App</code>, <code>Glossary</code> et <code>EntryDetail</code>
+ne l&#39;importent plus statiquement : ils consomment <code>loadBundledDataSource()</code> dans
+leur effet de chargement existant (qui était déjà asynchrone, avec état de
+chargement). Le shell démarre donc sans attendre les 226 KB de données.</li>
+</ul>
+<h2>Gain mesuré (build production)</h2>
+<table>
+<thead>
+<tr>
+<th>Chunk</th>
+<th>Avant</th>
+<th>Après</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>index</code> (shell : React, i18n, zod, UI)</td>
+<td>~573 KB</td>
+<td><strong>348 KB</strong> (gzip 103 KB)</td>
+</tr>
+<tr>
+<td><code>hsk1.generated</code> (données)</td>
+<td>—</td>
+<td>226 KB (gzip 46), chargé en parallèle dès le glossaire</td>
+</tr>
+<tr>
+<td><code>hsk1-stroke-data</code> (tracés)</td>
+<td>618 KB</td>
+<td>inchangé (chargé au 1er tracé)</td>
+</tr>
+</tbody></table>
+<p>Soit <strong>−39 %</strong> sur le chunk principal. Les données restent précachées par le
+service worker (offline préservé) ; le chunk se charge en parallèle pendant que
+React boote, masqué par l&#39;état de chargement déjà présent dans le glossaire.</p>
+<h2>Piste abandonnée : lazy-load de <code>hanzi-writer</code></h2>
+<p>Tentative de sortir aussi <code>hanzi-writer</code> (~37 KB) du chunk principal via import
+dynamique dans <code>HanziWriterRenderer.mount()</code>. <strong>Abandonnée après bisection E2E</strong> :</p>
+<ul>
+<li>Avec <code>hanzi-writer</code> chargé en différé, les tests canvas (<code>strict-mode-regression</code>,
+<code>canvas-controls</code>) échouaient de façon déterministe — le SVG injecté par Hanzi
+Writer interceptait les clics sur les boutons (Outline, etc.) après un montage
+retardé. Symptôme d&#39;un vrai problème d&#39;interaction pendant le montage différé,
+pas seulement de timing de test.</li>
+<li>Bisection : données eager + hanzi-writer lazy → échec ; hanzi-writer eager +
+données lazy → 28/28 verts. La cause isolée est bien le lazy-load de hanzi-writer.</li>
+<li><strong>Arbitrage</strong> : 37 KB (gzip 11 KB) ne justifient pas de fragiliser le canvas, cœur
+du produit, ni de casser un verrou de non-régression. <code>hanzi-writer</code> reste donc
+dans le chunk principal, chargé tôt.</li>
+</ul>
+<h2>Vérifications</h2>
+<p>Toutes sous le Node épinglé (<code>mise exec node@24.15.0 -- …</code>) :</p>
+<ul>
+<li><code>make test</code> : 220 tests front + backend <code>-race</code> OK.</li>
+<li><code>make lint</code> : ESLint + Prettier + golangci-lint, 0 issue.</li>
+<li><code>make typecheck</code> : <code>tsc --noEmit</code> propre.</li>
+<li><code>make build</code> : chunk principal 348 KB, <code>hsk1.generated</code> 226 KB séparé.</li>
+<li><code>make test-e2e</code> : 28/28 Chromium (~9 s).</li>
+</ul>
+<h2>Décisions prises</h2>
+<ul>
+<li><strong>Données de référence chargées en dynamique, instance <code>BundledDataSource</code>
+partagée.</strong> Le shell ne dépend plus de la taille des données pour son premier
+rendu ; offline préservé via le précache SW.</li>
+<li><strong><code>hanzi-writer</code> reste eager.</strong> Le code-splitting de la bibliothèque casse
+l&#39;interaction canvas en production (SVG monté en différé qui capte les clics) ;
+le gain (37 KB) ne le justifie pas.</li>
+</ul>
+<h2>Reste à faire / prochaines étapes (Lot 5)</h2>
+<ul>
+<li>Le chunk principal (348 KB) est désormais surtout du vendor incompressible
+(React, react-i18next, zod) nécessaire au premier rendu. Aller plus loin
+(lazy-load des vues Dashboard/Detail via <code>React.lazy</code>) donnerait des gains
+marginaux pour une complexité Suspense réelle — non prioritaire.</li>
 <li>Icônes PNG 192/512 si l&#39;audit Boox/Chrome les exige.</li>
 <li>Audit Lighthouse sur build de production.</li>
 <li>Test d&#39;installation réel sur Boox Air 5c (nécessite le matériel).</li>
@@ -3443,7 +3542,7 @@ bundle principal, une seule entrée de précache service worker.</li>
 </section>
 
 <footer>
-<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-06-13 08:47 par <code>make docs</code>.</p>
+<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-06-13 09:07 par <code>make docs</code>.</p>
 </footer>
 </div>
 

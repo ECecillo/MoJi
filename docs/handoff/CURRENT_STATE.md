@@ -2,7 +2,7 @@
 
 > **Fichier toujours à jour.** À mettre à jour à la fin de chaque session de travail. Répond à la question : "où en est le projet, là, maintenant ?"
 
-**Dernière mise à jour** : 2026-06-13 (Lot 5 — optimisation assets Hanzi Writer)
+**Dernière mise à jour** : 2026-06-13 (Lot 5 — code-splitting du chunk principal)
 
 ## Lot en cours
 
@@ -154,6 +154,14 @@ Cf. [`docs/journal/2026-06-01-lot5-pwa-baseline.md`](../journal/2026-06-01-lot5-
 - ✅ **Accessibilité e-ink baseline** : `prefers-reduced-motion` et `prefers-contrast: more` pris en compte dans `index.css`.
 - ✅ **Validation offline production** : `vite preview` + Chromium Playwright, activation SW puis reload offline OK (`offline-ok`).
 
+### Lot 5 — code-splitting du chunk principal (2026-06-13)
+
+Cf. [`docs/journal/2026-06-13-lot5-code-splitting.md`](../journal/2026-06-13-lot5-code-splitting.md).
+
+- ✅ **Données de référence en chunk paresseux** : nouveau loader `adapters/data/bundledReferenceData.ts` (`loadBundledDataSource()`) qui importe `hsk1.generated.json` en dynamique et expose une **instance `BundledDataSource` partagée** (un seul parse Zod). `App`, `Glossary`, `EntryDetail` ne l'importent plus statiquement.
+- ✅ **Chunk principal 573 KB → 348 KB** (gzip 103 KB, −39 %). Les 226 KB de données forment un chunk séparé chargé en parallèle dès le glossaire (offline préservé via précache SW, masqué par l'état de chargement existant).
+- ⏹ **Lazy-load de `hanzi-writer` abandonné** : sorti du chunk principal, il cassait l'interaction canvas en production (le SVG monté en différé interceptait les clics — bisection E2E déterministe). Gain de 37 KB seulement → non justifié. `hanzi-writer` reste eager.
+
 ### Lot 5 — optimisation des assets Hanzi Writer (2026-06-13)
 
 Cf. [`docs/journal/2026-06-13-lot5-optim-assets-hanzi-writer.md`](../journal/2026-06-13-lot5-optim-assets-hanzi-writer.md).
@@ -181,11 +189,13 @@ Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lo
 - `make test-e2e` : **28/28 tests E2E verts** (Chromium, ~10 s).
 - `make lint` : ESLint + Prettier propres, golangci-lint 0 issue.
 - `make typecheck` : `tsc --noEmit` propre.
-- `make build` : bundle front + binaire back OK, **93 modules** transformés, `dist/sw.js` 2,25 KB.
+- `make build` : bundle front + binaire back OK, chunk principal **348 KB**, `dist/sw.js` 2,3 KB.
 - `make docs` : `docs/index.html` à jour.
 
 ## Dernières décisions importantes
 
+- 2026-06-13 : **données de référence chargées en dynamique** (`loadBundledDataSource`), instance `BundledDataSource` partagée. Chunk principal −39 % ; le shell ne dépend plus de la taille des données pour son premier rendu.
+- 2026-06-13 : **`hanzi-writer` reste eager**. Son lazy-load casse l'interaction canvas en production (SVG différé qui capte les clics, prouvé par bisection E2E) ; 37 KB ne le justifient pas.
 - 2026-06-13 : **données de tracé = sous-ensemble généré hors-ligne**, pas de glob de `hanzi-writer-data` au build. Le pipeline (RFC 0008) produit un fichier unique restreint à HSK 1, chargé en import dynamique paresseux. Réduit le précache SW de ~260 KB à 2,25 KB et le bundle de ~9 600 à 93 modules.
 - 2026-06-13 : **les tests exigent Node 24.15.0** (épinglé via mise). Sous Node 25 le `localStorage` jsdom est cassé. Toujours passer par la toolchain mise.
 - 2026-06-01 : **PWA sans dépendance externe**. Le service worker est généré par un plugin Vite local, actif en production uniquement, avec cache-first assets et network-first API GET.
@@ -219,8 +229,8 @@ Aucun.
 
 ## Prochaines étapes — Lot 5
 
-- ✅ ~~**Optimisation assets Hanzi Writer**~~ : fait (2026-06-13). Sous-ensemble généré, glob supprimé, précache SW ~260 KB → 2,25 KB.
-- **Chunk principal restant** : 573 KB après l'optimisation des tracés. Code-splitting de Hanzi Writer / app à étudier.
+- ✅ ~~**Optimisation assets Hanzi Writer**~~ : fait (2026-06-13). Sous-ensemble généré, glob supprimé, précache SW ~260 KB → 2,3 KB.
+- ✅ ~~**Code-splitting du chunk principal**~~ : fait (2026-06-13). Données en chunk paresseux, chunk principal 573 KB → 348 KB. Le reste est du vendor incompressible (React/i18n/zod) ; lazy-load des vues = gain marginal, non prioritaire.
 - **Audit installabilité réel** : tester l'installation sur Boox Air 5c et sur ordinateur.
 - **Audit Lighthouse production** : vérifier installabilité, offline, performance et accessibilité.
 - **Icônes PNG** : ajouter 192/512 si Chrome/Boox/Lighthouse ne considèrent pas les SVG suffisants.

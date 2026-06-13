@@ -8,10 +8,9 @@ import { Dashboard } from './features/progress/Dashboard';
 import { SpeakButton } from './ui/SpeakButton';
 import { HanziWriterRenderer } from './adapters/renderer/HanziWriterRenderer';
 import { WebSpeechProvider } from './adapters/speech/WebSpeechProvider';
-import { BundledDataSource } from './adapters/data/BundledDataSource';
+import { loadBundledDataSource } from './adapters/data/bundledReferenceData';
 import { SpeechSettingsProvider } from './features/speech/SpeechSettingsProvider';
 import { VoiceSelect } from './features/speech/VoiceSelect';
-import hsk1Data from './data/hsk1.generated.json';
 import { countDue, pickNextDue } from './lib/srs/dueQueue';
 import { useProgress } from './features/progress/useProgress';
 import type { Character, Word } from './domain/schema/types';
@@ -34,7 +33,6 @@ export function App() {
 
   const renderer = useMemo(() => new HanziWriterRenderer(), []);
   const speechProvider = useMemo(() => new WebSpeechProvider(), []);
-  const dataSource = useMemo(() => new BundledDataSource(hsk1Data), []);
   const { entries, recordSession } = useProgress();
 
   // Charge le bundle pour pouvoir résoudre hanzi → entryId et bouton Réviser
@@ -43,6 +41,7 @@ export function App() {
     let cancelled = false;
     void (async () => {
       try {
+        const dataSource = await loadBundledDataSource();
         const [chars, wrds] = await Promise.all([dataSource.characters(), dataSource.words()]);
         if (cancelled) return;
         setCharacters(chars);
@@ -54,7 +53,7 @@ export function App() {
     return () => {
       cancelled = true;
     };
-  }, [dataSource]);
+  }, []);
 
   const today = useMemo(() => new Date(), []);
   const dueCount = countDue(entries, today);

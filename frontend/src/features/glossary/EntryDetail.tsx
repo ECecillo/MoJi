@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BundledDataSource } from '../../adapters/data/BundledDataSource';
-import hsk1Data from '../../data/hsk1.generated.json';
+import { loadBundledDataSource } from '../../adapters/data/bundledReferenceData';
 import { pinyinToString } from '../../lib/pinyin';
 import { mergeTranslations } from '../../lib/translations';
 import { useTranslationOverrides } from './useTranslationOverrides';
@@ -26,7 +25,6 @@ export function EntryDetail({ entryId, onBack, onPractice, onShowDetail }: Entry
   const [words, setWords] = useState<Word[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
-  const dataSource = useMemo(() => new BundledDataSource(hsk1Data), []);
   const currentLang = i18n.resolvedLanguage || 'fr';
   const { overrides, setOverride } = useTranslationOverrides();
   const { entries: progressEntries, loading: loadingProgress } = useProgress();
@@ -35,6 +33,7 @@ export function EntryDetail({ entryId, onBack, onPractice, onShowDetail }: Entry
     let cancelled = false;
     async function loadData() {
       try {
+        const dataSource = await loadBundledDataSource();
         const [chars, wrds] = await Promise.all([dataSource.characters(), dataSource.words()]);
         if (cancelled) return;
         setCharacters(chars);
@@ -49,7 +48,7 @@ export function EntryDetail({ entryId, onBack, onPractice, onShowDetail }: Entry
     return () => {
       cancelled = true;
     };
-  }, [dataSource]);
+  }, []);
 
   const entry: Entry | null = useMemo(() => {
     if (entryId.startsWith('char_')) {

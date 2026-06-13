@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BundledDataSource } from '../../adapters/data/BundledDataSource';
-import hsk1Data from '../../data/hsk1.generated.json';
+import { loadBundledDataSource } from '../../adapters/data/bundledReferenceData';
 import { pinyinToAscii, pinyinToString } from '../../lib/pinyin';
 import { mergeTranslations } from '../../lib/translations';
 import { useTranslationOverrides } from './useTranslationOverrides';
@@ -34,7 +33,6 @@ export function Glossary({ onSelect, onShowDetail }: GlossaryProps) {
   const [words, setWords] = useState<Word[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
-  const dataSource = useMemo(() => new BundledDataSource(hsk1Data), []);
   const { overrides } = useTranslationOverrides();
   const { entries: progressEntries, loading: loadingProgress } = useProgress();
 
@@ -42,19 +40,25 @@ export function Glossary({ onSelect, onShowDetail }: GlossaryProps) {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
     async function loadData() {
       try {
+        const dataSource = await loadBundledDataSource();
         const [chars, wrds] = await Promise.all([dataSource.characters(), dataSource.words()]);
+        if (cancelled) return;
         setCharacters(chars);
         setWords(wrds);
       } catch (error) {
         console.error('Failed to load glossary data:', error);
       } finally {
-        setLoadingData(false);
+        if (!cancelled) setLoadingData(false);
       }
     }
     void loadData();
-  }, [dataSource]);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const currentLang = i18n.resolvedLanguage || 'fr';
 
