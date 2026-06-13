@@ -2,7 +2,7 @@
 
 > **Fichier toujours à jour.** À mettre à jour à la fin de chaque session de travail. Répond à la question : "où en est le projet, là, maintenant ?"
 
-**Dernière mise à jour** : 2026-06-01 (Lot 5 — socle PWA offline)
+**Dernière mise à jour** : 2026-06-13 (Lot 5 — optimisation assets Hanzi Writer)
 
 ## Lot en cours
 
@@ -154,6 +154,16 @@ Cf. [`docs/journal/2026-06-01-lot5-pwa-baseline.md`](../journal/2026-06-01-lot5-
 - ✅ **Accessibilité e-ink baseline** : `prefers-reduced-motion` et `prefers-contrast: more` pris en compte dans `index.css`.
 - ✅ **Validation offline production** : `vite preview` + Chromium Playwright, activation SW puis reload offline OK (`offline-ok`).
 
+### Lot 5 — optimisation des assets Hanzi Writer (2026-06-13)
+
+Cf. [`docs/journal/2026-06-13-lot5-optim-assets-hanzi-writer.md`](../journal/2026-06-13-lot5-optim-assets-hanzi-writer.md).
+
+- ✅ **Sous-ensemble de tracés généré** : `build-hsk1-data.ts` produit désormais aussi `frontend/src/data/hsk1-stroke-data.generated.json` (map `hanzi → { strokes, medians }`), restreint aux 300 caractères HSK 1, extrait du paquet pinné `hanzi-writer-data`. Échec dur si un caractère manque.
+- ✅ **Renderer simplifié** : `loadBundledHanziWriterData` charge ce fichier unique en import dynamique paresseux (mémoïsé) au lieu de globber les ~9 600 JSON de `hanzi-writer-data`. Signature et erreurs publiques inchangées.
+- ✅ **Gain build** : modules transformés **9 600 → 93**, `dist/sw.js` (précache) **~260 KB → 2,25 KB**, chunk principal **~1,5 MB → 573 KB**. Données toujours 100 % offline (1 chunk paresseux mis en cache par le SW).
+- ✅ **Test d'intégrité** `hsk1-stroke-data.generated.test.ts` : couverture exacte des 300 caractères + cohérence `strokes`/`medians`.
+- ⚠ **Découverte toolchain** : les tests exigent **Node 24.15.0** (épinglé `mise.toml`). Sous Node 25, jsdom@25 expose un `localStorage` cassé → 46 faux échecs. Lancer via `mise exec node@24.15.0 -- …` (ou shell mise activé). Aucun correctif code.
+
 ### Clôture du Lot 2 — éditeur FR + filtres (session 3)
 
 Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lot2.md) et [RFC 0010](../rfc/0010-surcharges-traductions-locales.md).
@@ -165,15 +175,19 @@ Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lo
 
 ## Vérifications croisées
 
-- `env -u GOROOT make test` : **217 tests front passent**, 3 paquets back passent avec `-race`.
-- `env -u GOROOT make test-e2e` : **28/28 tests E2E verts** (Chromium, ~10,5 s).
-- `env -u GOROOT make lint` : ESLint + Prettier propres, golangci-lint 0 issue.
+> ⚠ **Toolchain** : lancer impérativement sous le Node épinglé (`mise.toml` → Node 24.15.0), p. ex. `mise exec node@24.15.0 -- env -u GOROOT make test`. Sous Node 25, jsdom expose un `localStorage` cassé → 46 faux échecs.
+
+- `make test` : **220 tests front passent**, paquets back passent avec `-race`.
+- `make test-e2e` : **28/28 tests E2E verts** (Chromium, ~10 s).
+- `make lint` : ESLint + Prettier propres, golangci-lint 0 issue.
 - `make typecheck` : `tsc --noEmit` propre.
-- `env -u GOROOT make build` : bundle front + binaire back OK, `dist/sw.js` généré.
-- `make docs` : `docs/index.html` à jour (10 RFC + 21 entrées de journal).
+- `make build` : bundle front + binaire back OK, **93 modules** transformés, `dist/sw.js` 2,25 KB.
+- `make docs` : `docs/index.html` à jour.
 
 ## Dernières décisions importantes
 
+- 2026-06-13 : **données de tracé = sous-ensemble généré hors-ligne**, pas de glob de `hanzi-writer-data` au build. Le pipeline (RFC 0008) produit un fichier unique restreint à HSK 1, chargé en import dynamique paresseux. Réduit le précache SW de ~260 KB à 2,25 KB et le bundle de ~9 600 à 93 modules.
+- 2026-06-13 : **les tests exigent Node 24.15.0** (épinglé via mise). Sous Node 25 le `localStorage` jsdom est cassé. Toujours passer par la toolchain mise.
 - 2026-06-01 : **PWA sans dépendance externe**. Le service worker est généré par un plugin Vite local, actif en production uniquement, avec cache-first assets et network-first API GET.
 - 2026-06-01 : **offline d'abord = shell + assets bundlés**. La résolution de conflits/sync backend offline reste hors du premier incrément Lot 5.
 - 2026-05-31 : **voix = préférence globale locale**. Le choix de voix est stocké dans `localStorage`, appliqué à tous les `SpeakButton`, et reste best-effort car la liste réelle dépend du navigateur/OS (notamment Boox/Android).
@@ -205,9 +219,10 @@ Aucun.
 
 ## Prochaines étapes — Lot 5
 
+- ✅ ~~**Optimisation assets Hanzi Writer**~~ : fait (2026-06-13). Sous-ensemble généré, glob supprimé, précache SW ~260 KB → 2,25 KB.
+- **Chunk principal restant** : 573 KB après l'optimisation des tracés. Code-splitting de Hanzi Writer / app à étudier.
 - **Audit installabilité réel** : tester l'installation sur Boox Air 5c et sur ordinateur.
 - **Audit Lighthouse production** : vérifier installabilité, offline, performance et accessibilité.
-- **Optimisation assets Hanzi Writer** : réduire le glob `hanzi-writer-data` pour ne plus embarquer ~9 600 modules si possible.
 - **Icônes PNG** : ajouter 192/512 si Chrome/Boox/Lighthouse ne considèrent pas les SVG suffisants.
 - **Offline API / sync** : préciser la stratégie pour les données de progression quand le backend est absent ou revient après offline.
 

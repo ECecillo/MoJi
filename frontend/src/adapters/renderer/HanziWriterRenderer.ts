@@ -25,12 +25,26 @@ type HanziWriterWithQuiz = HanziWriter & {
   _quiz?: HanziWriterInternalQuiz;
 };
 
-type BundledHanziWriterDataModule = CharacterJson;
+/**
+ * Carte hanzi → données de tracé Hanzi Writer, restreinte aux caractères HSK 1.
+ *
+ * Générée hors-ligne par `make build-data` dans `hsk1-stroke-data.generated.json`
+ * (cf. RFC 0008). On charge ce seul fichier en import dynamique paresseux plutôt
+ * que de globber les ~9 600 JSON de `hanzi-writer-data` : un seul chunk, une seule
+ * entrée de précache service worker, ~640 KB au lieu de tout l'amont.
+ */
+type BundledStrokeDataMap = Record<string, CharacterJson>;
 
-const bundledHanziWriterData = import.meta.glob<BundledHanziWriterDataModule>(
-  '/node_modules/hanzi-writer-data/*.json',
-  { import: 'default' },
-);
+let bundledStrokeDataPromise: Promise<BundledStrokeDataMap> | null = null;
+
+function loadBundledStrokeDataMap(): Promise<BundledStrokeDataMap> {
+  if (!bundledStrokeDataPromise) {
+    bundledStrokeDataPromise = import('../../data/hsk1-stroke-data.generated.json').then(
+      (module) => module.default as BundledStrokeDataMap,
+    );
+  }
+  return bundledStrokeDataPromise;
+}
 
 export class HanziWriterRendererError extends Error {
   constructor(message: string) {
@@ -50,12 +64,12 @@ export interface HanziWriterRendererOptions {
 }
 
 export async function loadBundledHanziWriterData(hanzi: string): Promise<CharacterJson> {
-  const key = `/node_modules/hanzi-writer-data/${hanzi}.json`;
-  const load = bundledHanziWriterData[key];
-  if (!load) {
+  const map = await loadBundledStrokeDataMap();
+  const data = map[hanzi];
+  if (!data) {
     throw new HanziWriterRendererError(`données Hanzi Writer introuvables pour "${hanzi}"`);
   }
-  return load();
+  return data;
 }
 
 export class HanziWriterRenderer implements CharacterRenderer {

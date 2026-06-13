@@ -168,14 +168,14 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <nav class="topnav"><div class="wrap">
   <a href="#etat">État courant</a>
   <a href="#rfc">RFC (10)</a>
-  <a href="#journal">Journal (21)</a>
+  <a href="#journal">Journal (22)</a>
   <a href="#brief">Brief</a>
 </div></nav>
 
 <div class="wrap">
 <header class="hero">
   <h1>Sinogrammes — Carnet de bord</h1>
-  <p class="meta">Index généré le 2026-06-01 06:42. 10 RFC · 21 entrées de journal.</p>
+  <p class="meta">Index généré le 2026-06-13 08:47. 10 RFC · 22 entrées de journal.</p>
   <p class="hint">Toutes les sections sont collapsables. Cliquez sur une ligne ou un lien interne pour ouvrir et défiler.</p>
 </header>
 
@@ -185,7 +185,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <blockquote>
 <p><strong>Fichier toujours à jour.</strong> À mettre à jour à la fin de chaque session de travail. Répond à la question : &quot;où en est le projet, là, maintenant ?&quot;</p>
 </blockquote>
-<p><strong>Dernière mise à jour</strong> : 2026-06-01 (Lot 5 — socle PWA offline)</p>
+<p><strong>Dernière mise à jour</strong> : 2026-06-13 (Lot 5 — optimisation assets Hanzi Writer)</p>
 <h2>Lot en cours</h2>
 <p><strong>Lot 5 — Polish &amp; PWA</strong> : 🟡 <strong>en cours</strong>, socle PWA offline livré.</p>
 <p><strong>Lot 4 — Synthèse vocale</strong> : ✅ <strong>clôturé</strong> (API SpeechSynthesis, SpeakButton intégré).</p>
@@ -313,6 +313,15 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li>✅ <strong>Accessibilité e-ink baseline</strong> : <code>prefers-reduced-motion</code> et <code>prefers-contrast: more</code> pris en compte dans <code>index.css</code>.</li>
 <li>✅ <strong>Validation offline production</strong> : <code>vite preview</code> + Chromium Playwright, activation SW puis reload offline OK (<code>offline-ok</code>).</li>
 </ul>
+<h3>Lot 5 — optimisation des assets Hanzi Writer (2026-06-13)</h3>
+<p>Cf. <a href="#journal-2026-06-13-lot5-optim-assets-hanzi-writer"><code>docs/journal/2026-06-13-lot5-optim-assets-hanzi-writer.md</code></a>.</p>
+<ul>
+<li>✅ <strong>Sous-ensemble de tracés généré</strong> : <code>build-hsk1-data.ts</code> produit désormais aussi <code>frontend/src/data/hsk1-stroke-data.generated.json</code> (map <code>hanzi → { strokes, medians }</code>), restreint aux 300 caractères HSK 1, extrait du paquet pinné <code>hanzi-writer-data</code>. Échec dur si un caractère manque.</li>
+<li>✅ <strong>Renderer simplifié</strong> : <code>loadBundledHanziWriterData</code> charge ce fichier unique en import dynamique paresseux (mémoïsé) au lieu de globber les ~9 600 JSON de <code>hanzi-writer-data</code>. Signature et erreurs publiques inchangées.</li>
+<li>✅ <strong>Gain build</strong> : modules transformés <strong>9 600 → 93</strong>, <code>dist/sw.js</code> (précache) <strong>~260 KB → 2,25 KB</strong>, chunk principal <strong>~1,5 MB → 573 KB</strong>. Données toujours 100 % offline (1 chunk paresseux mis en cache par le SW).</li>
+<li>✅ <strong>Test d&#39;intégrité</strong> <code>hsk1-stroke-data.generated.test.ts</code> : couverture exacte des 300 caractères + cohérence <code>strokes</code>/<code>medians</code>.</li>
+<li>⚠ <strong>Découverte toolchain</strong> : les tests exigent <strong>Node 24.15.0</strong> (épinglé <code>mise.toml</code>). Sous Node 25, jsdom@25 expose un <code>localStorage</code> cassé → 46 faux échecs. Lancer via <code>mise exec node@24.15.0 -- …</code> (ou shell mise activé). Aucun correctif code.</li>
+</ul>
 <h3>Clôture du Lot 2 — éditeur FR + filtres (session 3)</h3>
 <p>Cf. <a href="#journal-2026-05-30-cloture-lot2"><code>docs/journal/2026-05-30-cloture-lot2.md</code></a> et <a href="#rfc-0010">RFC 0010</a>.</p>
 <ul>
@@ -322,16 +331,21 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li>✅ Couverture : 6 tests <code>translations.ts</code> + 10 tests adapter + 12 tests <code>glossaryFilters.ts</code> + 4 tests édition FR dans <code>EntryDetail</code> + 3 tests filtres dans <code>Glossary</code>. E2E : 3 scénarios filtres + 3 scénarios éditeur FR (persistance reload, recherche après ajout, Annuler n&#39;écrit rien).</li>
 </ul>
 <h2>Vérifications croisées</h2>
+<blockquote>
+<p>⚠ <strong>Toolchain</strong> : lancer impérativement sous le Node épinglé (<code>mise.toml</code> → Node 24.15.0), p. ex. <code>mise exec node@24.15.0 -- env -u GOROOT make test</code>. Sous Node 25, jsdom expose un <code>localStorage</code> cassé → 46 faux échecs.</p>
+</blockquote>
 <ul>
-<li><code>env -u GOROOT make test</code> : <strong>217 tests front passent</strong>, 3 paquets back passent avec <code>-race</code>.</li>
-<li><code>env -u GOROOT make test-e2e</code> : <strong>28/28 tests E2E verts</strong> (Chromium, ~10,5 s).</li>
-<li><code>env -u GOROOT make lint</code> : ESLint + Prettier propres, golangci-lint 0 issue.</li>
+<li><code>make test</code> : <strong>220 tests front passent</strong>, paquets back passent avec <code>-race</code>.</li>
+<li><code>make test-e2e</code> : <strong>28/28 tests E2E verts</strong> (Chromium, ~10 s).</li>
+<li><code>make lint</code> : ESLint + Prettier propres, golangci-lint 0 issue.</li>
 <li><code>make typecheck</code> : <code>tsc --noEmit</code> propre.</li>
-<li><code>env -u GOROOT make build</code> : bundle front + binaire back OK, <code>dist/sw.js</code> généré.</li>
-<li><code>make docs</code> : <code>docs/index.html</code> à jour (10 RFC + 21 entrées de journal).</li>
+<li><code>make build</code> : bundle front + binaire back OK, <strong>93 modules</strong> transformés, <code>dist/sw.js</code> 2,25 KB.</li>
+<li><code>make docs</code> : <code>docs/index.html</code> à jour.</li>
 </ul>
 <h2>Dernières décisions importantes</h2>
 <ul>
+<li>2026-06-13 : <strong>données de tracé = sous-ensemble généré hors-ligne</strong>, pas de glob de <code>hanzi-writer-data</code> au build. Le pipeline (RFC 0008) produit un fichier unique restreint à HSK 1, chargé en import dynamique paresseux. Réduit le précache SW de ~260 KB à 2,25 KB et le bundle de ~9 600 à 93 modules.</li>
+<li>2026-06-13 : <strong>les tests exigent Node 24.15.0</strong> (épinglé via mise). Sous Node 25 le <code>localStorage</code> jsdom est cassé. Toujours passer par la toolchain mise.</li>
 <li>2026-06-01 : <strong>PWA sans dépendance externe</strong>. Le service worker est généré par un plugin Vite local, actif en production uniquement, avec cache-first assets et network-first API GET.</li>
 <li>2026-06-01 : <strong>offline d&#39;abord = shell + assets bundlés</strong>. La résolution de conflits/sync backend offline reste hors du premier incrément Lot 5.</li>
 <li>2026-05-31 : <strong>voix = préférence globale locale</strong>. Le choix de voix est stocké dans <code>localStorage</code>, appliqué à tous les <code>SpeakButton</code>, et reste best-effort car la liste réelle dépend du navigateur/OS (notamment Boox/Android).</li>
@@ -361,9 +375,10 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <p>Aucun.</p>
 <h2>Prochaines étapes — Lot 5</h2>
 <ul>
+<li>✅ <del><strong>Optimisation assets Hanzi Writer</strong></del> : fait (2026-06-13). Sous-ensemble généré, glob supprimé, précache SW ~260 KB → 2,25 KB.</li>
+<li><strong>Chunk principal restant</strong> : 573 KB après l&#39;optimisation des tracés. Code-splitting de Hanzi Writer / app à étudier.</li>
 <li><strong>Audit installabilité réel</strong> : tester l&#39;installation sur Boox Air 5c et sur ordinateur.</li>
 <li><strong>Audit Lighthouse production</strong> : vérifier installabilité, offline, performance et accessibilité.</li>
-<li><strong>Optimisation assets Hanzi Writer</strong> : réduire le glob <code>hanzi-writer-data</code> pour ne plus embarquer ~9 600 modules si possible.</li>
 <li><strong>Icônes PNG</strong> : ajouter 192/512 si Chrome/Boox/Lighthouse ne considèrent pas les SVG suffisants.</li>
 <li><strong>Offline API / sync</strong> : préciser la stratégie pour les données de progression quand le backend est absent ou revient après offline.</li>
 </ul>
@@ -1524,6 +1539,101 @@ clearAll(): Promise&lt;void&gt;;
 
 <section id="journal">
 <h2>Journal de bord</h2>
+<details id="journal-2026-06-13-lot5-optim-assets-hanzi-writer">
+  <summary>2026-06-13 — Lot 5 : optimisation des assets Hanzi Writer</summary>
+  <div class="content"><h1>2026-06-13 — Lot 5 : optimisation des assets Hanzi Writer</h1>
+<h2>Objectif de la session</h2>
+<p>Traiter l&#39;axe d&#39;optimisation identifié au démarrage du Lot 5 : le build embarquait
+l&#39;intégralité de <code>hanzi-writer-data</code> (~9 600 fichiers JSON, soit un caractère par
+glyphe existant) alors que HSK 1 n&#39;en utilise que 300. Conséquence directe : un
+service worker dont le manifeste de précache pesait ~260 KB et un chunk principal
+de ~1,5 MB.</p>
+<h2>Ce qui a été fait</h2>
+<ul>
+<li><strong>Pipeline de données étendu</strong> (<code>frontend/scripts/build-hsk1-data.ts</code>) : après la
+génération de <code>hsk1.generated.json</code>, le script extrait depuis le paquet npm pinné
+<code>hanzi-writer-data</code> les seules données de tracé des 300 caractères HSK 1 et les
+écrit, minifiées, dans un fichier généré unique <code>hsk1-stroke-data.generated.json</code>
+(map <code>hanzi → { strokes, medians }</code>). Échec dur si un caractère manque ou si ses
+données sont malformées : aucun fichier n&#39;est écrit (cf. RFC 0008).</li>
+<li><strong>Renderer simplifié</strong> (<code>HanziWriterRenderer.ts</code>) : <code>loadBundledHanziWriterData</code>
+ne globe plus <code>node_modules/hanzi-writer-data/*.json</code>. Il charge le fichier généré
+unique en <strong>import dynamique paresseux</strong> (un seul chunk, mémoïsé), puis indexe par
+hanzi. Comportement public inchangé (même signature, même erreur si absent).</li>
+<li><strong>Test d&#39;intégrité</strong> (<code>hsk1-stroke-data.generated.test.ts</code>) : couverture exacte des
+300 caractères (ni manquant, ni surnuméraire), traits non vides et <code>medians</code>
+alignées sur <code>strokes</code>, spot-check sur 你 (7 traits). C&#39;est le filet qui
+détecterait une régression du pipeline.</li>
+</ul>
+<h2>Gain mesuré (build production)</h2>
+<table>
+<thead>
+<tr>
+<th>Métrique</th>
+<th>Avant</th>
+<th>Après</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Modules transformés</td>
+<td>~9 600</td>
+<td><strong>93</strong></td>
+</tr>
+<tr>
+<td><code>dist/sw.js</code> (précache)</td>
+<td>~260 KB</td>
+<td><strong>2,25 KB</strong></td>
+</tr>
+<tr>
+<td>Chunk principal JS</td>
+<td>~1,5 MB</td>
+<td><strong>573 KB</strong> (gzip 150 KB)</td>
+</tr>
+<tr>
+<td>Données de tracé</td>
+<td>~9 600 chunks</td>
+<td><strong>1 chunk paresseux</strong> (618 KB / gzip 253 KB)</td>
+</tr>
+</tbody></table>
+<p>Les données restent intégralement disponibles hors-ligne : le chunk paresseux unique
+est chargé au premier tracé puis mis en cache par le service worker (une entrée de
+précache au lieu de ~9 600).</p>
+<h2>Découvertes / surprises</h2>
+<ul>
+<li><strong>Décalage de version Node.</strong> En lançant <code>make test</code> dans un shell utilisant le Node
+système (v25.0.0), <strong>46 tests échouaient</strong> sur <code>window.localStorage.clear is not a function</code> : sous Node 25, le <code>localStorage</code> exposé par <a href="mailto:jsdom@25.0.1">jsdom@25.0.1</a> n&#39;est pas un vrai
+<code>Storage</code>. <code>mise.toml</code> épingle <strong>Node 24.15.0</strong> ; sous cette version, <strong>220/220 tests
+passent</strong>. La config mise n&#39;était pas « trusted » localement (<code>mise trust</code> + <code>mise install node@24.15.0</code>), donc le Node épinglé n&#39;était pas utilisé. <strong>Rien à corriger
+côté code</strong> : il faut lancer les commandes via la toolchain mise.</li>
+</ul>
+<h2>Vérifications</h2>
+<p>Toutes lancées sous le Node épinglé (<code>mise exec node@24.15.0 -- …</code>) :</p>
+<ul>
+<li><code>make test</code> : 220 tests front + backend <code>-race</code> OK.</li>
+<li><code>make lint</code> : ESLint + Prettier + golangci-lint, 0 issue.</li>
+<li><code>make typecheck</code> : <code>tsc --noEmit</code> propre.</li>
+<li><code>make build</code> : 93 modules transformés, <code>sw.js</code> 2,25 KB, chunk principal 573 KB.</li>
+<li><code>make test-e2e</code> : 28/28 Chromium, dont le flux de tracé réel qui consomme le
+nouveau fichier généré.</li>
+</ul>
+<h2>Décisions prises</h2>
+<ul>
+<li><strong>Sous-ensemble de tracés généré hors-ligne, pas globé au build.</strong> Le pipeline de
+données (RFC 0008) est la source de vérité : il produit un fichier unique restreint à
+HSK 1 depuis le paquet npm pinné, validé durement. Aucune dépendance PWA externe.</li>
+<li><strong>Fichier de tracés minifié et chargé en import dynamique paresseux.</strong> Données
+purement machine (chemins SVG) → pas de pretty-print. Chargement paresseux → hors du
+bundle principal, une seule entrée de précache service worker.</li>
+</ul>
+<h2>Reste à faire / prochaines étapes (Lot 5)</h2>
+<ul>
+<li>Traiter le chunk principal restant (573 KB) : code-splitting de Hanzi Writer / app.</li>
+<li>Icônes PNG 192/512 si l&#39;audit Boox/Chrome les exige.</li>
+<li>Audit Lighthouse sur build de production.</li>
+<li>Test d&#39;installation réel sur Boox Air 5c (nécessite le matériel).</li>
+</ul>
+</div>
+</details>
 <details id="journal-2026-06-01-lot5-pwa-baseline">
   <summary>2026-06-01 — Lot 5 : socle PWA offline</summary>
   <div class="content"><h1>2026-06-01 — Lot 5 : socle PWA offline</h1>
@@ -3333,7 +3443,7 @@ clearAll(): Promise&lt;void&gt;;
 </section>
 
 <footer>
-<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-06-01 06:42 par <code>make docs</code>.</p>
+<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-06-13 08:47 par <code>make docs</code>.</p>
 </footer>
 </div>
 

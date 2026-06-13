@@ -16,7 +16,8 @@
  * Aucun appel réseau. Lance via `npm run build:data` depuis frontend/.
  */
 
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -24,9 +25,11 @@ import { referenceDataSchema } from '../src/domain/schema/validators';
 import { REFERENCE_SCHEMA_VERSION } from '../src/domain/schema/version';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const require = createRequire(import.meta.url);
 const REPO_ROOT = resolve(__dirname, '../..');
 const SOURCES = resolve(REPO_ROOT, 'shared/data/sources');
 const OUT_PATH = resolve(__dirname, '../src/data/hsk1.generated.json');
+const STROKE_DATA_OUT_PATH = resolve(__dirname, '../src/data/hsk1-stroke-data.generated.json');
 
 interface DrkTranscriptions {
   pinyin: string;
@@ -325,6 +328,55 @@ function buildDecks(characters: BuiltCharacter[], words: BuiltWord[]): BuiltDeck
   ];
 }
 
+interface StrokeData {
+  strokes: string[];
+  medians: number[][][];
+}
+
+/**
+ * Extrait, depuis le paquet npm pinné `hanzi-writer-data`, les seules données de
+ * tracé des caractères HSK 1 et les écrit minifiées dans un fichier généré unique.
+ *
+ * On évite ainsi d'embarquer les ~9 600 JSON de l'amont : à l'exécution, le
+ * renderer charge ce seul fichier (cf. `HanziWriterRenderer`). Échec dur si un
+ * caractère n'a pas de données ou si elles sont malformées : aucun fichier écrit.
+ */
+function buildStrokeData(characters: ReadonlyArray<{ hanzi: string }>): void {
+  const dataDir = dirname(require.resolve('hanzi-writer-data/package.json'));
+  const map: Record<string, StrokeData> = {};
+  const missing: string[] = [];
+
+  for (const character of characters) {
+    const file = resolve(dataDir, `${character.hanzi}.json`);
+    if (!existsSync(file)) {
+      missing.push(character.hanzi);
+      continue;
+    }
+    const parsed = JSON.parse(readFileSync(file, 'utf-8')) as StrokeData;
+    if (
+      !Array.isArray(parsed.strokes) ||
+      !Array.isArray(parsed.medians) ||
+      parsed.strokes.length === 0 ||
+      parsed.strokes.length !== parsed.medians.length
+    ) {
+      throw new Error(`données de tracé malformées pour "${character.hanzi}" (${file})`);
+    }
+    map[character.hanzi] = { strokes: parsed.strokes, medians: parsed.medians };
+  }
+
+  if (missing.length > 0) {
+    throw new Error(
+      `${missing.length} caractère(s) sans données de tracé hanzi-writer-data : ${missing.join(' ')}`,
+    );
+  }
+
+  // Minifié : données purement machine (chemins SVG), volumineuses, non revues à l'œil.
+  writeFileSync(STROKE_DATA_OUT_PATH, JSON.stringify(map) + '\n');
+  console.log(
+    `[build] tracés HSK 1 : ${Object.keys(map).length} caractères → ${STROKE_DATA_OUT_PATH}`,
+  );
+}
+
 function main(): void {
   console.log(`[build] lecture des sources vendorées (${SOURCES})`);
   const drkEntries = readDrkameleon();
@@ -369,6 +421,8 @@ function main(): void {
   mkdirSync(dirname(OUT_PATH), { recursive: true });
   writeFileSync(OUT_PATH, JSON.stringify(parsed.data, null, 2) + '\n');
   console.log(`[build] écrit : ${OUT_PATH}`);
+
+  buildStrokeData(parsed.data.characters);
 }
 
 main();
