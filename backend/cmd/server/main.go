@@ -44,7 +44,7 @@ func run() error {
 
 	srv := &http.Server{
 		Addr:              cfg.Addr(),
-		Handler:           httpapi.NewServer(progressStore, cfg.StaticDir),
+		Handler:           httpapi.NewServer(progressStore, cfg.StaticDir, cfg.APIToken),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 

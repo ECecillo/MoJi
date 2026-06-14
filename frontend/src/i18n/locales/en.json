@@ -30,7 +30,13 @@
     "recent_activity": "Recent activity",
     "no_activity": "No activity yet.",
     "success_rate": "successes",
-    "last_seen_on": "Seen on"
+    "last_seen_on": "Seen on",
+    "sync_title": "Sync",
+    "sync_hint": "Sync server access token (enter once per device).",
+    "sync_token_placeholder": "Access token",
+    "sync_save": "Save",
+    "sync_saved": "Token saved, sync started.",
+    "sync_error": "Sync failed (invalid token or server unreachable)."
   },
   "glossary": {
     "title": "HSK 1 Glossary",

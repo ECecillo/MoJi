@@ -34,6 +34,7 @@ export function useProgress(
   sync: () => Promise<void>;
   loading: boolean;
   syncing: boolean;
+  syncError: string | null;
 } {
   const repo = useMemo<ProgressRepository>(
     () => repository ?? new LocalStorageProgressRepository(),
@@ -45,6 +46,7 @@ export function useProgress(
   const [entries, setEntries] = useState<ProgressEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
   // Garde anti-concurrence : les déclencheurs (focus/online/...) peuvent appeler
   // sync() en rafale ; on évite d'empiler des cycles pull/push simultanés.
   const syncInFlight = useRef(false);
@@ -65,11 +67,14 @@ export function useProgress(
       await repo.upsertBatch(merged);
       await client.push(merged);
       setEntries(merged);
+      setSyncError(null);
     } catch (err: unknown) {
       // Offline-first : le backend de sync est optionnel. Un échec (hors-ligne,
       // backend absent) est un cas nominal, pas une erreur — on le journalise en
-      // debug pour ne pas polluer la console ni l'audit (cf. Lighthouse).
+      // debug pour ne pas polluer la console ni l'audit (cf. Lighthouse). On
+      // expose tout de même le message (ex. 401) pour le réglage de sync.
       console.debug('Sync best-effort indisponible (hors-ligne ?) :', err);
+      setSyncError(err instanceof Error ? err.message : 'sync indisponible');
     } finally {
       syncInFlight.current = false;
       setSyncing(false);
@@ -154,5 +159,5 @@ export function useProgress(
     [repo, sync],
   );
 
-  return { entries, recordSession, sync, loading, syncing };
+  return { entries, recordSession, sync, loading, syncing, syncError };
 }

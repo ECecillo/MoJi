@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useProgress } from './useProgress';
 import { getLearningStatus, type LearningStatus } from '../../lib/glossaryFilters';
+import { readApiToken, writeApiToken } from '../../lib/syncToken';
 import type { Character, Word } from '../../domain/schema/types';
 
 interface DashboardProps {
@@ -13,7 +14,7 @@ interface DashboardProps {
 
 export function Dashboard({ characters, words: _words, onBack, onSelect }: DashboardProps) {
   const { t } = useTranslation();
-  const { entries, loading } = useProgress();
+  const { entries, loading, sync, syncing, syncError } = useProgress();
 
   const stats = useMemo(() => {
     const today = new Date();
@@ -116,7 +117,73 @@ export function Dashboard({ characters, words: _words, onBack, onSelect }: Dashb
           </div>
         )}
       </section>
+
+      <SyncSettings sync={sync} syncing={syncing} syncError={syncError} />
     </div>
+  );
+}
+
+function SyncSettings({
+  sync,
+  syncing,
+  syncError,
+}: {
+  sync: () => Promise<void>;
+  syncing: boolean;
+  syncError: string | null;
+}) {
+  const { t } = useTranslation();
+  const [token, setToken] = useState(readApiToken);
+  const [saved, setSaved] = useState(false);
+
+  const save = () => {
+    writeApiToken(token);
+    setSaved(true);
+    void sync();
+  };
+
+  const status = syncing
+    ? t('sync.syncing')
+    : syncError
+      ? t('dashboard.sync_error')
+      : saved
+        ? t('dashboard.sync_saved')
+        : '';
+
+  return (
+    <section className="flex flex-col gap-2">
+      <h3 className="text-sm font-semibold uppercase tracking-wider text-ink-muted">
+        {t('dashboard.sync_title')}
+      </h3>
+      <p className="text-xs text-ink-faint">{t('dashboard.sync_hint')}</p>
+      <div className="flex gap-2">
+        <input
+          type="password"
+          value={token}
+          autoComplete="off"
+          onChange={(e) => {
+            setToken(e.target.value);
+            setSaved(false);
+          }}
+          placeholder={t('dashboard.sync_token_placeholder')}
+          className="flex-1 border border-ink bg-paper px-2 py-1 text-sm"
+          data-testid="sync-token-input"
+        />
+        <button
+          type="button"
+          onClick={save}
+          className="border border-ink px-3 py-1 text-xs font-bold uppercase tracking-wider hover:bg-ink hover:text-paper"
+          data-testid="sync-token-save"
+        >
+          {t('dashboard.sync_save')}
+        </button>
+      </div>
+      {status ? (
+        <p className="text-xs text-ink-muted" aria-live="polite" data-testid="sync-status">
+          {status}
+        </p>
+      ) : null}
+    </section>
   );
 }
 

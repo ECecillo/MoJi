@@ -30,7 +30,13 @@
     "recent_activity": "Activité récente",
     "no_activity": "Aucune activité pour le moment.",
     "success_rate": "succès",
-    "last_seen_on": "Vu le"
+    "last_seen_on": "Vu le",
+    "sync_title": "Synchronisation",
+    "sync_hint": "Jeton d'accès au serveur de sync (à saisir une fois par appareil).",
+    "sync_token_placeholder": "Jeton d'accès",
+    "sync_save": "Enregistrer",
+    "sync_saved": "Jeton enregistré, synchronisation lancée.",
+    "sync_error": "Échec de synchronisation (jeton invalide ou serveur injoignable)."
   },
   "glossary": {
     "title": "Glossaire HSK 1",

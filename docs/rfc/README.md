@@ -19,6 +19,7 @@ Une RFC documente **une décision structurante** : contexte, décision, conséqu
 | 0011  | [Synchronisation backend de la progression](0011-sync-backend.md)     | Accepté   | 2026-06-13 |
 | 0012  | [Extension du jeu de données à HSK 2](0012-extension-hsk2.md)         | Accepté   | 2026-06-13 |
 | 0013  | [Déploiement auto-hébergé (Docker) et CI](0013-deploiement-docker.md) | Accepté   | 2026-06-13 |
+| 0014  | [Authentification de l'API et accès Tailscale](0014-securite-api.md)  | Accepté   | 2026-06-14 |
 
 ## Statuts possibles
 

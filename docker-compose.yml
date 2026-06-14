@@ -14,6 +14,10 @@ services:
     environment:
       # Tout est déjà défini dans l'image ; surcharger ici au besoin.
       SINO_PORT: '8787'
+      # Jeton d'accès à l'API (cf. RFC 0014). Sourcé depuis l'hôte / le fichier
+      # .env (voir .env.example). Vide = API ouverte → à ne faire que sur réseau
+      # de confiance. Pour un accès Tailscale, définir un jeton non vide.
+      SINO_API_TOKEN: ${SINO_API_TOKEN:-}
     restart: unless-stopped
     healthcheck:
       test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:8787/health']

@@ -18,6 +18,9 @@ type Config struct {
 	// (single-origin deployment). Empty disables static serving — the server
 	// then only exposes /health and /api/*.
 	StaticDir string
+	// APIToken protects the /api/* routes with a shared bearer token
+	// (cf. RFC 0014). Empty disables authentication (trusted LAN / dev).
+	APIToken string
 }
 
 // Load reads configuration from the environment and returns a populated Config.
@@ -28,6 +31,7 @@ func Load() (Config, error) {
 		DBPath:        getEnv("SINO_DB_PATH", "data/sinogrammes.db"),
 		MigrationsDir: getEnv("SINO_MIGRATIONS_DIR", "migrations"),
 		StaticDir:     getEnv("SINO_STATIC_DIR", ""),
+		APIToken:      getEnv("SINO_API_TOKEN", ""),
 	}
 
 	portStr := getEnv("SINO_PORT", "8787")

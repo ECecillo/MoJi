@@ -18,7 +18,7 @@ func TestServer_ServesStaticAndSpaFallback(t *testing.T) {
 	require.NoError(t, os.MkdirAll(assetsDir, 0o750))
 	require.NoError(t, os.WriteFile(filepath.Join(assetsDir, "app.js"), []byte("console.log(1)"), 0o600))
 
-	srv := NewServer(&mockProgressStore{}, dir)
+	srv := NewServer(&mockProgressStore{}, dir, "")
 
 	t.Run("sert un asset présent", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/assets/app.js", nil)

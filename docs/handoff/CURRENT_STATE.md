@@ -2,11 +2,11 @@
 
 > **Fichier toujours à jour.** À mettre à jour à la fin de chaque session de travail. Répond à la question : "où en est le projet, là, maintenant ?"
 
-**Dernière mise à jour** : 2026-06-13 (post-MVP — déploiement Docker + CI)
+**Dernière mise à jour** : 2026-06-14 (post-MVP — sécurité API : jeton + Tailscale)
 
 ## Statut global
 
-🎉 **MVP complet (Lots 0 → 5).** Post-MVP en cours : **déploiement auto-hébergé Docker + CI livré** (RFC 0013). L'app est installable/utilisable sur Boox Air 5c et ordinateur, hors-ligne, sync multi-appareils, HSK 3.0 niveaux 1–2.
+🎉 **MVP complet (Lots 0 → 5).** Post-MVP en cours : **déploiement auto-hébergé Docker + CI** (RFC 0013) puis **authentification de l'API + accès Tailscale** (RFC 0014). L'app est installable/utilisable sur Boox Air 5c et ordinateur, hors-ligne, sync multi-appareils sécurisée, HSK 3.0 niveaux 1–2.
 
 **Lot 5 — Polish & PWA** : ✅ **clôturé, critère de sortie atteint** — installable + 100 % offline + Lighthouse 97/100/100. Validé en réel sur Boox le 2026-06-13 (installation, tracé HSK 1/2, hors-ligne, sync multi-appareils via `make serve` sur le LAN).
 
@@ -18,6 +18,15 @@
 
 ## Ce qui est fait
 
+### Post-MVP — sécurité API : jeton + Tailscale (2026-06-14)
+
+Cf. [`docs/journal/2026-06-14-securite-api.md`](../journal/2026-06-14-securite-api.md) et [RFC 0014](../rfc/0014-securite-api.md).
+
+- ✅ **Jeton d'accès opt-in** : `SINO_API_TOKEN` (vide = ouvert, rétro-compatible). Si défini, `/api/*` exige `Authorization: Bearer` (middleware constant-time `auth.go`) ; `/health` + statique restent publics. Tests backend.
+- ✅ **Client** : `RestSyncClient` envoie le jeton (lu en localStorage à chaque requête via `lib/syncToken.ts`), gère 401. `useProgress` expose `syncError`.
+- ✅ **UI réglage** : section « Synchronisation » du Dashboard (champ jeton + Enregistrer → sync + statut), i18n FR/EN.
+- ✅ **Accès Tailscale + HTTPS** (`tailscale serve`) documenté : chiffre le jeton **et** fournit le *secure context* requis par le service worker (offline/PWA impossible sur IP LAN en HTTP nu). Compose lit `SINO_API_TOKEN` depuis `.env` (`.env.example`).
+
 ### Post-MVP — déploiement auto-hébergé Docker + CI (2026-06-13)
 
 Cf. [`docs/journal/2026-06-13-deploiement-docker.md`](../journal/2026-06-13-deploiement-docker.md) et [RFC 0013](../rfc/0013-deploiement-docker.md).
@@ -25,7 +34,7 @@ Cf. [`docs/journal/2026-06-13-deploiement-docker.md`](../journal/2026-06-13-depl
 - ✅ **`Dockerfile`** multi-étapes single-origin (front `vite build` → Go statique `CGO_ENABLED=0` → runtime Alpine non-root + migrations + dist + healthcheck `/health`). **Validé** : `docker run` → endpoints OK + persistance après restart.
 - ✅ **`docker-compose.yml`** : volume nommé `/data` (SQLite), `restart: unless-stopped`. `make docker-up`/`down`/`build`.
 - ✅ **CI GitHub Actions** (`.github/workflows/ci.yml`) : jobs frontend (vitest/eslint/prettier/tsc/playwright), backend (`go test -race`, golangci-lint), docker build. **Outils appelés directement** (pas `make`) pour découpler la CI du task runner ; toolchain via `jdx/mise-action` (parité Node 24.15.0).
-- ⚠ **Sécurité** : API non authentifiée → LAN / réseau de confiance uniquement ; jeton + TLS requis avant exposition publique (RFC 0013, incrément ultérieur).
+- ✅ **Sécurité** : traitée par RFC 0014 (jeton `SINO_API_TOKEN` + Tailscale HTTPS) — voir section ci-dessus.
 
 
 ### Lot 0 (clôturé)
@@ -239,6 +248,7 @@ Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lo
 
 ## Dernières décisions importantes
 
+- 2026-06-14 : **authentification API par jeton partagé opt-in** (RFC 0014). `SINO_API_TOKEN` vide = ouvert (rétro-compatible) ; sinon Bearer requis sur `/api/*` (constant-time), `/health`/statique publics. Jeton saisi par appareil (localStorage). Accès chiffré via Tailscale `serve` HTTPS (aussi requis pour le service worker / offline).
 - 2026-06-13 : **déploiement auto-hébergé Docker** (RFC 0013) — image single-origin (Alpine, binaire statique, SQLite sur volume), docker-compose, CI GitHub Actions appelant les outils **directement** (indépendante du Makefile). API non authentifiée → LAN uniquement.
 - 2026-06-13 : **indicateur de focus clavier global** (`:focus-visible` noir, e-ink) dans `index.css`, en plus du renforcement `prefers-contrast`. Les `focus:outline-none` nus des champs sont retirés (focus clavier redevenu visible).
 - 2026-06-13 : **périmètre étendu à HSK 3.0 niveaux 1–2** (RFC 0012). Sourcing cumulatif (niveau = plus bas d'apparition), fichiers générés **par niveau** + merge au chargement (HSK 1 byte-identique, HSK 3 trivial), schéma inchangé, filtre niveau au glossaire.
@@ -300,7 +310,8 @@ Le MVP est complet ; pistes ultérieures, non engagées :
 - **Export / import Anki**.
 - **Statistiques avancées** (heatmap, courbes de rétention).
 - **HSK 3, 4, …** : ajout trivial d'un niveau dans le pipeline (`LEVELS` + un import au merge, cf. RFC 0012).
-- ✅ ~~**Docker / CI / déploiement formalisé**~~ : fait (2026-06-13, RFC 0013). Reste éventuellement : durcissement sécurité (jeton + TLS) pour exposition publique, image multi-arch (arm64/Pi).
+- ✅ ~~**Docker / CI / déploiement formalisé**~~ : fait (2026-06-13, RFC 0013).
+- ✅ ~~**Sécurité (jeton d'accès + transport chiffré)**~~ : fait (2026-06-14, RFC 0014). Jeton `SINO_API_TOKEN` + accès Tailscale HTTPS. Reste éventuellement : image multi-arch (arm64/Pi), rate-limiting si exposition publique.
 - **IndexedDB** (si volume/query le justifient ; RFC à écrire) ; **sync concurrente avancée** (horodatage/CRDT) si besoin multi-appareils concurrent réel.
 - Détails mineurs : avertissement Vite « chunk > 500 KB » sur les données de tracé (intentionnel, chunks paresseux) ; focus clavier déplacé au changement de vue (amélioration a11y facultative).
 

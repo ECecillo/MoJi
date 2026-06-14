@@ -89,4 +89,28 @@ test.describe('Lot 3 — synchronisation backend (API mockée)', () => {
     await expect.poll(() => pushed).not.toBeNull();
     expect(pushed).toContain('char_4E00');
   });
+
+  test('envoie le jeton en en-tête Authorization quand il est configuré (RFC 0014)', async ({
+    page,
+  }) => {
+    let authHeader: string | undefined;
+    await page.route('**/api/progress', async (route) => {
+      if (route.request().method() === 'GET') {
+        authHeader = route.request().headers()['authorization'];
+        await route.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
+      } else {
+        await route.fulfill({ status: 204, body: '' });
+      }
+    });
+
+    // Jeton présent avant le premier chargement (addInitScript s'exécute avant les
+    // scripts de la page) → l'auto-sync au démarrage doit le porter.
+    await page.addInitScript(() => {
+      window.localStorage.setItem('sinogrammes:sync:api-token', 'e2e-secret');
+    });
+    await page.goto('/');
+    await page.getByPlaceholder(/Chercher/i).waitFor();
+
+    await expect.poll(() => authHeader).toBe('Bearer e2e-secret');
+  });
 });

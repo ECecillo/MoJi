@@ -1,5 +1,8 @@
 # Contexte de build minimal — voir Dockerfile (build multi-étapes).
 .git
+.env
+.env.*
+!.env.example
 **/node_modules
 frontend/dist
 frontend/test-results

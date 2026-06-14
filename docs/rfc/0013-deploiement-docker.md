@@ -53,11 +53,9 @@ jsdom et ferait échouer les tests).
 
 ## Conséquences
 
-- **Sécurité** : l'API `/api/progress` **n'est pas authentifiée**. Cet incrément vise un
-  **réseau de confiance (LAN)**. Avant toute **exposition publique**, il faudra ajouter un
-  **jeton d'accès** (variable d'env côté backend + en-tête côté client) et idéalement du
-  TLS via un reverse-proxy. Ce durcissement est un incrément ultérieur explicite, hors de
-  cette RFC.
+- **Sécurité** : cet incrément livrait l'API **non authentifiée** (réseau de confiance).
+  Le durcissement (jeton d'accès + transport chiffré) est désormais traité par la
+  **[RFC 0014](0014-securite-api.md)** : jeton `SINO_API_TOKEN` + accès Tailscale HTTPS.
 - **Aucun changement de code applicatif** : uniquement de l'infra et de la doc.
 - Le binaire statique + Alpine donnent une image légère, multi-arch possible (amd64/arm64
   pour Raspberry Pi) via buildx si besoin.

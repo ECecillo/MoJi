@@ -54,9 +54,26 @@ Une seule image Docker sert la PWA **et** l'API (single-origin), avec la base SQ
 docker compose up -d --build   # ou : make docker-up
 ```
 
-L'app est alors accessible sur `http://<hôte>:8787` (la Boox et l'ordinateur s'y connectent sur le réseau local et installent la PWA depuis là). Les données persistent dans le volume `sinogrammes-data`. Arrêt : `make docker-down`.
+L'app est alors accessible sur `http://<hôte>:8787`. Les données persistent dans le volume `sinogrammes-data`. Arrêt : `make docker-down`.
 
-> ⚠️ **Sécurité** : l'API n'est pas authentifiée — à n'exposer que sur un **réseau de confiance (LAN)**. Une exposition publique nécessiterait au préalable un jeton d'accès + TLS (cf. RFC 0013).
+### Sécurité & accès Tailscale (cf. [RFC 0014](docs/rfc/0014-securite-api.md))
+
+L'API peut être protégée par un **jeton d'accès** partagé :
+
+1. Générer un secret et le placer dans un fichier `.env` (cf. [`.env.example`](.env.example)) :
+   ```sh
+   echo "SINO_API_TOKEN=$(openssl rand -base64 32)" > .env
+   docker compose up -d
+   ```
+   Vide = API ouverte (à réserver à un LAN de confiance).
+2. **Accès chiffré via Tailscale** : sur l'hôte, exposer le conteneur en HTTPS dans le tailnet :
+   ```sh
+   tailscale serve --https=443 http://127.0.0.1:8787
+   ```
+   L'app est alors sur `https://<machine>.<tailnet>.ts.net`, accessible depuis n'importe où, chiffrée.
+3. Sur chaque appareil (Boox, ordinateur), ouvrir l'app puis saisir le jeton dans **Tableau de bord → Synchronisation**.
+
+> ℹ️ **HTTPS est requis pour l'offline/PWA** : le service worker ne s'enregistre que sur `localhost` ou en HTTPS. Sur une IP LAN en HTTP nu, l'app marche en ligne mais sans mode hors-ligne — d'où l'intérêt de `tailscale serve` (HTTPS).
 
 ## Documentation
 

@@ -167,15 +167,15 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <body>
 <nav class="topnav"><div class="wrap">
   <a href="#etat">État courant</a>
-  <a href="#rfc">RFC (13)</a>
-  <a href="#journal">Journal (29)</a>
+  <a href="#rfc">RFC (14)</a>
+  <a href="#journal">Journal (30)</a>
   <a href="#brief">Brief</a>
 </div></nav>
 
 <div class="wrap">
 <header class="hero">
   <h1>Sinogrammes — Carnet de bord</h1>
-  <p class="meta">Index généré le 2026-06-13 15:28. 13 RFC · 29 entrées de journal.</p>
+  <p class="meta">Index généré le 2026-06-14 09:36. 14 RFC · 30 entrées de journal.</p>
   <p class="hint">Toutes les sections sont collapsables. Cliquez sur une ligne ou un lien interne pour ouvrir et défiler.</p>
 </header>
 
@@ -185,21 +185,29 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <blockquote>
 <p><strong>Fichier toujours à jour.</strong> À mettre à jour à la fin de chaque session de travail. Répond à la question : &quot;où en est le projet, là, maintenant ?&quot;</p>
 </blockquote>
-<p><strong>Dernière mise à jour</strong> : 2026-06-13 (post-MVP — déploiement Docker + CI)</p>
+<p><strong>Dernière mise à jour</strong> : 2026-06-14 (post-MVP — sécurité API : jeton + Tailscale)</p>
 <h2>Statut global</h2>
-<p>🎉 <strong>MVP complet (Lots 0 → 5).</strong> Post-MVP en cours : <strong>déploiement auto-hébergé Docker + CI livré</strong> (RFC 0013). L&#39;app est installable/utilisable sur Boox Air 5c et ordinateur, hors-ligne, sync multi-appareils, HSK 3.0 niveaux 1–2.</p>
+<p>🎉 <strong>MVP complet (Lots 0 → 5).</strong> Post-MVP en cours : <strong>déploiement auto-hébergé Docker + CI</strong> (RFC 0013) puis <strong>authentification de l&#39;API + accès Tailscale</strong> (RFC 0014). L&#39;app est installable/utilisable sur Boox Air 5c et ordinateur, hors-ligne, sync multi-appareils sécurisée, HSK 3.0 niveaux 1–2.</p>
 <p><strong>Lot 5 — Polish &amp; PWA</strong> : ✅ <strong>clôturé, critère de sortie atteint</strong> — installable + 100 % offline + Lighthouse 97/100/100. Validé en réel sur Boox le 2026-06-13 (installation, tracé HSK 1/2, hors-ligne, sync multi-appareils via <code>make serve</code> sur le LAN).</p>
 <p><strong>Lot 4 — Synthèse vocale</strong> : ✅ <strong>clôturé</strong> (API SpeechSynthesis, SpeakButton intégré).</p>
 <p><strong>Lot 3 — Système de révision</strong> : ✅ <strong>clôturé, critère de sortie atteint</strong> — sync backend single-origin + merge par champ (RFC 0011, 2026-06-13).</p>
 <p><strong>Lot 2</strong> : ✅ clôturé officiellement (RFC 0007 + RFC 0010).</p>
 <h2>Ce qui est fait</h2>
+<h3>Post-MVP — sécurité API : jeton + Tailscale (2026-06-14)</h3>
+<p>Cf. <a href="#journal-2026-06-14-securite-api"><code>docs/journal/2026-06-14-securite-api.md</code></a> et <a href="#rfc-0014">RFC 0014</a>.</p>
+<ul>
+<li>✅ <strong>Jeton d&#39;accès opt-in</strong> : <code>SINO_API_TOKEN</code> (vide = ouvert, rétro-compatible). Si défini, <code>/api/*</code> exige <code>Authorization: Bearer</code> (middleware constant-time <code>auth.go</code>) ; <code>/health</code> + statique restent publics. Tests backend.</li>
+<li>✅ <strong>Client</strong> : <code>RestSyncClient</code> envoie le jeton (lu en localStorage à chaque requête via <code>lib/syncToken.ts</code>), gère 401. <code>useProgress</code> expose <code>syncError</code>.</li>
+<li>✅ <strong>UI réglage</strong> : section « Synchronisation » du Dashboard (champ jeton + Enregistrer → sync + statut), i18n FR/EN.</li>
+<li>✅ <strong>Accès Tailscale + HTTPS</strong> (<code>tailscale serve</code>) documenté : chiffre le jeton <strong>et</strong> fournit le <em>secure context</em> requis par le service worker (offline/PWA impossible sur IP LAN en HTTP nu). Compose lit <code>SINO_API_TOKEN</code> depuis <code>.env</code> (<code>.env.example</code>).</li>
+</ul>
 <h3>Post-MVP — déploiement auto-hébergé Docker + CI (2026-06-13)</h3>
 <p>Cf. <a href="#journal-2026-06-13-deploiement-docker"><code>docs/journal/2026-06-13-deploiement-docker.md</code></a> et <a href="#rfc-0013">RFC 0013</a>.</p>
 <ul>
 <li>✅ <strong><code>Dockerfile</code></strong> multi-étapes single-origin (front <code>vite build</code> → Go statique <code>CGO_ENABLED=0</code> → runtime Alpine non-root + migrations + dist + healthcheck <code>/health</code>). <strong>Validé</strong> : <code>docker run</code> → endpoints OK + persistance après restart.</li>
 <li>✅ <strong><code>docker-compose.yml</code></strong> : volume nommé <code>/data</code> (SQLite), <code>restart: unless-stopped</code>. <code>make docker-up</code>/<code>down</code>/<code>build</code>.</li>
 <li>✅ <strong>CI GitHub Actions</strong> (<code>.github/workflows/ci.yml</code>) : jobs frontend (vitest/eslint/prettier/tsc/playwright), backend (<code>go test -race</code>, golangci-lint), docker build. <strong>Outils appelés directement</strong> (pas <code>make</code>) pour découpler la CI du task runner ; toolchain via <code>jdx/mise-action</code> (parité Node 24.15.0).</li>
-<li>⚠ <strong>Sécurité</strong> : API non authentifiée → LAN / réseau de confiance uniquement ; jeton + TLS requis avant exposition publique (RFC 0013, incrément ultérieur).</li>
+<li>✅ <strong>Sécurité</strong> : traitée par RFC 0014 (jeton <code>SINO_API_TOKEN</code> + Tailscale HTTPS) — voir section ci-dessus.</li>
 </ul>
 <h3>Lot 0 (clôturé)</h3>
 <p>Cf. <a href="#journal-2026-05-24-lot0-fondations"><code>docs/journal/2026-05-24-lot0-fondations.md</code></a>. Documentation initiale, structure du monorepo, schéma de données v1 + fixture, backend Go avec <code>/health</code> en TDD, frontend Vite/React/TS strict + Tailwind + Vitest + i18n FR/EN, ports hexagonaux, orchestrateur de migrations, Makefile racine.</p>
@@ -390,6 +398,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </ul>
 <h2>Dernières décisions importantes</h2>
 <ul>
+<li>2026-06-14 : <strong>authentification API par jeton partagé opt-in</strong> (RFC 0014). <code>SINO_API_TOKEN</code> vide = ouvert (rétro-compatible) ; sinon Bearer requis sur <code>/api/*</code> (constant-time), <code>/health</code>/statique publics. Jeton saisi par appareil (localStorage). Accès chiffré via Tailscale <code>serve</code> HTTPS (aussi requis pour le service worker / offline).</li>
 <li>2026-06-13 : <strong>déploiement auto-hébergé Docker</strong> (RFC 0013) — image single-origin (Alpine, binaire statique, SQLite sur volume), docker-compose, CI GitHub Actions appelant les outils <strong>directement</strong> (indépendante du Makefile). API non authentifiée → LAN uniquement.</li>
 <li>2026-06-13 : <strong>indicateur de focus clavier global</strong> (<code>:focus-visible</code> noir, e-ink) dans <code>index.css</code>, en plus du renforcement <code>prefers-contrast</code>. Les <code>focus:outline-none</code> nus des champs sont retirés (focus clavier redevenu visible).</li>
 <li>2026-06-13 : <strong>périmètre étendu à HSK 3.0 niveaux 1–2</strong> (RFC 0012). Sourcing cumulatif (niveau = plus bas d&#39;apparition), fichiers générés <strong>par niveau</strong> + merge au chargement (HSK 1 byte-identique, HSK 3 trivial), schéma inchangé, filtre niveau au glossaire.</li>
@@ -447,7 +456,8 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li><strong>Export / import Anki</strong>.</li>
 <li><strong>Statistiques avancées</strong> (heatmap, courbes de rétention).</li>
 <li><strong>HSK 3, 4, …</strong> : ajout trivial d&#39;un niveau dans le pipeline (<code>LEVELS</code> + un import au merge, cf. RFC 0012).</li>
-<li>✅ <del><strong>Docker / CI / déploiement formalisé</strong></del> : fait (2026-06-13, RFC 0013). Reste éventuellement : durcissement sécurité (jeton + TLS) pour exposition publique, image multi-arch (arm64/Pi).</li>
+<li>✅ <del><strong>Docker / CI / déploiement formalisé</strong></del> : fait (2026-06-13, RFC 0013).</li>
+<li>✅ <del><strong>Sécurité (jeton d&#39;accès + transport chiffré)</strong></del> : fait (2026-06-14, RFC 0014). Jeton <code>SINO_API_TOKEN</code> + accès Tailscale HTTPS. Reste éventuellement : image multi-arch (arm64/Pi), rate-limiting si exposition publique.</li>
 <li><strong>IndexedDB</strong> (si volume/query le justifient ; RFC à écrire) ; <strong>sync concurrente avancée</strong> (horodatage/CRDT) si besoin multi-appareils concurrent réel.</li>
 <li>Détails mineurs : avertissement Vite « chunk &gt; 500 KB » sur les données de tracé (intentionnel, chunks paresseux) ; focus clavier déplacé au changement de vue (amélioration a11y facultative).</li>
 </ul>
@@ -553,6 +563,12 @@ après sync (single-origin, merge par champ).</p>
   <td><a href="#rfc-0013">Déploiement auto-hébergé (Docker) et intégration continue</a></td>
   <td><span class="status status-Accepté">Accepté</span></td>
   <td>2026-06-13</td>
+</tr>
+<tr>
+  <td><a href="#rfc-0014">0014</a></td>
+  <td><a href="#rfc-0014">Authentification de l'API et accès Tailscale</a></td>
+  <td><span class="status status-Accepté">Accepté</span></td>
+  <td>2026-06-14</td>
 </tr></tbody>
 </table>
 <details id="rfc-0001">
@@ -1825,11 +1841,9 @@ task runner. La toolchain est provisionnée par <strong><code>jdx/mise-action</c
 jsdom et ferait échouer les tests).</p>
 <h2>Conséquences</h2>
 <ul>
-<li><strong>Sécurité</strong> : l&#39;API <code>/api/progress</code> <strong>n&#39;est pas authentifiée</strong>. Cet incrément vise un
-<strong>réseau de confiance (LAN)</strong>. Avant toute <strong>exposition publique</strong>, il faudra ajouter un
-<strong>jeton d&#39;accès</strong> (variable d&#39;env côté backend + en-tête côté client) et idéalement du
-TLS via un reverse-proxy. Ce durcissement est un incrément ultérieur explicite, hors de
-cette RFC.</li>
+<li><strong>Sécurité</strong> : cet incrément livrait l&#39;API <strong>non authentifiée</strong> (réseau de confiance).
+Le durcissement (jeton d&#39;accès + transport chiffré) est désormais traité par la
+<strong><a href="#rfc-0014">RFC 0014</a></strong> : jeton <code>SINO_API_TOKEN</code> + accès Tailscale HTTPS.</li>
 <li><strong>Aucun changement de code applicatif</strong> : uniquement de l&#39;infra et de la doc.</li>
 <li>Le binaire statique + Alpine donnent une image légère, multi-arch possible (amd64/arm64
 pour Raspberry Pi) via buildx si besoin.</li>
@@ -1846,10 +1860,133 @@ l&#39;instant elles sont copiées dans l&#39;image (simple, déjà lues depuis u
 </ul>
 </div>
 </details>
+<details id="rfc-0014">
+  <summary>RFC 0014 — Authentification de l'API et accès Tailscale<span class="meta">2026-06-14 · <span class="status status-Accepté">Accepté</span></span></summary>
+  <div class="content"><h1>RFC 0014 — Authentification de l&#39;API et accès Tailscale</h1>
+<ul>
+<li><strong>Statut</strong> : Accepté</li>
+<li><strong>Date</strong> : 2026-06-14</li>
+<li><strong>Auteur(s)</strong> : Enzo</li>
+<li><strong>Lié à</strong> : RFC 0011 (sync backend), RFC 0013 (déploiement Docker)</li>
+</ul>
+<h2>Contexte</h2>
+<p>RFC 0013 a livré le déploiement auto-hébergé mais a laissé l&#39;API <code>/api/progress</code>
+<strong>ouverte</strong> (« réseau de confiance uniquement »). Pour un déploiement chez soi accessible
+hors LAN, deux besoins : (1) <strong>authentifier</strong> l&#39;API pour que la progression ne soit ni
+lisible ni modifiable sans secret ; (2) un <strong>transport chiffré</strong>. L&#39;utilisateur accède
+via <strong>Tailscale</strong> (VPN maillé chiffré), ce qui répond au point 2 sans reverse-proxy.</p>
+<h2>Décision</h2>
+<h3>Jeton d&#39;accès partagé, opt-in</h3>
+<p>Application <strong>mono-utilisateur</strong> → un <strong>jeton partagé</strong> suffit (pas d&#39;OAuth ni de
+multi-comptes). Variable d&#39;environnement backend <strong><code>SINO_API_TOKEN</code></strong> :</p>
+<ul>
+<li><strong>vide → authentification désactivée</strong> (dev, <code>make serve</code>, LAN de confiance — comportement
+RFC 0013 inchangé) ;</li>
+<li><strong>non vide → <code>/api/*</code> exige <code>Authorization: Bearer &lt;token&gt;</code></strong> (comparaison
+<strong>constant-time</strong>, <code>crypto/subtle</code>). <code>/health</code> et les fichiers statiques (shell PWA)
+restent <strong>publics</strong> : le healthcheck doit fonctionner sans secret, et la donnée
+sensible est derrière le jeton.</li>
+</ul>
+<p>Côté client, le jeton est <strong>saisi une fois par appareil</strong> (réglage « Synchronisation » du
+tableau de bord), stocké en <code>localStorage</code> (<code>sinogrammes:sync:api-token</code>) et envoyé en
+en-tête par <code>RestSyncClient</code> sur chaque requête (lu à chaque appel → changement pris en
+compte sans rechargement). Un échec <code>401</code> est remonté à l&#39;UI (statut de sync).</p>
+<h3>Transport : Tailscale + HTTPS</h3>
+<p>Le serveur reste joignable via <strong>Tailscale</strong> ; on expose le conteneur en HTTPS dans le
+tailnet avec <strong><code>tailscale serve</code></strong> → <code>https://&lt;machine&gt;.&lt;tailnet&gt;.ts.net</code>. C&#39;est important
+au-delà du chiffrement du jeton : le <strong>service worker</strong> (offline/PWA) ne s&#39;enregistre que
+dans un <strong>secure context</strong> (HTTPS ou <code>localhost</code>). Une IP LAN en HTTP nu (ex.
+<code>http://192.168.x.x</code>) <strong>ne permet pas</strong> l&#39;enregistrement du SW — donc pas de vrai mode
+hors-ligne. Tailscale HTTPS fournit ce contexte sûr <strong>et</strong> chiffre le jeton de bout en bout,
+sans exposition publique ni domaine.</p>
+<h2>Conséquences</h2>
+<ul>
+<li>Déploiement sécurisé pour un usage perso nomade : <code>SINO_API_TOKEN</code> défini + Tailscale.</li>
+<li>Rétro-compatibilité totale : sans <code>SINO_API_TOKEN</code>, rien ne change (dev/LAN).</li>
+<li>Le shell PWA reste public (sans secret on charge l&#39;app mais on ne peut pas synchroniser) —
+acceptable, la donnée est protégée.</li>
+<li><code>docker-compose.yml</code> lit <code>SINO_API_TOKEN</code> depuis l&#39;hôte / <code>.env</code> (<code>.env.example</code> fourni,
+<code>.env</code> gitignoré).</li>
+</ul>
+<h2>Limites (assumées, mono-utilisateur)</h2>
+<ul>
+<li><strong>Un seul jeton</strong>, pas de rotation automatique ni de révocation par appareil. Pour
+changer le secret : mettre à jour <code>SINO_API_TOKEN</code> côté serveur et le re-saisir sur
+chaque appareil.</li>
+<li>Pas de rate-limiting ni de verrouillage : suffisant derrière Tailscale (pas d&#39;exposition
+publique). Une exposition publique (reverse-proxy) nécessiterait en plus du rate-limiting.</li>
+</ul>
+<h2>Alternatives considérées</h2>
+<ul>
+<li><strong>Reverse-proxy Caddy + domaine public + HTTPS</strong> : écarté au profit de Tailscale (plus
+simple, pas de surface publique). L&#39;option reste documentée si besoin futur.</li>
+<li><strong>Sessions / cookies / OAuth</strong> : sur-dimensionné pour un mono-utilisateur.</li>
+<li><strong>Jeton injecté dans le HTML servi</strong> : rejeté (exposerait le secret à quiconque charge la
+page) ; le jeton est saisi et stocké côté appareil.</li>
+</ul>
+</div>
+</details>
 </section>
 
 <section id="journal">
 <h2>Journal de bord</h2>
+<details id="journal-2026-06-14-securite-api">
+  <summary>2026-06-14 — Sécurité : authentification de l'API (jeton) + Tailscale</summary>
+  <div class="content"><h1>2026-06-14 — Sécurité : authentification de l&#39;API (jeton) + Tailscale</h1>
+<h2>Objectif</h2>
+<p>Suite du déploiement (RFC 0013) : sécuriser l&#39;API pour un déploiement chez soi accessible
+via Tailscale. RFC 0014.</p>
+<h2>Ce qui a été fait</h2>
+<h3>Backend</h3>
+<ul>
+<li><code>config.go</code> : <code>APIToken</code> ← <code>SINO_API_TOKEN</code> (vide = auth désactivée). + tests.</li>
+<li><code>auth.go</code> : middleware <code>requireBearerToken</code> — 401 si en-tête absent/incorrect,
+comparaison constant-time (<code>crypto/subtle</code>).</li>
+<li><code>server.go</code> : <code>NewServer(store, staticDir, apiToken)</code> ; groupe <code>/api</code> avec le middleware
+<strong>seulement si un jeton est configuré</strong> ; <code>/health</code> et le statique restent publics.
+Appelants mis à jour (<code>main.go</code>, tests).</li>
+<li><code>auth_test.go</code> : 401 sans/mauvais/Basic, 200 avec le bon jeton, <code>/health</code> public,
+auth désactivée quand vide.</li>
+</ul>
+<h3>Frontend</h3>
+<ul>
+<li><code>lib/syncToken.ts</code> (+test) : lecture/écriture du jeton en localStorage (clé
+<code>sinogrammes:sync:api-token</code>).</li>
+<li><code>RestSyncClient</code> : <code>Authorization: Bearer &lt;token&gt;</code> sur pull+push (jeton lu à chaque
+requête via getter par défaut), message clair sur 401. Tests mis à jour/étendus.</li>
+<li><code>useProgress</code> : expose <code>syncError</code> (posé dans le catch, vidé au succès).</li>
+<li><code>Dashboard</code> : section « Synchronisation » — champ jeton (password) + Enregistrer →
+<code>writeApiToken</code> + <code>sync()</code> + statut (synchronisé / erreur). i18n FR/EN.</li>
+</ul>
+<h3>Déploiement</h3>
+<ul>
+<li><code>docker-compose.yml</code> : <code>SINO_API_TOKEN: ${SINO_API_TOKEN:-}</code> (sourcé hôte/<code>.env</code>).</li>
+<li><code>.env.example</code> (+ <code>.env</code> gitignoré et exclu du contexte Docker).</li>
+</ul>
+<h2>Décisions (RFC 0014)</h2>
+<ul>
+<li><strong>Jeton partagé opt-in</strong> (mono-utilisateur) ; vide = ouvert (rétro-compatible).</li>
+<li><strong>Accès Tailscale + <code>tailscale serve</code> HTTPS</strong> : chiffre le jeton <strong>et</strong> fournit le
+<em>secure context</em> indispensable à l&#39;enregistrement du service worker (offline/PWA). Une
+IP LAN en HTTP nu ne permet pas le SW.</li>
+<li>Shell PWA public, donnée derrière le jeton. <code>/health</code> public (healthcheck).</li>
+</ul>
+<h2>Vérifications</h2>
+<ul>
+<li><strong>Backend</strong> : <code>go test ./... -race</code> (auth + config) OK, <code>golangci-lint</code> 0 issue.</li>
+<li><strong>Front</strong> : <code>npx vitest run</code> (syncToken, RestSyncClient header/401, useProgress) OK,
+eslint/prettier/tsc OK.</li>
+<li><strong>E2E</strong> : <code>e2e/sync.spec.ts</code> étendu — asserte l&#39;en-tête <code>Authorization: Bearer</code> au sync.</li>
+<li><strong>Manuel Docker</strong> : <code>docker run -e SINO_API_TOKEN=secret</code> → <code>/api/progress</code> 401 sans
+en-tête, 200 avec <code>Authorization: Bearer secret</code> ; <code>/health</code> 200 sans jeton.</li>
+</ul>
+<h2>Reste / pistes</h2>
+<ul>
+<li>Rotation de jeton / révocation par appareil, rate-limiting : non nécessaires derrière
+Tailscale (pas d&#39;exposition publique). À prévoir si exposition publique un jour.</li>
+</ul>
+</div>
+</details>
 <details id="journal-2026-06-13-lot5-optim-assets-hanzi-writer">
   <summary>2026-06-13 — Lot 5 : optimisation des assets Hanzi Writer</summary>
   <div class="content"><h1>2026-06-13 — Lot 5 : optimisation des assets Hanzi Writer</h1>
@@ -4176,7 +4313,7 @@ HSK 3+, Docker/CI/déploiement, IndexedDB. Rien d&#39;engagé.</p>
 </section>
 
 <footer>
-<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-06-13 15:28 par <code>make docs</code>.</p>
+<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-06-14 09:36 par <code>make docs</code>.</p>
 </footer>
 </div>
 
