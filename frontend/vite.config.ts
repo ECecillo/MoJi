@@ -26,6 +26,11 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     css: false,
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    // Les tests de composants (App, Glossary) chargent et valident (Zod) tout le
+    // jeu HSK 1+2 (~600 caractères / ~1250 mots) : lent sur un runner CI 2 cœurs.
+    // Le défaut de 5 s y suffit pas → on relève le plafond (cf. RFC 0012).
+    testTimeout: 20000,
+    hookTimeout: 20000,
   },
 });
 

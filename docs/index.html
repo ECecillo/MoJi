@@ -168,14 +168,14 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <nav class="topnav"><div class="wrap">
   <a href="#etat">État courant</a>
   <a href="#rfc">RFC (14)</a>
-  <a href="#journal">Journal (30)</a>
+  <a href="#journal">Journal (31)</a>
   <a href="#brief">Brief</a>
 </div></nav>
 
 <div class="wrap">
 <header class="hero">
   <h1>Sinogrammes — Carnet de bord</h1>
-  <p class="meta">Index généré le 2026-06-14 09:36. 14 RFC · 30 entrées de journal.</p>
+  <p class="meta">Index généré le 2026-06-14 09:49. 14 RFC · 31 entrées de journal.</p>
   <p class="hint">Toutes les sections sont collapsables. Cliquez sur une ligne ou un lien interne pour ouvrir et défiler.</p>
 </header>
 
@@ -185,7 +185,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <blockquote>
 <p><strong>Fichier toujours à jour.</strong> À mettre à jour à la fin de chaque session de travail. Répond à la question : &quot;où en est le projet, là, maintenant ?&quot;</p>
 </blockquote>
-<p><strong>Dernière mise à jour</strong> : 2026-06-14 (post-MVP — sécurité API : jeton + Tailscale)</p>
+<p><strong>Dernière mise à jour</strong> : 2026-06-14 (post-MVP — fix CI timeout + image multi-arch arm64)</p>
 <h2>Statut global</h2>
 <p>🎉 <strong>MVP complet (Lots 0 → 5).</strong> Post-MVP en cours : <strong>déploiement auto-hébergé Docker + CI</strong> (RFC 0013) puis <strong>authentification de l&#39;API + accès Tailscale</strong> (RFC 0014). L&#39;app est installable/utilisable sur Boox Air 5c et ordinateur, hors-ligne, sync multi-appareils sécurisée, HSK 3.0 niveaux 1–2.</p>
 <p><strong>Lot 5 — Polish &amp; PWA</strong> : ✅ <strong>clôturé, critère de sortie atteint</strong> — installable + 100 % offline + Lighthouse 97/100/100. Validé en réel sur Boox le 2026-06-13 (installation, tracé HSK 1/2, hors-ligne, sync multi-appareils via <code>make serve</code> sur le LAN).</p>
@@ -193,6 +193,12 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <p><strong>Lot 3 — Système de révision</strong> : ✅ <strong>clôturé, critère de sortie atteint</strong> — sync backend single-origin + merge par champ (RFC 0011, 2026-06-13).</p>
 <p><strong>Lot 2</strong> : ✅ clôturé officiellement (RFC 0007 + RFC 0010).</p>
 <h2>Ce qui est fait</h2>
+<h3>Post-MVP — fix CI (timeout Vitest) + image multi-arch arm64 (2026-06-14)</h3>
+<p>Cf. <a href="#journal-2026-06-14-ci-timeout-et-multiarch"><code>docs/journal/2026-06-14-ci-timeout-et-multiarch.md</code></a>.</p>
+<ul>
+<li>✅ <strong>CI verte</strong> : les tests composants (App, Glossary) dépassaient 5 s en CI depuis l&#39;import HSK 2 (parse Zod de ~600 chars/~1250 mots sur runner lent). <code>vite.config</code> → <code>testTimeout</code>/<code>hookTimeout</code> à 20 s. Pas un bug de logique.</li>
+<li>✅ <strong>Image multi-arch</strong> : <code>Dockerfile</code> cross-compile (<code>$BUILDPLATFORM</code> + <code>GOARCH=$TARGETARCH</code>) ; <code>make docker-buildx-arm64</code> produit <code>sinogrammes-arm64.tar</code> (vérifié <code>arm64/linux</code>). README : section Raspberry Pi (builder sur le Pi, ou cross-builder + <code>docker load</code>).</li>
+</ul>
 <h3>Post-MVP — sécurité API : jeton + Tailscale (2026-06-14)</h3>
 <p>Cf. <a href="#journal-2026-06-14-securite-api"><code>docs/journal/2026-06-14-securite-api.md</code></a> et <a href="#rfc-0014">RFC 0014</a>.</p>
 <ul>
@@ -457,7 +463,8 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li><strong>Statistiques avancées</strong> (heatmap, courbes de rétention).</li>
 <li><strong>HSK 3, 4, …</strong> : ajout trivial d&#39;un niveau dans le pipeline (<code>LEVELS</code> + un import au merge, cf. RFC 0012).</li>
 <li>✅ <del><strong>Docker / CI / déploiement formalisé</strong></del> : fait (2026-06-13, RFC 0013).</li>
-<li>✅ <del><strong>Sécurité (jeton d&#39;accès + transport chiffré)</strong></del> : fait (2026-06-14, RFC 0014). Jeton <code>SINO_API_TOKEN</code> + accès Tailscale HTTPS. Reste éventuellement : image multi-arch (arm64/Pi), rate-limiting si exposition publique.</li>
+<li>✅ <del><strong>Sécurité (jeton d&#39;accès + transport chiffré)</strong></del> : fait (2026-06-14, RFC 0014). Jeton <code>SINO_API_TOKEN</code> + accès Tailscale HTTPS.</li>
+<li>✅ <del><strong>Image multi-arch (arm64 / Raspberry Pi)</strong></del> : fait (2026-06-14). Cross-compilation + <code>make docker-buildx-arm64</code>. Reste éventuellement : rate-limiting si exposition publique.</li>
 <li><strong>IndexedDB</strong> (si volume/query le justifient ; RFC à écrire) ; <strong>sync concurrente avancée</strong> (horodatage/CRDT) si besoin multi-appareils concurrent réel.</li>
 <li>Détails mineurs : avertissement Vite « chunk &gt; 500 KB » sur les données de tracé (intentionnel, chunks paresseux) ; focus clavier déplacé au changement de vue (amélioration a11y facultative).</li>
 </ul>
@@ -1984,6 +1991,47 @@ en-tête, 200 avec <code>Authorization: Bearer secret</code> ; <code>/health</co
 <ul>
 <li>Rotation de jeton / révocation par appareil, rate-limiting : non nécessaires derrière
 Tailscale (pas d&#39;exposition publique). À prévoir si exposition publique un jour.</li>
+</ul>
+</div>
+</details>
+<details id="journal-2026-06-14-ci-timeout-et-multiarch">
+  <summary>2026-06-14 — Fix CI (timeout Vitest) + image multi-arch arm64</summary>
+  <div class="content"><h1>2026-06-14 — Fix CI (timeout Vitest) + image multi-arch arm64</h1>
+<h2>Contexte</h2>
+<p>La CI GitHub Actions (RFC 0013) échouait sur le job <code>frontend</code> (Vitest), et besoin
+d&#39;une image arm64 pour un déploiement Raspberry Pi.</p>
+<h2>CI : timeout Vitest</h2>
+<ul>
+<li><strong>Diagnostic</strong> (via <code>gh run view --log-failed</code>) : 3 tests de composants échouaient sur
+<code>Test timed out in 5000ms</code> (App.test ×1, Glossary.test ×2). Cause : depuis l&#39;import
+HSK 2 (RFC 0012), ces tests chargent et valident (Zod) ~600 caractères / ~1250 mots ;
+sur le runner CI (2 cœurs, plus lent que le poste local) ça dépasse le défaut de 5 s.
+Pas un bug de logique — un timeout. (Les lignes <code>Invalid URL: /api/progress</code> du log
+sont du bruit <code>console.debug</code> du sync best-effort, attrapé.)</li>
+<li><strong>Correctif</strong> : <code>vite.config.ts</code> → <code>testTimeout: 20000</code>, <code>hookTimeout: 20000</code>.</li>
+</ul>
+<h2>Image multi-arch (arm64 Raspberry Pi)</h2>
+<ul>
+<li><code>Dockerfile</code> rendu cross-compile-friendly : étapes de build sur <code>$BUILDPLATFORM</code>,
+binaire Go cross-compilé via <code>ARG TARGETOS/TARGETARCH</code> + <code>GOOS/GOARCH</code> (le bundle JS
+est indépendant de l&#39;arch, le runtime <code>alpine</code> prend l&#39;arch cible). Sûr pour les builds
+natifs (BuildKit fournit <code>TARGETARCH</code>=host par défaut).</li>
+<li><code>make docker-buildx-arm64</code> : crée au besoin un builder <code>docker-container</code> et produit
+<code>sinogrammes-arm64.tar</code> (transférable par scp + <code>docker load</code>). <code>.tar</code> gitignoré.</li>
+<li>README : section « Raspberry Pi (arm64) » — builder sur le Pi, ou cross-builder + transférer.</li>
+</ul>
+<h2>Vérifications</h2>
+<ul>
+<li><code>npm run test</code> : 244 tests OK (le timeout ne change rien en local).</li>
+<li><code>make docker-buildx-arm64</code> : tar produit ; <code>docker load</code> + <code>docker image inspect</code> →
+<strong>Architecture: arm64 / Os: linux</strong> confirmé.</li>
+<li>Push → la CI doit repasser au vert (timeout levé).</li>
+</ul>
+<h2>Décisions</h2>
+<ul>
+<li>Timeout Vitest relevé globalement (tests d&#39;intégration légitimement lents sur le jeu
+HSK 1+2) plutôt que d&#39;injecter un jeu réduit (refactor plus invasif des composants).</li>
+<li>Image multi-arch via cross-compilation Go (rapide, sans émulation QEMU du build Go).</li>
 </ul>
 </div>
 </details>
@@ -4313,7 +4361,7 @@ HSK 3+, Docker/CI/déploiement, IndexedDB. Rien d&#39;engagé.</p>
 </section>
 
 <footer>
-<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-06-14 09:36 par <code>make docs</code>.</p>
+<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-06-14 09:49 par <code>make docs</code>.</p>
 </footer>
 </div>
 

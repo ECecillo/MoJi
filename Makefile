@@ -9,7 +9,7 @@ SHELL := /bin/sh
         lint lint-front lint-back \
         typecheck build build-front build-back \
         vendor-sources build-data build-icons docs serve \
-        docker-build docker-up docker-down \
+        docker-build docker-up docker-down docker-buildx-arm64 \
         clean
 
 help:
@@ -25,6 +25,7 @@ help:
 	@echo "  make serve       — build + sert front ET API sur une seule origine (LAN, cf. RFC 0011)"
 	@echo "  make docker-up   — build l'image et lance le conteneur (docker compose, cf. RFC 0013)"
 	@echo "  make docker-down — arrête le conteneur"
+	@echo "  make docker-buildx-arm64 — cross-build une image arm64 (Raspberry Pi) dans un tar"
 	@echo "  make vendor-sources — rafraîchit shared/data/sources/ depuis les SHA upstream (rare, réseau)"
 	@echo "  make build-data  — régénère frontend/src/data/hsk1.generated.json (offline)"
 	@echo "  make build-icons — régénère les icônes PNG de la PWA (192/512, via Chromium Playwright)"
@@ -117,6 +118,16 @@ docker-up:
 
 docker-down:
 	docker compose down
+
+# Cross-build une image arm64 (Raspberry Pi) dans un tar transférable
+# (scp vers le Pi, puis `docker load -i sinogrammes-arm64.tar`). Plus rapide que
+# builder sur le Pi. Nécessite un builder buildx "docker-container" (créé au
+# besoin). Cf. RFC 0013 (multi-arch) et la section déploiement du README.
+docker-buildx-arm64:
+	docker buildx inspect sino-builder >/dev/null 2>&1 || \
+	  docker buildx create --name sino-builder --driver docker-container
+	docker buildx build --builder sino-builder --platform linux/arm64 \
+	  -t sinogrammes:arm64 -o type=docker,dest=sinogrammes-arm64.tar .
 
 # ─────────── data pipeline (cf. RFC 0008) ───────────
 

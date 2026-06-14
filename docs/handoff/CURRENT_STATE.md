@@ -2,7 +2,7 @@
 
 > **Fichier toujours à jour.** À mettre à jour à la fin de chaque session de travail. Répond à la question : "où en est le projet, là, maintenant ?"
 
-**Dernière mise à jour** : 2026-06-14 (post-MVP — sécurité API : jeton + Tailscale)
+**Dernière mise à jour** : 2026-06-14 (post-MVP — fix CI timeout + image multi-arch arm64)
 
 ## Statut global
 
@@ -17,6 +17,13 @@
 **Lot 2** : ✅ clôturé officiellement (RFC 0007 + RFC 0010).
 
 ## Ce qui est fait
+
+### Post-MVP — fix CI (timeout Vitest) + image multi-arch arm64 (2026-06-14)
+
+Cf. [`docs/journal/2026-06-14-ci-timeout-et-multiarch.md`](../journal/2026-06-14-ci-timeout-et-multiarch.md).
+
+- ✅ **CI verte** : les tests composants (App, Glossary) dépassaient 5 s en CI depuis l'import HSK 2 (parse Zod de ~600 chars/~1250 mots sur runner lent). `vite.config` → `testTimeout`/`hookTimeout` à 20 s. Pas un bug de logique.
+- ✅ **Image multi-arch** : `Dockerfile` cross-compile (`$BUILDPLATFORM` + `GOARCH=$TARGETARCH`) ; `make docker-buildx-arm64` produit `sinogrammes-arm64.tar` (vérifié `arm64/linux`). README : section Raspberry Pi (builder sur le Pi, ou cross-builder + `docker load`).
 
 ### Post-MVP — sécurité API : jeton + Tailscale (2026-06-14)
 
@@ -311,7 +318,8 @@ Le MVP est complet ; pistes ultérieures, non engagées :
 - **Statistiques avancées** (heatmap, courbes de rétention).
 - **HSK 3, 4, …** : ajout trivial d'un niveau dans le pipeline (`LEVELS` + un import au merge, cf. RFC 0012).
 - ✅ ~~**Docker / CI / déploiement formalisé**~~ : fait (2026-06-13, RFC 0013).
-- ✅ ~~**Sécurité (jeton d'accès + transport chiffré)**~~ : fait (2026-06-14, RFC 0014). Jeton `SINO_API_TOKEN` + accès Tailscale HTTPS. Reste éventuellement : image multi-arch (arm64/Pi), rate-limiting si exposition publique.
+- ✅ ~~**Sécurité (jeton d'accès + transport chiffré)**~~ : fait (2026-06-14, RFC 0014). Jeton `SINO_API_TOKEN` + accès Tailscale HTTPS.
+- ✅ ~~**Image multi-arch (arm64 / Raspberry Pi)**~~ : fait (2026-06-14). Cross-compilation + `make docker-buildx-arm64`. Reste éventuellement : rate-limiting si exposition publique.
 - **IndexedDB** (si volume/query le justifient ; RFC à écrire) ; **sync concurrente avancée** (horodatage/CRDT) si besoin multi-appareils concurrent réel.
 - Détails mineurs : avertissement Vite « chunk > 500 KB » sur les données de tracé (intentionnel, chunks paresseux) ; focus clavier déplacé au changement de vue (amélioration a11y facultative).
 

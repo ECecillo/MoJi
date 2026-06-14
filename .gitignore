@@ -42,3 +42,6 @@ backend/data/
 # Logs
 *.log
 npm-debug.log*
+
+# Image arm64 cross-buildée (make docker-buildx-arm64)
+sinogrammes-arm64.tar

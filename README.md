@@ -56,6 +56,19 @@ docker compose up -d --build   # ou : make docker-up
 
 L'app est alors accessible sur `http://<hôte>:8787`. Les données persistent dans le volume `sinogrammes-data`. Arrêt : `make docker-down`.
 
+#### Raspberry Pi (arm64)
+
+L'image est multi-arch (le binaire Go est cross-compilé vers l'arch cible). Deux options :
+
+- **Builder sur le Pi** (le plus simple) : `git clone` sur le Pi puis `docker compose up -d --build` → image arm64 native.
+- **Cross-builder depuis un autre poste** puis transférer (plus rapide que builder sur le Pi) :
+  ```sh
+  make docker-buildx-arm64                       # produit sinogrammes-arm64.tar
+  scp sinogrammes-arm64.tar pi@raspberrypi:~/
+  ssh pi@raspberrypi 'docker load -i sinogrammes-arm64.tar'
+  ```
+  Côté Pi, lancer via un compose qui référence `image: sinogrammes:arm64` (au lieu de `build: .`) + le volume `/data`.
+
 ### Sécurité & accès Tailscale (cf. [RFC 0014](docs/rfc/0014-securite-api.md))
 
 L'API peut être protégée par un **jeton d'accès** partagé :

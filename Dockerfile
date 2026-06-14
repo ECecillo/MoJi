@@ -2,10 +2,13 @@
 #
 # Image de déploiement single-origin (cf. RFC 0011, RFC 0013) : un seul conteneur
 # sert la PWA (frontend buildé) ET l'API, avec la base SQLite sur un volume.
-# Multi-étapes : build front (Node), build Go statique, runtime Alpine minimal.
+# Multi-étapes + multi-arch : les étapes de build tournent sur l'arch du builder
+# ($BUILDPLATFORM) et le binaire Go est cross-compilé vers l'arch cible
+# ($TARGETARCH), ce qui permet de produire des images arm64 (Raspberry Pi) depuis
+# une machine amd64 sans émulation lente. Voir `make docker-buildx`.
 
-# 1. Build du frontend → dist/
-FROM node:24.15.0-alpine AS frontend
+# 1. Build du frontend → dist/ (JS : indépendant de l'arch, on build sur le builder).
+FROM --platform=$BUILDPLATFORM node:24.15.0-alpine AS frontend
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
@@ -15,13 +18,16 @@ COPY frontend/ ./
 # produire le bundle. Évite aussi de dépendre de `shared/` (tsc inclut les tests).
 RUN npx vite build
 
-# 2. Build du binaire Go (statique : SQLite pur-Go, CGO désactivé)
-FROM golang:1.26.2-alpine AS backend
+# 2. Build du binaire Go (statique : SQLite pur-Go, CGO désactivé), cross-compilé.
+FROM --platform=$BUILDPLATFORM golang:1.26.2-alpine AS backend
+ARG TARGETOS
+ARG TARGETARCH
 WORKDIR /app/backend
 COPY backend/go.mod backend/go.sum ./
 RUN go mod download
 COPY backend/ ./
-RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /server ./cmd/server
+RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH:-amd64} \
+    go build -trimpath -ldflags="-s -w" -o /server ./cmd/server
 
 # 3. Runtime minimal
 FROM alpine:3.20
