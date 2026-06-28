@@ -34,6 +34,7 @@ Contenu type :
 
 ## Index (par date décroissante)
 
+- [2026-06-28 — Migration toolchain vers Node 26.3.0 (+ shim localStorage de test)](2026-06-28-migration-node26.md)
 - [2026-06-01 — Lot 5 : socle PWA offline](2026-06-01-lot5-pwa-baseline.md)
 - [2026-05-31 — Réglage global de la voix](2026-05-31-reglage-voix-global.md)
 - [2026-05-31 — Lot 4 : synthèse vocale](2026-05-31-lot4-speech-synthesis.md)

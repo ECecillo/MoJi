@@ -40,7 +40,7 @@ make dev
 
 `mise run setup` lance `make install` puis installe le navigateur Chromium utilisé par Playwright.
 
-Sans mise, il faut installer manuellement Node 24.15.0, Go 1.26.2 et golangci-lint 2.9.0, puis lancer `make install`.
+Sans mise, il faut installer manuellement Node 26.3.0, Go 1.26.2 et golangci-lint 2.9.0, puis lancer `make install`.
 
 ## Commandes projet
 

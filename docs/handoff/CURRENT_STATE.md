@@ -2,7 +2,7 @@
 
 > **Fichier toujours à jour.** À mettre à jour à la fin de chaque session de travail. Répond à la question : "où en est le projet, là, maintenant ?"
 
-**Dernière mise à jour** : 2026-06-14 (post-MVP — fix CI timeout + image multi-arch arm64)
+**Dernière mise à jour** : 2026-06-28 (toolchain — migration Node 26.3.0 + shim localStorage de test)
 
 ## Statut global
 
@@ -229,7 +229,7 @@ Cf. [`docs/journal/2026-06-13-lot5-optim-assets-hanzi-writer.md`](../journal/202
 - ✅ **Renderer simplifié** : `loadBundledHanziWriterData` charge ce fichier unique en import dynamique paresseux (mémoïsé) au lieu de globber les ~9 600 JSON de `hanzi-writer-data`. Signature et erreurs publiques inchangées.
 - ✅ **Gain build** : modules transformés **9 600 → 93**, `dist/sw.js` (précache) **~260 KB → 2,25 KB**, chunk principal **~1,5 MB → 573 KB**. Données toujours 100 % offline (1 chunk paresseux mis en cache par le SW).
 - ✅ **Test d'intégrité** `hsk1-stroke-data.generated.test.ts` : couverture exacte des 300 caractères + cohérence `strokes`/`medians`.
-- ⚠ **Découverte toolchain** : les tests exigent **Node 24.15.0** (épinglé `mise.toml`). Sous Node 25, jsdom@25 expose un `localStorage` cassé → 46 faux échecs. Lancer via `mise exec node@24.15.0 -- …` (ou shell mise activé). Aucun correctif code.
+- ⚠ **Découverte toolchain** (résolue le 2026-06-28) : à l'époque, les tests exigeaient **Node 24.15.0** car sous Node 25 jsdom@25 exposait un `localStorage` cassé → 46 faux échecs. **Depuis** : shim mémoire dans `frontend/src/test/setup.ts`, Node épinglé à 26.3.0, suite verte sous 24 et 26 (cf. décision 2026-06-28).
 
 ### Clôture du Lot 2 — éditeur FR + filtres (session 3)
 
@@ -242,7 +242,7 @@ Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lo
 
 ## Vérifications croisées
 
-> ⚠ **Toolchain** : lancer impérativement sous le Node épinglé (`mise.toml` → Node 24.15.0), p. ex. `mise exec node@24.15.0 -- env -u GOROOT make test`. Sous Node 25, jsdom expose un `localStorage` cassé → 46 faux échecs.
+> ℹ️ **Toolchain** : Node épinglé à **26.3.0** (`mise.toml`). Le `localStorage` natif de Node ≥ 25 masquait celui de jsdom ; un shim mémoire dans `frontend/src/test/setup.ts` le rétablit côté tests. La suite est désormais verte sous Node 24.15.0 **et** 26.3.0. Lancer via la toolchain mise, p. ex. `mise exec node@26.3.0 -- env -u GOROOT make test`.
 
 - `make test` : **239 tests front passent**, paquets back passent avec `-race`.
 - `make test-e2e` : **31/31 tests E2E verts** (Chromium, ~13 s).
@@ -266,7 +266,8 @@ Cf. [`docs/journal/2026-05-30-cloture-lot2.md`](../journal/2026-05-30-cloture-lo
 - 2026-06-13 : **données de référence chargées en dynamique** (`loadBundledDataSource`), instance `BundledDataSource` partagée. Chunk principal −39 % ; le shell ne dépend plus de la taille des données pour son premier rendu.
 - 2026-06-13 : **`hanzi-writer` reste eager**. Son lazy-load casse l'interaction canvas en production (SVG différé qui capte les clics, prouvé par bisection E2E) ; 37 KB ne le justifient pas.
 - 2026-06-13 : **données de tracé = sous-ensemble généré hors-ligne**, pas de glob de `hanzi-writer-data` au build. Le pipeline (RFC 0008) produit un fichier unique restreint à HSK 1, chargé en import dynamique paresseux. Réduit le précache SW de ~260 KB à 2,25 KB et le bundle de ~9 600 à 93 modules.
-- 2026-06-13 : **les tests exigent Node 24.15.0** (épinglé via mise). Sous Node 25 le `localStorage` jsdom est cassé. Toujours passer par la toolchain mise.
+- 2026-06-28 : **migration Node 26.3.0** (épinglé via mise). Node ≥ 25 expose un `Storage`/`localStorage` natif (gated) dont la présence comme global empêche jsdom d'installer le sien (`window.localStorage` undefined). Correctif : shim `localStorage`/`sessionStorage` mémoire dans `frontend/src/test/setup.ts`, activé seulement si absent (no-op sous Node 24). Aucun bump de paquet (jsdom 25 / vitest 2 conservés). Supersède la note « les tests exigent Node 24.15.0 ».
+- 2026-06-13 : ~~**les tests exigent Node 24.15.0**~~ (supersédé le 2026-06-28). Sous Node 25 le `localStorage` jsdom était cassé ; résolu par le shim de test ci-dessus.
 - 2026-06-01 : **PWA sans dépendance externe**. Le service worker est généré par un plugin Vite local, actif en production uniquement, avec cache-first assets et network-first API GET.
 - 2026-06-01 : **offline d'abord = shell + assets bundlés**. La résolution de conflits/sync backend offline reste hors du premier incrément Lot 5.
 - 2026-05-31 : **voix = préférence globale locale**. Le choix de voix est stocké dans `localStorage`, appliqué à tous les `SpeakButton`, et reste best-effort car la liste réelle dépend du navigateur/OS (notamment Boox/Android).

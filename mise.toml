@@ -3,7 +3,7 @@
 #   mise run setup
 
 [tools]
-node = "24.15.0"
+node = "26.3.0"
 go = "1.26.2"
 golangci-lint = "2.9.0"
 

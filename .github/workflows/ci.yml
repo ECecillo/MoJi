@@ -14,7 +14,8 @@ jobs:
   # NB : on appelle les outils directement (npx / go / golangci-lint), pas le
   # Makefile, pour rester indépendant du task runner. mise-action ne sert qu'à
   # provisionner la toolchain pinnée (mise.toml) — parité de version exacte,
-  # notamment Node 24.15.0 (Node 25 casse le localStorage de jsdom).
+  # notamment Node 26.3.0. Le localStorage natif de Node ≥ 25 masque celui de
+  # jsdom ; un shim mémoire dans src/test/setup.ts le rétablit côté tests.
 
   frontend:
     runs-on: ubuntu-latest

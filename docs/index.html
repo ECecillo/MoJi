@@ -168,14 +168,14 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <nav class="topnav"><div class="wrap">
   <a href="#etat">État courant</a>
   <a href="#rfc">RFC (14)</a>
-  <a href="#journal">Journal (31)</a>
+  <a href="#journal">Journal (32)</a>
   <a href="#brief">Brief</a>
 </div></nav>
 
 <div class="wrap">
 <header class="hero">
   <h1>Sinogrammes — Carnet de bord</h1>
-  <p class="meta">Index généré le 2026-06-14 09:49. 14 RFC · 31 entrées de journal.</p>
+  <p class="meta">Index généré le 2026-06-28 08:15. 14 RFC · 32 entrées de journal.</p>
   <p class="hint">Toutes les sections sont collapsables. Cliquez sur une ligne ou un lien interne pour ouvrir et défiler.</p>
 </header>
 
@@ -185,7 +185,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <blockquote>
 <p><strong>Fichier toujours à jour.</strong> À mettre à jour à la fin de chaque session de travail. Répond à la question : &quot;où en est le projet, là, maintenant ?&quot;</p>
 </blockquote>
-<p><strong>Dernière mise à jour</strong> : 2026-06-14 (post-MVP — fix CI timeout + image multi-arch arm64)</p>
+<p><strong>Dernière mise à jour</strong> : 2026-06-28 (toolchain — migration Node 26.3.0 + shim localStorage de test)</p>
 <h2>Statut global</h2>
 <p>🎉 <strong>MVP complet (Lots 0 → 5).</strong> Post-MVP en cours : <strong>déploiement auto-hébergé Docker + CI</strong> (RFC 0013) puis <strong>authentification de l&#39;API + accès Tailscale</strong> (RFC 0014). L&#39;app est installable/utilisable sur Boox Air 5c et ordinateur, hors-ligne, sync multi-appareils sécurisée, HSK 3.0 niveaux 1–2.</p>
 <p><strong>Lot 5 — Polish &amp; PWA</strong> : ✅ <strong>clôturé, critère de sortie atteint</strong> — installable + 100 % offline + Lighthouse 97/100/100. Validé en réel sur Boox le 2026-06-13 (installation, tracé HSK 1/2, hors-ligne, sync multi-appareils via <code>make serve</code> sur le LAN).</p>
@@ -378,7 +378,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li>✅ <strong>Renderer simplifié</strong> : <code>loadBundledHanziWriterData</code> charge ce fichier unique en import dynamique paresseux (mémoïsé) au lieu de globber les ~9 600 JSON de <code>hanzi-writer-data</code>. Signature et erreurs publiques inchangées.</li>
 <li>✅ <strong>Gain build</strong> : modules transformés <strong>9 600 → 93</strong>, <code>dist/sw.js</code> (précache) <strong>~260 KB → 2,25 KB</strong>, chunk principal <strong>~1,5 MB → 573 KB</strong>. Données toujours 100 % offline (1 chunk paresseux mis en cache par le SW).</li>
 <li>✅ <strong>Test d&#39;intégrité</strong> <code>hsk1-stroke-data.generated.test.ts</code> : couverture exacte des 300 caractères + cohérence <code>strokes</code>/<code>medians</code>.</li>
-<li>⚠ <strong>Découverte toolchain</strong> : les tests exigent <strong>Node 24.15.0</strong> (épinglé <code>mise.toml</code>). Sous Node 25, jsdom@25 expose un <code>localStorage</code> cassé → 46 faux échecs. Lancer via <code>mise exec node@24.15.0 -- …</code> (ou shell mise activé). Aucun correctif code.</li>
+<li>⚠ <strong>Découverte toolchain</strong> (résolue le 2026-06-28) : à l&#39;époque, les tests exigeaient <strong>Node 24.15.0</strong> car sous Node 25 jsdom@25 exposait un <code>localStorage</code> cassé → 46 faux échecs. <strong>Depuis</strong> : shim mémoire dans <code>frontend/src/test/setup.ts</code>, Node épinglé à 26.3.0, suite verte sous 24 et 26 (cf. décision 2026-06-28).</li>
 </ul>
 <h3>Clôture du Lot 2 — éditeur FR + filtres (session 3)</h3>
 <p>Cf. <a href="#journal-2026-05-30-cloture-lot2"><code>docs/journal/2026-05-30-cloture-lot2.md</code></a> et <a href="#rfc-0010">RFC 0010</a>.</p>
@@ -390,7 +390,7 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 </ul>
 <h2>Vérifications croisées</h2>
 <blockquote>
-<p>⚠ <strong>Toolchain</strong> : lancer impérativement sous le Node épinglé (<code>mise.toml</code> → Node 24.15.0), p. ex. <code>mise exec node@24.15.0 -- env -u GOROOT make test</code>. Sous Node 25, jsdom expose un <code>localStorage</code> cassé → 46 faux échecs.</p>
+<p>ℹ️ <strong>Toolchain</strong> : Node épinglé à <strong>26.3.0</strong> (<code>mise.toml</code>). Le <code>localStorage</code> natif de Node ≥ 25 masquait celui de jsdom ; un shim mémoire dans <code>frontend/src/test/setup.ts</code> le rétablit côté tests. La suite est désormais verte sous Node 24.15.0 <strong>et</strong> 26.3.0. Lancer via la toolchain mise, p. ex. <code>mise exec node@26.3.0 -- env -u GOROOT make test</code>.</p>
 </blockquote>
 <ul>
 <li><code>make test</code> : <strong>239 tests front passent</strong>, paquets back passent avec <code>-race</code>.</li>
@@ -415,7 +415,8 @@ footer { margin-top: 4rem; padding-top: 1rem; border-top: 1px solid var(--border
 <li>2026-06-13 : <strong>données de référence chargées en dynamique</strong> (<code>loadBundledDataSource</code>), instance <code>BundledDataSource</code> partagée. Chunk principal −39 % ; le shell ne dépend plus de la taille des données pour son premier rendu.</li>
 <li>2026-06-13 : <strong><code>hanzi-writer</code> reste eager</strong>. Son lazy-load casse l&#39;interaction canvas en production (SVG différé qui capte les clics, prouvé par bisection E2E) ; 37 KB ne le justifient pas.</li>
 <li>2026-06-13 : <strong>données de tracé = sous-ensemble généré hors-ligne</strong>, pas de glob de <code>hanzi-writer-data</code> au build. Le pipeline (RFC 0008) produit un fichier unique restreint à HSK 1, chargé en import dynamique paresseux. Réduit le précache SW de ~260 KB à 2,25 KB et le bundle de ~9 600 à 93 modules.</li>
-<li>2026-06-13 : <strong>les tests exigent Node 24.15.0</strong> (épinglé via mise). Sous Node 25 le <code>localStorage</code> jsdom est cassé. Toujours passer par la toolchain mise.</li>
+<li>2026-06-28 : <strong>migration Node 26.3.0</strong> (épinglé via mise). Node ≥ 25 expose un <code>Storage</code>/<code>localStorage</code> natif (gated) dont la présence comme global empêche jsdom d&#39;installer le sien (<code>window.localStorage</code> undefined). Correctif : shim <code>localStorage</code>/<code>sessionStorage</code> mémoire dans <code>frontend/src/test/setup.ts</code>, activé seulement si absent (no-op sous Node 24). Aucun bump de paquet (jsdom 25 / vitest 2 conservés). Supersède la note « les tests exigent Node 24.15.0 ».</li>
+<li>2026-06-13 : <del><strong>les tests exigent Node 24.15.0</strong></del> (supersédé le 2026-06-28). Sous Node 25 le <code>localStorage</code> jsdom était cassé ; résolu par le shim de test ci-dessus.</li>
 <li>2026-06-01 : <strong>PWA sans dépendance externe</strong>. Le service worker est généré par un plugin Vite local, actif en production uniquement, avec cache-first assets et network-first API GET.</li>
 <li>2026-06-01 : <strong>offline d&#39;abord = shell + assets bundlés</strong>. La résolution de conflits/sync backend offline reste hors du premier incrément Lot 5.</li>
 <li>2026-05-31 : <strong>voix = préférence globale locale</strong>. Le choix de voix est stocké dans <code>localStorage</code>, appliqué à tous les <code>SpeakButton</code>, et reste best-effort car la liste réelle dépend du navigateur/OS (notamment Boox/Android).</li>
@@ -1937,6 +1938,64 @@ page) ; le jeton est saisi et stocké côté appareil.</li>
 
 <section id="journal">
 <h2>Journal de bord</h2>
+<details id="journal-2026-06-28-migration-node26">
+  <summary>2026-06-28 — Migration toolchain vers Node 26.3.0 (+ shim localStorage de test)</summary>
+  <div class="content"><h1>2026-06-28 — Migration toolchain vers Node 26.3.0 (+ shim localStorage de test)</h1>
+<h2>Contexte</h2>
+<p>Le projet était bloqué sur <strong>Node 24.15.0</strong> : sous Node récent, la suite Vitest
+échouait massivement (<code>window.localStorage</code> undefined → <code>Cannot read properties of undefined (reading &#39;clear&#39;)</code>). Objectif : débloquer la montée de version avant toute
+nouvelle feature.</p>
+<h2>Diagnostic</h2>
+<p>Reproduction sous Node 26.3.0 (<code>mise exec node@26.3.0 -- npx vitest run</code>) puis test
+diagnostique : <code>window.localStorage</code> et le global <code>localStorage</code> sont <code>undefined</code>,
+avec l&#39;avertissement Node :</p>
+<pre><code>ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+</code></pre>
+<p><strong>Cause racine</strong> : Node ≥ 25 expose une <strong>Web Storage API native</strong> (<code>Storage</code> global,
+<code>localStorage</code> gated derrière <code>--localstorage-file</code>). La simple présence de <code>Storage</code>
+comme global empêche jsdom d&#39;installer sa propre implémentation → <code>window.localStorage</code>
+reste <code>undefined</code>.</p>
+<p>Ce <strong>n&#39;est pas</strong> un problème de version de jsdom ni de vitest : testé en bumpant
+jsdom (25 → 26) et vitest (2 → 3) sous Node 26, l&#39;échec persiste à l&#39;identique. Bumper
+ces paquets est donc inutile pour ce point.</p>
+<h2>Correctif</h2>
+<p>Shim <code>localStorage</code>/<code>sessionStorage</code> en mémoire dans <code>frontend/src/test/setup.ts</code>,
+installé <strong>seulement si absent</strong> (<code>if (window[key]) return;</code>). No-op sous Node 24 où
+jsdom fournit déjà un <code>localStorage</code> fonctionnel ; rétablit un Storage conforme sous
+Node ≥ 25. Indépendant des versions de Node/jsdom/vitest.</p>
+<p>Aucun bump de paquet : <strong>jsdom 25.0.1 / vitest 2.1.8 conservés</strong>.</p>
+<h2>Pins mis à jour (Node 24.15.0 → 26.3.0)</h2>
+<ul>
+<li><code>mise.toml</code> : <code>node = &quot;26.3.0&quot;</code>.</li>
+<li><code>Dockerfile</code> : étape de build frontend <code>node:24.15.0-alpine</code> → <code>node:26.3.0-alpine</code>.</li>
+<li><code>.github/workflows/ci.yml</code> : commentaire de toolchain mis à jour (mise-action lit <code>mise.toml</code>).</li>
+<li><code>README.md</code> : mention d&#39;install manuelle « Node 26.3.0 ».</li>
+<li><code>docs/handoff/CURRENT_STATE.md</code> : avertissements toolchain + décisions actualisés.</li>
+</ul>
+<h2>Vérifications</h2>
+<p>Sous <strong>Node 26.3.0</strong> :</p>
+<ul>
+<li><code>npx vitest run</code> : <strong>244/244</strong> tests verts.</li>
+<li><code>npm run typecheck</code> : OK.</li>
+<li><code>npm run lint</code> (ESLint + Prettier) : OK.</li>
+<li><code>npm run build</code> (tsc + vite build) : OK.</li>
+</ul>
+<p>Sous <strong>Node 24.15.0</strong> (rétro-compat, shim = no-op) :</p>
+<ul>
+<li><code>npx vitest run</code> : <strong>244/244</strong> tests verts.</li>
+</ul>
+<h2>Décisions</h2>
+<ul>
+<li><strong>Node épinglé à 26.3.0</strong>, pas 25.x : Node 25 est une ligne <em>Current</em> non-LTS et
+n&#39;était pas disponible via mise ; 26.3.0 est la ligne LTS paire et déjà vert. Le shim
+couvre tout Node ≥ 25.</li>
+<li><strong>Correctif au niveau du setup de test</strong>, pas via <code>--localstorage-file</code> (qui
+persisterait dans un fichier partagé entre tests) ni via bump de paquet (sans effet).</li>
+<li>Traçabilité : journal + mise à jour de <code>CURRENT_STATE.md</code> (pas de RFC dédiée — pin
+réversible, pas de changement d&#39;architecture).</li>
+</ul>
+</div>
+</details>
 <details id="journal-2026-06-14-securite-api">
   <summary>2026-06-14 — Sécurité : authentification de l'API (jeton) + Tailscale</summary>
   <div class="content"><h1>2026-06-14 — Sécurité : authentification de l&#39;API (jeton) + Tailscale</h1>
@@ -4361,7 +4420,7 @@ HSK 3+, Docker/CI/déploiement, IndexedDB. Rien d&#39;engagé.</p>
 </section>
 
 <footer>
-<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-06-14 09:49 par <code>make docs</code>.</p>
+<p class="meta">Sinogrammes · projet personnel d'apprentissage des sinogrammes HSK 1 · index généré le 2026-06-28 08:15 par <code>make docs</code>.</p>
 </footer>
 </div>
 

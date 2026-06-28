@@ -8,7 +8,7 @@
 # une machine amd64 sans émulation lente. Voir `make docker-buildx`.
 
 # 1. Build du frontend → dist/ (JS : indépendant de l'arch, on build sur le builder).
-FROM --platform=$BUILDPLATFORM node:24.15.0-alpine AS frontend
+FROM --platform=$BUILDPLATFORM node:26.3.0-alpine AS frontend
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
